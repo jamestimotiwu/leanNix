@@ -21,12 +21,23 @@ tss_size:
 ldt_size:
     .long ldt_bottom - ldt - 1
 
+# 16-bit limit -> table size - 1
+gdt_size:
+    .long gdt_bottom - gdt - 1
+    
     .word 0 # Padding
+
 ldt_desc:
     .word KERNEL_LDT
     .long ldt
 
+# Pseudo descriptor format: 16-bit limit, 32-bit base address (first gdt entry -> 0)
+gdt_desc:
+    .word gdt_bottom - gdt - 1 # 16-bit limit -> table size - 1
+    .long gdt
+
     .align 4
+
 tss:
 _tss:
     .rept 104
