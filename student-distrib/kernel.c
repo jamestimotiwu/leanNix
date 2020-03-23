@@ -13,7 +13,8 @@
 #include "rtc.h"
 
 #include "interrupts.h"
-// #include "drivers/rtc.h"
+#include "rtc.h"
+#include "page.h"
 
 #define RUN_TESTS
 
@@ -153,6 +154,9 @@ void entry(unsigned long magic, unsigned long addr) {
 
     /* Init the RTC */
     rtc_init();
+
+    /* Init paging */
+    //init_pages();
 
     /* Initialize devices, memory, filesystem, enable device interrupts on the
      * PIC, any other initialization stuff... */

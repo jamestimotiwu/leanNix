@@ -1,6 +1,7 @@
 #include "page.h"
 #include "types.h"
-//#include "lib.h"
+#include "lib.h"
+#include "page_asm.h"
 
 /* Initialize paging structures */
 void init_pages()
@@ -90,7 +91,7 @@ void init_pages()
     page_dir[1].mb.rw = 1;
     page_dir[1].mb.user = 0;
     page_dir[1].mb.pwt = 0;
-    page_dir[1].mb.pcd = 0;
+    page_dir[1].mb.pcd = 1;
     page_dir[1].mb.accessed = 0;
     page_dir[1].mb.dirty = 0;
     page_dir[1].mb.reserved0 = 0;
@@ -103,7 +104,10 @@ void init_pages()
     /* 1. Load cr3 with address of page dir */
     /* 2. Enable PSE page size extension bit of cr4*/
     /* 3. Set PG paging flag bit of cr0*/
-    asm volatile("                       \n\
+
+    load_page(&page_dir);
+
+    /*asm volatile("                       \n\
         movl %0, %%eax                   \n\
         movl %%eax, %%cr3                \n\
         movl %%cr4, %%eax                \n\
@@ -114,7 +118,8 @@ void init_pages()
         movl %%eax, %%cr0                \n\
         "
         :
-    : "r"(page_dir)
+    : "r"(&page_dir)
         : "eax", "memory", "cc"
-        );
+        );*/
+
 }

@@ -1,0 +1,18 @@
+boot.o: boot.S multiboot.h x86_desc.h types.h
+interrupt_linkage.o: interrupt_linkage.S
+page_asm.o: page_asm.S
+x86_desc.o: x86_desc.S x86_desc.h types.h
+exceptions.o: exceptions.c exceptions.h x86_desc.h types.h lib.h
+i8259.o: i8259.c i8259.h types.h lib.h
+idt.o: idt.c idt.h x86_desc.h types.h tests.h lib.h exceptions.h rtc.h \
+  i8259.h keyboard.h interrupt_linkage.h syscall.h
+interrupts.o: interrupts.c x86_desc.h types.h interrupts.h lib.h
+kernel.o: kernel.c multiboot.h types.h x86_desc.h lib.h i8259.h debug.h \
+  tests.h idt.h exceptions.h rtc.h keyboard.h interrupt_linkage.h \
+  interrupts.h page.h
+keyboard.o: keyboard.c keyboard.h x86_desc.h types.h lib.h i8259.h
+lib.o: lib.c lib.h types.h
+page.o: page.c page.h types.h lib.h page_asm.h
+rtc.o: rtc.c rtc.h x86_desc.h types.h lib.h i8259.h
+syscall.o: syscall.c lib.h types.h
+tests.o: tests.c tests.h lib.h types.h x86_desc.h i8259.h
