@@ -9,6 +9,8 @@
 #include "debug.h"
 #include "tests.h"
 
+#include "interrupts.h"
+
 #define RUN_TESTS
 
 /* Macros. */
