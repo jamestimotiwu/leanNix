@@ -2,6 +2,12 @@
 #include "interrupts.h"
 #include "lib.h"
 
+/* Exception Handlers
+ *   DESCRIPTION: one of these functions is called when the x86 causes
+ *                an exception. These functions print the error message.
+ *   INPUTS/OUTPUTS: none
+ *   SIDE EFFECTS: causes the kernel to freeze
+ */
 void divide_error(void) {
 	printf("Divide error exception.");
 	while (1); // Prevent shutdown
@@ -156,6 +162,11 @@ void set_trap_gate_desc(int vec_num, void* handler_addr)
 
 /*
 * idt_init
+*   DESCRIPTION: sets the exception entries for the IDT as well
+*                as initializes the idtr register
+*   INPUTS: none
+*   OUTPUTS: none
+*   SIDE EFFECTS: changes idtr, the idt table entries
 */
 void idt_init(void)
 {

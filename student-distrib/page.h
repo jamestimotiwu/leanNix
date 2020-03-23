@@ -1,3 +1,6 @@
+#ifndef _PAGE_H
+#define _PAGE_H
+
 /* page.h - Defines for various page_tables, structure of page descriptor
  * and selectors
  * vim:ts=4 noexpandtab
@@ -7,6 +10,8 @@
 
 #define NUM_PAGES   1024
 #define PAGE_SIZE   4096
+
+#ifndef ASM
 
 typedef union page_dir_entry {
     page_dir_entry_4KB_t kb;
@@ -110,3 +115,8 @@ page_dir_entry_t page_dir[NUM_PAGES] __attribute__((aligned(PAGE_SIZE)));
 page_table_entry_t page_table[NUM_PAGES] __attribute__((aligned(PAGE_SIZE)));
 
 page_table_entry_t page_vmem[NUM_PAGES] __attribute__((aligned(PAGE_SIZE)));
+
+#endif // ASM
+
+#endif
+

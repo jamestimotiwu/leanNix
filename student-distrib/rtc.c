@@ -1,5 +1,11 @@
 #include "rtc.h"
 
+/* rtc_int
+ *   DESCRIPTION: rtc interrupt handler test
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   SIDE EFFECT: prints to screen
+ */
 void rtc_int(){
 
   cli();				/* Disable interrupts */
@@ -10,6 +16,13 @@ void rtc_int(){
   printf("testing if rtc works");
 	sti();
 }
+
+/* rtc_init()
+ *   DESCRIPTION: initializes the rtc
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   SIDE EFFECT: changes rtc state, enables irq8
+ */
 void rtc_init(){
 
   char prev;

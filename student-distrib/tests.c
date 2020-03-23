@@ -3,7 +3,7 @@
 #include "lib.h"
 
 #include "i8259.h"
-#include "drivers/rtc.h"
+// #include "drivers/rtc.h"
 
 #define PASS 1
 #define FAIL 0
@@ -68,6 +68,21 @@ int test_divide_error() {
 	return result;
 }
 
+/* System call test
+ *
+ * Check that system calls work
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ * Coverage: IDT, system call
+ */
+int syscall_test() {
+	TEST_HEADER;
+
+	int result = PASS;
+    asm volatile ("int $0x80");
+	return result;
+}
 /* Checkpoint 2 tests */
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
@@ -78,7 +93,8 @@ int test_divide_error() {
 void launch_tests(){
 
 	TEST_OUTPUT("idt_test", idt_test());
-	TEST_OUTPUT("test_divide_error", test_divide_error());
+	//TEST_OUTPUT("test_divide_error", test_divide_error());
 	// launch your tests here
 	//test_interrupts();
+	TEST_OUTPUT("syscall_test", syscall_test());
 }
