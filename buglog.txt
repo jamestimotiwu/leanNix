@@ -1,0 +1,58 @@
+	Debugging:
+gdb bootimg
+target remote 10.0.2.2:1234
+
+Broken image:
+rm bootimg
+rm mp3.img
+git checkout mp3.img
+
+######
+
+Buglog (James):
+
+Problem: Issues using batch script to launch boot image
+
+Problem: Initializing GDT
+https://www.tldp.org/HOWTO/Linux-Init-HOWTO-4.html
+https://www.google.com/search?q=linux+gdt+initialize&oq=linux+gdt+initialize&aqs=chrome..69i57j33.3746j0j7&sourceid=chrome&ie=UTF-8
+Problem: Undefined reference to gdt while doing lgdt gdt?
+Solution: Check what is in .globl in .S file, contains pointer to gdt
+
+Problem: Make output error -> sudo: unable to execute ./debug.sh: No such file or directory
+Solution: https://piazza.com/class/k5nafawx3fj2v3?cid=628
+Run 
+dos2unix debug.sh
+chmod +x debug.sh
+make clean && make
+
+Problem: #include x86_desc.h in asm .S file and set up descriptor pointer?
+Solution: Pseudo descriptor format containing base address (first gdt entry) and limit (size of table - 1)
+
+Problem: What is .align doing?
+Solution: http://www.keil.com/support/man/docs/armasm/armasm_dom1361290002364.htm
+
+Problem: Issue with passing gdtr pseduo descriptor
+Solution: Pad before gdt descriptor for gdtr
+
+Problem: Still bootlooping
+Solution: https://piazza.com/class/k5nafawx3fj2v3?cid=631, week8 discussion
+RUN_TESTS macro, test is throwing fault on boot due to IDT calls failing, comment out run_tests macro
+
+Problem: IDT linkage
+Solution: arch/i386/kernel/head.S:367 -> It doesn't actually load idt - that can be done only after paging has been enabled and the kernel moved to PAGE_OFFSET. Interrupts are enabled elsewhere, when we can be relatively sure everything is ok.
+https://lwn.net/Articles/109375/
+https://lwn.net/Articles/21846/
+
+Problem: Interrupt / trap vectors
+4.8.3
+
+Problem: How to test throw exceptions?
+Solution: Divide by error -> a / 0 should throw an error
+
+Problem: Print output displaying to top of screen after fully filled
+
+Problem: Paging keeps crashing/boot looping
+Solution: Improper video memory spacing, need to change something in lib.c
+
+
