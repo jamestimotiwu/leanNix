@@ -47,7 +47,12 @@ int idt_test(){
 
 int interrupt0_test(){
 	TEST_HEADER;
-
+	int result = PASS;
+	int x = 1;
+	int y = 0;
+	x = x/y;
+	assertion_failure();
+	return result;
 }
 
 // add more tests here
@@ -60,7 +65,7 @@ int interrupt0_test(){
 
 /* Test suite entry point */
 void launch_tests(){
-	TEST_OUTPUT("idt_test", idt_test());
-	//TEST_OUTPUT("interrupt0_test", interrupt0_test());
+	//TEST_OUTPUT("idt_test", idt_test());
+	TEST_OUTPUT("interrupt0_test", interrupt0_test());
 	// launch your tests here
 }
