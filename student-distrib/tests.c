@@ -66,6 +66,7 @@ int interrupt0_test(){
 /* Test suite entry point */
 void launch_tests(){
 	//TEST_OUTPUT("idt_test", idt_test());
-	TEST_OUTPUT("interrupt0_test", interrupt0_test());
+	//TEST_OUTPUT("interrupt0_test", interrupt0_test());
 	// launch your tests here
+	//test_interrupts();
 }

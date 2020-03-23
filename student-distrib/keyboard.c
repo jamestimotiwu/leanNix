@@ -14,12 +14,12 @@ void keyboard_int(){
   // printf("KEYBOARD INTERRUPT! \n");
   // while(1);
   unsigned scancode = inb(KB_DATA);
-  // if(scancode < 60 && scancode >= 0){
-  //   clear();
-  //   putc(kb_map[scancode]);
-  // }
-  clear();
-  putc(kb_map[scancode]);
+  if(scancode < 60 && scancode >= 0){
+    //clear();
+    putc(kb_map[scancode]);
+  }
+  // clear();
+  // putc(kb_map[scancode]);
   send_eoi(KB_IRQ);
 }
 void keyboard_init(){
