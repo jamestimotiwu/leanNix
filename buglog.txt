@@ -69,3 +69,15 @@ the hlt-jmp loop. This was fixed by resetting some masks on the PIC so that
 interrupts could go through, which prevented qemu from closing.
 
 
+######
+
+Buglog (Ben):
+
+Problem: sudo: unable to execute ./debug.sh: No such file or directory
+Solution: Piazza -> dos2unix debug.sh; chmod +x debug.sh; make clean; make;
+
+Problem Keyboard wasnt printing anything
+Solution: Added James' RTC files and called test_interrupt in tests.c
+
+Problem RTC handler not being called
+Solution: still trying to fix
