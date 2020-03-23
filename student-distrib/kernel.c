@@ -97,6 +97,9 @@ void entry(unsigned long magic, unsigned long addr) {
                     (unsigned)mmap->length_low);
     }
 
+    /* Initialize IDT */
+    idt_init();
+
     /* Construct an LDT entry in the GDT */
     {
         seg_desc_t the_ldt_desc;
@@ -153,7 +156,7 @@ void entry(unsigned long magic, unsigned long addr) {
 
 #ifdef RUN_TESTS
     /* Run tests */
-    //launch_tests();
+    launch_tests();
 #endif
     /* Execute the first program ("shell") ... */
 
