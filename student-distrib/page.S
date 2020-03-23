@@ -4,9 +4,9 @@
 #define ASM     1
 #include "page.h"
 
-.globl page_init
+.globl load_pg_table
 
-page_init:
+load_pg_table:
 	# Init stack frame
 	pushl %ebp
 	movl %esp, %ebp
@@ -20,9 +20,9 @@ page_init:
 	orl $0x00000010, %eax
 	movl %eax, %cr4
 
-	# Set PG, PE bits of cr0
+	# Set PG bits of cr0
 	movl %cr0, %eax
-	orl $0x80000001, %eax
+	orl $0x8000000, %eax
 	movl %cr0, %eax
 
 	leave
