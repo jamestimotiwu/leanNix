@@ -56,3 +56,16 @@ Problem: Paging keeps crashing/boot looping
 Solution: Improper video memory spacing, need to change something in lib.c
 
 
+#####
+Buglog (Michael)
+
+Bug: The interrupt handlers were executing correctly, but sometimes for
+the ones that don't pause afterwards they were causing weird crashes. This
+was fixed by adding a an assembly wrapper around the c functions which
+finish with IRET.
+
+Bug: After implementing some PIC stuff, the qemu window would close during
+the hlt-jmp loop. This was fixed by resetting some masks on the PIC so that
+interrupts could go through, which prevented qemu from closing.
+
+
