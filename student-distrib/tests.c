@@ -45,7 +45,25 @@ int idt_test(){
 	return result;
 }
 
-// add more tests here
+/* Exception Handling Test
+ *
+ * Asserts if divide error exception is handled when dividing by 0
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ * Coverage: Exception handling, IDT
+ * Files: x86_desc.h/S, interrupts.c/h
+ */
+int test_divide_error() {
+	TEST_HEADER;
+
+	int result = PASS;
+	int a = 1;
+	int b = 0;
+	a = a / b;
+	assertion_failure();
+	return result;
+}
 
 /* Checkpoint 2 tests */
 /* Checkpoint 3 tests */
@@ -56,5 +74,6 @@ int idt_test(){
 /* Test suite entry point */
 void launch_tests(){
 	TEST_OUTPUT("idt_test", idt_test());
+	TEST_OUTPUT("test_divide_error", test_divide_error());
 	// launch your tests here
 }
