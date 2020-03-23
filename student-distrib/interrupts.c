@@ -1,27 +1,100 @@
 #include "x86_desc.h"
 #include "interrupts.h"
+#include "lib.h"
 
 void divide_error(void) {
-	printf("blah");
+	printf("Divide error exception.");
+	while (1); // Prevent shutdown
 }
-//void debug(void);
-//void nmi(void);
-//void overflow(void);
-//void bounds(void);
-//void invalid_op(void);
-//void device_not_available(void);
-//void coprocessor_segment_overrun(void);
-//void invalid_tss(void);
-//void device_not_available(void);
-//void segment_not_present(void);
-//void stack_segment(void);
-//void general_protection(void);
-//void page_fault(void);
-//void coprocessor_error(void);
-//void alignment_check(void);
-//void machine_check(void);
-//void simd_coprocessor_check(void);
-//void machine_check(void);
+
+void nmi(void) {
+	printf("Non-maskable interrupt exception.");
+	while (1);
+}
+
+void breakpoint(void) {
+	printf("Breakpoint exception.");
+	while (1);
+}
+
+void overflow(void) {
+	printf("Overflow exception.");
+	while (1);
+}
+
+void bounds(void) {
+	printf("Bound range exceeded exception");
+	while (1);
+}
+
+void invalid_op(void) {
+	printf("Invalid Opcode exception.");
+	while (1);
+}
+
+void device_not_available(void) {
+	printf("Device not available exception.");
+	while (1); 
+}
+
+void double_fault(void) {
+	printf("Double fault exception.");
+	while (1);
+}
+
+void coprocessor_segment_overrun(void) {
+	printf("Coprocessor segment overrun exception.");
+	while (1); 
+}
+
+void invalid_tss(void) {
+	printf("Invalid TSS exception.");
+	while (1);
+}
+
+void segment_not_present(void) {
+	printf("Segment not present exception.");
+	while (1);
+}
+
+void stack_segment(void) {
+	printf("Stack segment fault exception.");
+	while (1);
+}
+
+void general_protection(void) {
+	printf("General protection exception.");
+	while (1);
+}
+
+void page_fault(void) {
+	printf("Page fault exception");
+	while (1);
+}
+
+void math_fault(void) {
+	printf("Math fault exception.");
+	while (1);
+}
+
+void alignment_check(void) {
+	printf("Alignment check exception");
+	while (1);
+}
+
+void machine_check(void) {
+	printf("Machine check exception");
+	while (1);
+}
+
+void simd_coprocessor_check(void) {
+	printf("SIMD floating point exception.");
+	while (1);
+}
+
+void intel_reserved(void) {
+	printf("Intel reserved exception");
+}
 
 /*
 * set_gate
@@ -87,15 +160,24 @@ void idt_init(void)
 {
 	lidt(idt_desc_ptr);
 	set_interrupt_gate_desc(0, divide_error);
-	set_interrupt_gate_desc(1, divide_error);
-	set_interrupt_gate_desc(2, divide_error);
-	set_interrupt_gate_desc(3, divide_error);
-	set_interrupt_gate_desc(4, divide_error);
-	set_interrupt_gate_desc(5, divide_error);
-	set_interrupt_gate_desc(6, divide_error);
-	set_interrupt_gate_desc(7, divide_error);
-	set_interrupt_gate_desc(8, divide_error);
-	set_interrupt_gate_desc(9, divide_error);
-	set_interrupt_gate_desc(10, divide_error);
+	set_interrupt_gate_desc(1, intel_reserved);
+	set_interrupt_gate_desc(2, nmi);
+	set_interrupt_gate_desc(3, breakpoint);
+	set_interrupt_gate_desc(4, overflow);
+	set_interrupt_gate_desc(5, bounds);
+	set_interrupt_gate_desc(6, invalid_op);
+	set_interrupt_gate_desc(7, device_not_available);
+	set_interrupt_gate_desc(8, double_fault);
+	set_interrupt_gate_desc(9, coprocessor_segment_overrun);
+	set_interrupt_gate_desc(10, invalid_tss);
+	set_interrupt_gate_desc(11, segment_not_present);
+	set_interrupt_gate_desc(12, stack_segment);
+	set_interrupt_gate_desc(13, general_protection);
+	set_interrupt_gate_desc(14, page_fault);
+	set_interrupt_gate_desc(15, intel_reserved);
+	set_interrupt_gate_desc(16, math_fault);
+	set_interrupt_gate_desc(17, alignment_check);
+	set_interrupt_gate_desc(18, machine_check);
+	set_interrupt_gate_desc(19, simd_coprocessor_check);
 
 }
