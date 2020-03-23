@@ -56,7 +56,20 @@ void enable_irq(uint32_t irq_num) {
 
 /* Disable (mask) the specified IRQ */
 void disable_irq(uint32_t irq_num) {
+    unsigned int mask = 1 << irq_num;
 
+    /* Remove masking and update */
+    master_mask |= mask;
+
+    if (irq_num > 8) {
+        // Slave is IRQ 8-15
+        mask = 1 << (irq_num - 8)
+        slave_mask |= mask; /* Remove masking for slave */
+        outb(slave_mask, SLAVE_8259_PORT + 1);
+    }
+    else {
+        outb(master_mask, MASTER_8259_PORT + 1);
+    }
 }
 
 
