@@ -1,5 +1,12 @@
 #include "idt.h"
 
+/* init_idt
+ *   DESCRIPTION: clears all entires in the IDT, then initializes some of
+ *                them to the correct interrupt handler
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   SIDE EFFECTS: changes idt, idtr
+ */
 void init_idt(){
   int i;
   /* Initialize IDT */
@@ -24,6 +31,7 @@ void init_idt(){
       idt[i].present = 1;
       SET_IDT_ENTRY(idt[i], reserved);
     }
+    /* Only the system call has privilige of 3 */
     if(i == IDT_SYSTEM_CALL){
       idt[i].dpl = 3;
       idt[i].present = 1;
@@ -33,6 +41,7 @@ void init_idt(){
     }
   }
 
+  /* Initialize the exceptions */
   SET_IDT_ENTRY(idt[IDT_DIVIDE_ERROR], divide_error_exception);
   SET_IDT_ENTRY(idt[IDT_DEBUG], debug_exception);
   SET_IDT_ENTRY(idt[IDT_NMI], nmi_interrupt);
@@ -53,11 +62,14 @@ void init_idt(){
   SET_IDT_ENTRY(idt[IDT_MACHINE_CHECK], machine_check_exception);
   SET_IDT_ENTRY(idt[IDT_SIMD_FLOATING_POINT], simd_floating_point_exception);
 
+  /* Set handlers for the keyboard and rtc (hardware interrupts) */
   SET_IDT_ENTRY(idt[IDT_KEYBOARD], keyboard_interrupt_assembly);
   SET_IDT_ENTRY(idt[IDT_RTC], rtc_interrupt_assembly);
   // SET_IDT_ENTRY(idt[IDT_SYSTEM_CALL], system_call_assembly);
+  /* set handler for system call */
   SET_IDT_ENTRY(idt[IDT_SYSTEM_CALL], system_call);
 
 
+  /* set idtr */
   lidt(idt_desc_ptr);
 }

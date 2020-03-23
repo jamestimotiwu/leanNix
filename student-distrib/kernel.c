@@ -13,7 +13,7 @@
 #include "rtc.h"
 
 #include "interrupts.h"
-#include "drivers/rtc.h"
+// #include "drivers/rtc.h"
 
 #define RUN_TESTS
 
@@ -145,7 +145,7 @@ void entry(unsigned long magic, unsigned long addr) {
         ltr(KERNEL_TSS);
     }
     /* Init IDT */
-    init_idt();
+    // init_idt(); old version don't use anymore
     /* Init the PIC */
     i8259_init();
     /* Init the keyboard */

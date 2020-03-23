@@ -1,5 +1,11 @@
 #include "exceptions.h"
 
+/* Exception Handlers
+ *   DESCRIPTION: prints error msg and halts execution when exception is raised
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   SIDE EFFECTS: prints characters, execution stops
+ */
 void divide_error_exception(){
   print_exception("EXCEPTION: DIVIDE_ERROR_EXCEPTION! \n");
 }
@@ -64,6 +70,7 @@ void system_call(){
   print_exception("EXCEPTION: SYSTEM CALL! \n");
 }
 
+/* helper function used by the above functions */
 void print_exception(char * str){
   clear();
   printf(str);
