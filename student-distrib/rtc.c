@@ -9,7 +9,7 @@
 void rtc_int(){
 
   cli();				/* Disable interrupts */
-	outb(REG_B, RTC_PORT);	/* Select and read register C */
+	outb(REG_C, RTC_PORT);	/* Select and read register C */
 	inb(CMOS_PORT);			/* Reset contents in CMOS port */
 	send_eoi(RTC_IRQ);		/* Send EOI for IRQ8 */
   //test_interrupts();
