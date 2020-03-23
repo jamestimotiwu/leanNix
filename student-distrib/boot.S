@@ -25,9 +25,9 @@ _start:
 
 continue:
     # Load the GDT
-    lgdt    gdt_desc_ptr
 
     lidt    idt_desc_ptr
+    lgdt gdt_desc
 
     # Load CS with the new descriptor value
     ljmp    $KERNEL_CS, $keep_going

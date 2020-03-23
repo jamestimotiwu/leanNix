@@ -2,6 +2,9 @@
 #include "x86_desc.h"
 #include "lib.h"
 
+#include "i8259.h"
+#include "drivers/rtc.h"
+
 #define PASS 1
 #define FAIL 0
 
@@ -45,17 +48,25 @@ int idt_test(){
 	return result;
 }
 
-int interrupt0_test(){
+/* Exception Handling Test
+ *
+ * Asserts if divide error exception is handled when dividing by 0
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ * Coverage: Exception handling, IDT
+ * Files: x86_desc.h/S, interrupts.c/h
+ */
+int test_divide_error() {
 	TEST_HEADER;
+
 	int result = PASS;
-	int x = 1;
-	int y = 0;
-	x = x/y;
+	int a = 1;
+	int b = 0;
+	a = a / b;
 	assertion_failure();
 	return result;
 }
-
-// add more tests here
 
 /* Checkpoint 2 tests */
 /* Checkpoint 3 tests */
@@ -65,8 +76,9 @@ int interrupt0_test(){
 
 /* Test suite entry point */
 void launch_tests(){
-	//TEST_OUTPUT("idt_test", idt_test());
-	//TEST_OUTPUT("interrupt0_test", interrupt0_test());
+
+	TEST_OUTPUT("idt_test", idt_test());
+	TEST_OUTPUT("test_divide_error", test_divide_error());
 	// launch your tests here
 	//test_interrupts();
 }
