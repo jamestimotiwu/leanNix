@@ -41,8 +41,6 @@ void i8259_init(void) {
 void enable_irq(uint32_t irq_num) {
     unsigned int mask = ~(1 << irq_num);
 
-    master_mask &= mask;
-    
     if (irq_num > 8) {
         // Slave is IRQ 8-15
         mask = ~(1 << (irq_num - 8))
@@ -50,6 +48,7 @@ void enable_irq(uint32_t irq_num) {
         outb(slave_mask, SLAVE_8259_PORT + 1);
     }
     else {
+        master_mask &= mask;
         outb(master_mask, MASTER_8259_PORT + 1);
     }
 }
@@ -58,9 +57,6 @@ void enable_irq(uint32_t irq_num) {
 void disable_irq(uint32_t irq_num) {
     unsigned int mask = 1 << irq_num;
 
-    /* Remove masking and update */
-    master_mask |= mask;
-
     if (irq_num > 8) {
         // Slave is IRQ 8-15
         mask = 1 << (irq_num - 8)
@@ -68,6 +64,8 @@ void disable_irq(uint32_t irq_num) {
         outb(slave_mask, SLAVE_8259_PORT + 1);
     }
     else {
+        /* Remove masking and update */
+        master_mask |= mask;
         outb(master_mask, MASTER_8259_PORT + 1);
     }
 }
