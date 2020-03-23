@@ -78,6 +78,7 @@ void send_eoi(uint32_t irq_num) {
     /* Check if irq_num is in slave or master and send eoi for selected PIC and IRQ */
     if (irq >= 8) {
         outb(EOI | (irq_num - 8), SLAVE_8259_PORT);
+        outb(EOI | 2, MASTER_8259_PORT); /* Send eoi for IRQ slave is on for master*/
     }
     outb(EOI | irq_num, MASTER_8259_PORT); /* Always send EOI to master */
 }
