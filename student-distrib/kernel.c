@@ -10,6 +10,7 @@
 #include "tests.h"
 
 #include "interrupts.h"
+#include "drivers/rtc.h"
 
 #define RUN_TESTS
 
@@ -143,6 +144,9 @@ void entry(unsigned long magic, unsigned long addr) {
 
     /* Init the PIC */
     i8259_init();
+
+    /* Init the RTC */
+    rtc_init();
 
     /* Initialize devices, memory, filesystem, enable device interrupts on the
      * PIC, any other initialization stuff... */

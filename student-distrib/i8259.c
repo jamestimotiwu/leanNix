@@ -43,7 +43,7 @@ void enable_irq(uint32_t irq_num) {
 
     if (irq_num > 8) {
         // Slave is IRQ 8-15
-        mask = ~(1 << (irq_num - 8))
+        mask = ~(1 << (irq_num - 8));
         slave_mask &= mask;
         outb(slave_mask, SLAVE_8259_PORT + 1);
     }
@@ -59,7 +59,7 @@ void disable_irq(uint32_t irq_num) {
 
     if (irq_num > 8) {
         // Slave is IRQ 8-15
-        mask = 1 << (irq_num - 8)
+        mask = 1 << (irq_num - 8);
         slave_mask |= mask; /* Remove masking for slave */
         outb(slave_mask, SLAVE_8259_PORT + 1);
     }
@@ -74,7 +74,7 @@ void disable_irq(uint32_t irq_num) {
 /* Send end-of-interrupt signal for the specified IRQ */
 void send_eoi(uint32_t irq_num) {
     /* Check if irq_num is in slave or master and send eoi for selected PIC and IRQ */
-    if (irq >= 8) {
+    if (irq_num >= 8) {
         outb(EOI | (irq_num - 8), SLAVE_8259_PORT);
         outb(EOI | 2, MASTER_8259_PORT); /* Send eoi for IRQ slave is on for master*/
     }

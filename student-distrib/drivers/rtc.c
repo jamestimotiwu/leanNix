@@ -6,8 +6,6 @@
 * RTC i/o ports: RTC: 0x70, CMOS: 0x71
 * RTC status registers A, B, C offsets IO ports for RTC/CMOS -> 0xA, 0xB, 0xC
 */
-static unsigned long rtc_data;
-static unsigned long rtc_status;
 
 /* RTC driver initializiation */
 void rtc_init(void) 
