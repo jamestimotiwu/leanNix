@@ -21,7 +21,7 @@ void rtc_init(void)
 	sti();						/* Enable interrupts */
 }
 
-/* Handle IRQs to IR8 */
+/* Handler for interrupts to IRQ8 */
 void rtc_interrupt_handler(int irq_num)
 {
 	cli();				/* Disable interrupts */
