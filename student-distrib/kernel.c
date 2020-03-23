@@ -8,6 +8,9 @@
 #include "i8259.h"
 #include "debug.h"
 #include "tests.h"
+#include "idt.h"
+#include "keyboard.h"
+#include "rtc.h"
 
 #include "interrupts.h"
 #include "drivers/rtc.h"
@@ -141,9 +144,12 @@ void entry(unsigned long magic, unsigned long addr) {
         tss.esp0 = 0x800000;
         ltr(KERNEL_TSS);
     }
-
+    /* Init IDT */
+    init_idt();
     /* Init the PIC */
     i8259_init();
+    /* Init the keyboard */
+    keyboard_init();
 
     /* Init the RTC */
     rtc_init();

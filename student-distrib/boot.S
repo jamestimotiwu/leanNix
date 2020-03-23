@@ -25,6 +25,8 @@ _start:
 
 continue:
     # Load the GDT
+
+    lidt    idt_desc_ptr
     lgdt gdt_desc
 
     # Load CS with the new descriptor value
