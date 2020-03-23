@@ -1,3 +1,4 @@
+#include "lib.h"
 
 /* syscall_int()
  *   DESCRIPTION: sys call c code
