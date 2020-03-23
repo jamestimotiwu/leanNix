@@ -65,6 +65,7 @@ void system_call(){
 }
 
 void print_exception(char * str){
+  clear();
   printf(str);
   while(1);
 }
