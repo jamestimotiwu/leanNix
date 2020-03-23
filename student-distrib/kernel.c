@@ -9,6 +9,9 @@
 #include "debug.h"
 #include "tests.h"
 
+#include "interrupts.h"
+#include "drivers/rtc.h"
+
 #define RUN_TESTS
 
 /* Macros. */
@@ -95,6 +98,9 @@ void entry(unsigned long magic, unsigned long addr) {
                     (unsigned)mmap->length_low);
     }
 
+    /* Initialize IDT */
+    idt_init();
+
     /* Construct an LDT entry in the GDT */
     {
         seg_desc_t the_ldt_desc;
@@ -139,6 +145,9 @@ void entry(unsigned long magic, unsigned long addr) {
     /* Init the PIC */
     i8259_init();
 
+    /* Init the RTC */
+    rtc_init();
+
     /* Initialize devices, memory, filesystem, enable device interrupts on the
      * PIC, any other initialization stuff... */
 
@@ -146,8 +155,8 @@ void entry(unsigned long magic, unsigned long addr) {
     /* Do not enable the following until after you have set up your
      * IDT correctly otherwise QEMU will triple fault and simple close
      * without showing you any output */
-    /*printf("Enabling Interrupts\n");
-    sti();*/
+    printf("Enabling Interrupts\n");
+    sti();
 
 #ifdef RUN_TESTS
     /* Run tests */
