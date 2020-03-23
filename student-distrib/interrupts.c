@@ -94,6 +94,7 @@ void simd_coprocessor_check(void) {
 
 void intel_reserved(void) {
 	printf("Intel reserved exception");
+	while (1);
 }
 
 /*
@@ -159,25 +160,25 @@ void set_trap_gate_desc(int vec_num, void* handler_addr)
 void idt_init(void)
 {
 	lidt(idt_desc_ptr);
-	set_interrupt_gate_desc(0, divide_error);
-	set_interrupt_gate_desc(1, intel_reserved);
-	set_interrupt_gate_desc(2, nmi);
-	set_interrupt_gate_desc(3, breakpoint);
-	set_interrupt_gate_desc(4, overflow);
-	set_interrupt_gate_desc(5, bounds);
-	set_interrupt_gate_desc(6, invalid_op);
-	set_interrupt_gate_desc(7, device_not_available);
-	set_interrupt_gate_desc(8, double_fault);
-	set_interrupt_gate_desc(9, coprocessor_segment_overrun);
-	set_interrupt_gate_desc(10, invalid_tss);
-	set_interrupt_gate_desc(11, segment_not_present);
-	set_interrupt_gate_desc(12, stack_segment);
-	set_interrupt_gate_desc(13, general_protection);
-	set_interrupt_gate_desc(14, page_fault);
-	set_interrupt_gate_desc(15, intel_reserved);
-	set_interrupt_gate_desc(16, math_fault);
-	set_interrupt_gate_desc(17, alignment_check);
-	set_interrupt_gate_desc(18, machine_check);
-	set_interrupt_gate_desc(19, simd_coprocessor_check);
+	set_interrupt_gate_desc(0, &divide_error);
+	set_interrupt_gate_desc(1, &intel_reserved);
+	set_interrupt_gate_desc(2, &nmi);
+	set_interrupt_gate_desc(3, &breakpoint);
+	set_interrupt_gate_desc(4, &overflow);
+	set_interrupt_gate_desc(5, &bounds);
+	set_interrupt_gate_desc(6, &invalid_op);
+	set_interrupt_gate_desc(7, &device_not_available);
+	set_interrupt_gate_desc(8, &double_fault);
+	set_interrupt_gate_desc(9, &coprocessor_segment_overrun);
+	set_interrupt_gate_desc(10, &invalid_tss);
+	set_interrupt_gate_desc(11, &segment_not_present);
+	set_interrupt_gate_desc(12, &stack_segment);
+	set_interrupt_gate_desc(13, &general_protection);
+	set_interrupt_gate_desc(14, &page_fault);
+	set_interrupt_gate_desc(15, &intel_reserved);
+	set_interrupt_gate_desc(16, &math_fault);
+	set_interrupt_gate_desc(17, &alignment_check);
+	set_interrupt_gate_desc(18, &machine_check);
+	set_interrupt_gate_desc(19, &simd_coprocessor_check);
 
 }
