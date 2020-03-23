@@ -1,6 +1,7 @@
 .text
 .globl rtc_interrupt_assembly
 .globl keyboard_interrupt_assembly
+.globl syscall_assembly
 
 # These are interrupt handlers used directly by IDT
 
@@ -18,6 +19,15 @@ keyboard_interrupt_assembly:
   pushal
   pushfl
   call keyboard_int
+  popfl
+  popal
+  iret
+
+# syscall interrupt
+syscall_assembly:
+  pushal
+  pushfl
+  call syscall_int
   popfl
   popal
   iret

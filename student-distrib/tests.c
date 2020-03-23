@@ -80,7 +80,10 @@ int syscall_test() {
 	TEST_HEADER;
 
 	int result = PASS;
+
+    /* should cause SYSTEM CALL! to print out */
     asm volatile ("int $0x80");
+
 	return result;
 }
 /* Checkpoint 2 tests */

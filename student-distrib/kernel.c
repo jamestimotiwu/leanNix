@@ -145,7 +145,7 @@ void entry(unsigned long magic, unsigned long addr) {
         ltr(KERNEL_TSS);
     }
     /* Init IDT */
-    // init_idt(); old version don't use anymore
+    init_idt();
     /* Init the PIC */
     i8259_init();
     /* Init the keyboard */

@@ -1,4 +1,5 @@
 #include "idt.h"
+#include "syscall.h"
 
 /* init_idt
  *   DESCRIPTION: clears all entires in the IDT, then initializes some of
@@ -67,7 +68,8 @@ void init_idt(){
   SET_IDT_ENTRY(idt[IDT_RTC], rtc_interrupt_assembly);
   // SET_IDT_ENTRY(idt[IDT_SYSTEM_CALL], system_call_assembly);
   /* set handler for system call */
-  SET_IDT_ENTRY(idt[IDT_SYSTEM_CALL], system_call);
+  SET_IDT_ENTRY(idt[IDT_SYSTEM_CALL], syscall_assembly);
+  
 
 
   /* set idtr */
