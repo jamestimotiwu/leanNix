@@ -54,6 +54,7 @@ Problem: Print output displaying to top of screen after fully filled
 
 Problem: Paging keeps crashing/boot looping
 Solution: Improper video memory spacing, need to change something in lib.c
+Solution2: Fixed paging; forgot to map video mem physical address to page's virtual address
 
 
 #####

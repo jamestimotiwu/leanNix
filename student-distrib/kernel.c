@@ -8,12 +8,12 @@
 #include "i8259.h"
 #include "debug.h"
 #include "tests.h"
+
 #include "idt.h"
-#include "keyboard.h"
-#include "rtc.h"
+#include "drivers/keyboard.h"
+#include "drivers/rtc.h"
 
 #include "interrupts.h"
-#include "rtc.h"
 #include "page.h"
 
 #define RUN_TESTS
@@ -154,7 +154,7 @@ void entry(unsigned long magic, unsigned long addr) {
     rtc_init();
 
     /* Init paging */
-    //init_pages();
+    init_pages();
 
     /* Initialize devices, memory, filesystem, enable device interrupts on the
      * PIC, any other initialization stuff... */

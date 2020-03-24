@@ -1,8 +1,8 @@
-#ifndef PAGE_INIT_H_
-#define PAGE_INIT_H_
+#ifndef PAGE_ASM_H_
+#define PAGE_ASM_H_
 
 /**
- * Initialize page and turn on paging
+ * Load page / enable paging
  */
 void load_page();
 

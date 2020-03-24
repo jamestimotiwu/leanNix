@@ -356,3 +356,6 @@ MigrationBackup/
 *.o
 *.brk
 *.xml
+
+# Ignore auto-dependencies
+*.dep
