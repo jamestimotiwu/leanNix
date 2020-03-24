@@ -154,7 +154,7 @@ void entry(unsigned long magic, unsigned long addr) {
     rtc_init();
 
     /* Init paging */
-    //init_pages();
+    init_pages();
 
     /* Initialize devices, memory, filesystem, enable device interrupts on the
      * PIC, any other initialization stuff... */

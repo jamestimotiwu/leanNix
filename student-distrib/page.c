@@ -44,6 +44,7 @@ void init_pages()
     // Mark video memory present and user
     page_table[VMEM_MAP].present = 1;
     page_table[VMEM_MAP].rw = 1;
+    page_table[VMEM_MAP].base_32_12 = VMEM_MAP;
     //page_table[VMEM_MAP].user = 1;
     // First entry of page table to directory (4kb entries)
     /*
