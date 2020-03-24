@@ -27,16 +27,16 @@
 typedef union page_dir_entry_4KB {
     uint32_t val;
     struct {
-        uint32_t present : 1;
-        uint32_t rw : 1;
-        uint32_t user : 1;
-        uint32_t pwt : 1;
-        uint32_t pcd : 1;
-        uint32_t accessed : 1;
-        uint32_t reserved0 : 1;
-        uint32_t page_size : 1;
-        uint32_t global : 1;
-        uint32_t available : 3;
+        uint32_t present    : 1;
+        uint32_t rw         : 1;
+        uint32_t user       : 1;
+        uint32_t pwt        : 1;
+        uint32_t pcd        : 1;
+        uint32_t accessed   : 1;
+        uint32_t reserved0  : 1;
+        uint32_t page_size  : 1;
+        uint32_t global     : 1;
+        uint32_t available  : 3;
         uint32_t base_32_12 : 20;
     } __attribute__((packed));
 } page_dir_entry_4KB_t;
@@ -58,18 +58,18 @@ P - 0 - present flag (set to 1 during initialization)
 typedef union page_dir_entry_4MB {
     uint32_t val;
     struct {
-        uint32_t present : 1;
-        uint32_t rw : 1;
-        uint32_t user : 1;
-        uint32_t pwt : 1;
-        uint32_t pcd : 1;
-        uint32_t accessed : 1;
-        uint32_t dirty : 1;
-        uint32_t page_size : 1;
-        uint32_t global : 1;
-        uint32_t available : 3;
-        uint32_t pat : 1;
-        uint32_t reserved0 : 9;
+        uint32_t present    : 1;
+        uint32_t rw         : 1;
+        uint32_t user       : 1;
+        uint32_t pwt        : 1;
+        uint32_t pcd        : 1;
+        uint32_t accessed   : 1;
+        uint32_t dirty      : 1;
+        uint32_t page_size  : 1;
+        uint32_t global     : 1;
+        uint32_t available  : 3;
+        uint32_t pat        : 1;
+        uint32_t reserved0  : 9;
         uint32_t base_32_22 : 10;
     } __attribute__((packed));
 } page_dir_entry_4MB_t;
@@ -91,16 +91,16 @@ P - 0 - present flag (set to 1 during initialization)
 typedef union page_table_entry {
     uint32_t val;
     struct {
-        uint32_t present : 1;
-        uint32_t rw : 1;
-        uint32_t user : 1;
-        uint32_t pwt : 1;
-        uint32_t pcd : 1;
-        uint32_t accessed : 1;
-        uint32_t dirty : 1;
-        uint32_t pat : 1;
-        uint32_t global : 1;
-        uint32_t available : 3;
+        uint32_t present    : 1;
+        uint32_t rw         : 1;
+        uint32_t user       : 1;
+        uint32_t pwt        : 1;
+        uint32_t pcd        : 1;
+        uint32_t accessed   : 1;
+        uint32_t dirty      : 1;
+        uint32_t pat        : 1;
+        uint32_t global     : 1;
+        uint32_t available  : 3;
         uint32_t base_32_12 : 20;
     } __attribute__((packed));
 } page_table_entry_t;
