@@ -42,16 +42,16 @@ void i8259_init(void) {
 /* Enable (unmask) the specified IRQ */
 void enable_irq(uint32_t irq_num) {
 
-    unsigned int mask = ~(1 << irq_num);
+    //unsigned int mask = ~(1 << irq_num);
 
-    if (irq_num > 8) {
+    if (irq_num >= MIDDLE) {
         // Slave is IRQ 8-15
-        mask = ~(1 << (irq_num - 8));
-        slave_mask &= mask;
+        //mask = ~(1 << (irq_num - MIDDLE));
+        slave_mask &= ~(1 << (irq_num - MIDDLE));
         outb(slave_mask, SLAVE_8259_PORT + 1);
     }
     else {
-        master_mask &= mask;
+        master_mask &= ~(1 << irq_num);
         outb(master_mask, MASTER_8259_PORT + 1);
     }
 }
@@ -60,9 +60,9 @@ void enable_irq(uint32_t irq_num) {
 void disable_irq(uint32_t irq_num) {
     unsigned int mask = 1 << irq_num;
 
-    if (irq_num > 8) {
+    if (irq_num >= MIDDLE) {
         // Slave is IRQ 8-15
-        mask = 1 << (irq_num - 8);
+        mask = 1 << (irq_num - MIDDLE);
         slave_mask |= mask; /* Remove masking for slave */
         outb(slave_mask, SLAVE_8259_PORT + 1);
     }
@@ -78,8 +78,10 @@ void disable_irq(uint32_t irq_num) {
 void send_eoi(uint32_t irq_num) {
     /* Check if irq_num is in slave or master and send eoi for selected PIC and IRQ */
     if (irq_num >= 8) {
-        outb(EOI | (irq_num - 8), SLAVE_8259_PORT);
-        outb(EOI | 2, MASTER_8259_PORT); /* Send eoi for IRQ slave is on for master*/
+        outb(EOI | (irq_num - MIDDLE), SLAVE_8259_PORT);
+        outb(EOI | ICW3_SLAVE, MASTER_8259_PORT); /* Send eoi for IRQ slave is on for master*/
     }
+    else {
     outb(EOI | irq_num, MASTER_8259_PORT); /* Always send EOI to master */
+  }
 }

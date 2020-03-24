@@ -102,8 +102,6 @@ void entry(unsigned long magic, unsigned long addr) {
                     (unsigned)mmap->length_low);
     }
 
-    /* Initialize IDT */
-    idt_init();
 
     /* Construct an LDT entry in the GDT */
     {

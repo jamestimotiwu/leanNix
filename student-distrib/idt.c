@@ -66,10 +66,9 @@ void init_idt(){
   /* Set handlers for the keyboard and rtc (hardware interrupts) */
   SET_IDT_ENTRY(idt[IDT_KEYBOARD], keyboard_interrupt_assembly);
   SET_IDT_ENTRY(idt[IDT_RTC], rtc_interrupt_assembly);
-  // SET_IDT_ENTRY(idt[IDT_SYSTEM_CALL], system_call_assembly);
   /* set handler for system call */
   SET_IDT_ENTRY(idt[IDT_SYSTEM_CALL], syscall_assembly);
-  
+
 
 
   /* set idtr */

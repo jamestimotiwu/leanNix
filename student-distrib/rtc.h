@@ -12,7 +12,7 @@
 #define REG_A     0x8A
 #define REG_B     0x8B
 #define REG_C     0x8C
-
+#define SLAVE_IRQ 0x2
 
 void rtc_int();
 void rtc_init();
