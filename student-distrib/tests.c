@@ -98,6 +98,6 @@ void launch_tests(){
 	TEST_OUTPUT("idt_test", idt_test());
 	//TEST_OUTPUT("test_divide_error", test_divide_error());
 	// launch your tests here
-	//test_interrupts();
+	test_interrupts();
 	TEST_OUTPUT("syscall_test", syscall_test());
 }

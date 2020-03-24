@@ -4,8 +4,6 @@
 #include "x86_desc.h"
 #include "tests.h"
 #include "exceptions.h"
-#include "rtc.h"
-#include "keyboard.h"
 #include "interrupt_linkage.h"
 
 #define RESERVED_NUMS                   0x20
