@@ -4,6 +4,7 @@
 
 #include "i8259.h"
 #include "page.h"
+#include "drivers/fs.h"
 // #include "drivers/rtc.h"
 
 #define PASS 1
@@ -154,6 +155,35 @@ int test_paging_out_kernel() {
 }
 
 /* Checkpoint 2 tests */
+
+/* Test open file in file system
+ *
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ * Coverage: paging
+ */
+int test_fs_open_good_file() {
+	int err_code;
+	err_code = fs_open((const uint8_t*) "frame0.txt");
+	printf("Test file system open good file frame0.txt: %d \n", err_code);
+	return 0;
+}
+
+/* Test open file in file system
+ *
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ * Coverage: paging
+ */
+int test_fs_open_bad_file() {
+	int err_code;
+	err_code = fs_open((const uint8_t*) "frame10.txt");
+	printf("Test file system open bad file frame10.txt: %d \n", err_code);
+	return 0;
+}
+
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
@@ -168,6 +198,8 @@ void launch_tests(){
 	//test_interrupts();
 	//test_paging_null();
 	//test_paging_kernel();
-	test_paging_out_kernel();
+	//test_paging_out_kernel();
+	test_fs_open_good_file();
+	test_fs_open_bad_file();
 	TEST_OUTPUT("syscall_test", syscall_test());
 }

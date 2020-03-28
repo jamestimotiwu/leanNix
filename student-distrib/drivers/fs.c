@@ -38,7 +38,7 @@ int32_t get_dir_entry(const uint8_t* file_name, dir_entry_t* dir_entry) {
     /* Iterate over dir entries in boot block for matching file name */
     for (i = 0; i < fs->dentry_count; i++) {
         /* If filename match, populate dir_entry accordingly */
-        if (strncmp((const int8_t*) file_name, (const int8_t*) dir_entries[i].filename, FILENAME_CHAR_LIMIT)) {
+        if (strncmp((const int8_t*) file_name, (const int8_t*) dir_entries[i].filename, FILENAME_CHAR_LIMIT) == 0) {
             memcpy(dir_entry, &dir_entries[i], sizeof(dir_entry));
             return 0;
         }
