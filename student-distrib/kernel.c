@@ -67,6 +67,7 @@ void entry(unsigned long magic, unsigned long addr) {
                 printf("0x%x ", *((char*)(mod->mod_start+i)));
             }
             printf("\n");
+			fs_init((uint8_t *mod->mod_start));
             mod_count++;
             mod++;
         }
@@ -158,7 +159,6 @@ void entry(unsigned long magic, unsigned long addr) {
 
     /* Initialize devices, memory, filesystem, enable device interrupts on the
      * PIC, any other initialization stuff... */
-	fs_init();
 
     /* Enable interrupts */
     /* Do not enable the following until after you have set up your
