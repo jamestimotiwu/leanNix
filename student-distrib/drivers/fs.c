@@ -101,14 +101,59 @@ int32_t fs_write(int32_t fd) {
 	return -1;
 }
 
+int strncmp(char *s1, char *s2, int len) {
+	return -1; // TODO
+}
 
+void strncpy(char *dest, char *src, int len) {
+	// TODO
+}
+
+/* read_dentry_by_name
+ *   DESCRIPTION: fills the dir_entry based on 
+ *   INPUTS: fname -- the file name as a string
+ *           dentry -- the directory entry to be filled out
+ *   OUTPUTS: 0 if successful, -1 if not (ie. fname not in directory)
+ *   SIDE EFFECTS: changes dentry
+ */
 int32_t read_dentry_by_name(const uint8_t *fname, dir_entry *dentry) {
+	int i;
+	for (i == 0; i < fs.dentry_count; i++) {
+		if (strcmp(fs.dir_entries[i].fname, fname, FILENAME_CHAR_LIMIT) == 0) {
+			
+			/* A match; fill out dentry */
+			strncpy(dentry.fname, fname, FILENAME_CHAR_LIMIT);
+			dentry.type = fs.dir_entries[i].type;
+			dentry.inode_num = fs.dir_entries[i].inode_num;
+			/* return success */
+			return 0;
+		}
 
+	}
+	return -1;
 }
+
+/* read_dentry_by_index
+ *   DESCRIPTION: fills the dir_entry based on the
+ *   INPUTS: fname -- the file name as a string
+ *           dentry -- the directory entry to be filled out
+ *   OUTPUTS: 0 if successful, -1 if not (ie. index doesn't exist)
+ *   SIDE EFFECTS: changes dentry
+ */
 int32_t read_dentry_by_index(uint32_t index, dir_entry *dentry) {
-
+	return -1;
 }
-int32_t read_dentry_by_name(uint32_t inode, uint32_t offset, uint8_t *buf, uint32_t length) {
 
+/* read_dentry_by_name
+ *   DESCRIPTION: fills the dir_entry with the name, 
+ *   INPUTS: inode -- the inode
+ *           offset -- offset into the file
+ *           buf -- destination location of all the data
+ *           length -- number of bytes to copy
+ *   OUTPUTS: filled out in dentry
+ *   SIDE EFFECTS: changes dentry
+ */
+int32_t read_data(uint32_t inode, uint32_t offset, uint8_t *buf, uint32_t length) {
+	return -1;
 }
 
