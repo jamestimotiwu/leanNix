@@ -10,14 +10,6 @@
 
 #define BLOCK_LIMIT			1023
 
-/* Boot block structure */
-typedef struct boot_block {
-	uint32_t dentry_count;
-	uint32_t inodes_count;
-	uint32_t blocks_count;
-	uint8_t reserved[52];
-	dir_entry_t dir_entry[DIR_ENTRY_LIMIT];
-} boot_block_t;
 
 /* Directory entry structure */
 typedef struct dir_entry {
@@ -33,3 +25,14 @@ typedef struct inode {
 	uint32_t length;
 	uint32_t data_block[BLOCK_LIMIT];
 } inode_t;
+
+/* Boot block structure */
+typedef struct boot_block {
+	uint32_t dentry_count;
+	uint32_t inodes_count;
+	uint32_t blocks_count;
+	uint8_t reserved[52];
+	dir_entry_t dir_entries[DIR_ENTRY_LIMIT];
+} boot_block_t;
+
+boot_block_t* fs;

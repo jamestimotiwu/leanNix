@@ -8,7 +8,7 @@
 
 boot_block_t *fs;
 
-int32_t init_fs(uint32_t boot_block_addr) {
+void init_fs(uint32_t boot_block_addr) {
     /* Set file system metadata block to address of boot block structure */
     fs = (boot_block_t *) boot_block_addr;
 }
@@ -21,13 +21,13 @@ int32_t init_fs(uint32_t boot_block_addr) {
   *   SIDE EFFECTS:
   */
 int32_t get_dir_entry(const uint8_t* file_name, dir_entry_t* dir_entry) {
-    dir_entry_t* dir_entries = fs->dir_entry;
+    dir_entry_t* dir_entries = fs->dir_entries;
     int i;
     
     /* Iterate over dir entries in boot block for matching file name */
     for (i = 0; i < fs->dentry_count; i++) {
         /* If filename match, populate dir_entry accordingly */
-        if (strncmp(file_name, dir_entries[i].filename, FILENAME_CHAR_LIMIT) {
+        if (strncmp((const int8_t*) file_name, (const int8_t*) dir_entries[i].filename, FILENAME_CHAR_LIMIT)) {
             memcpy(dir_entry, &dir_entries[i], sizeof(dir_entry));
             return 0;
         }
@@ -43,7 +43,7 @@ int32_t get_dir_entry(const uint8_t* file_name, dir_entry_t* dir_entry) {
  *   SIDE EFFECTS:
  */
 int32_t fs_open(const uint8_t* file_name) {
-    dir_entry_t* dir;
+    dir_entry_t* dir_entry;
 
     /* Validate file exist calling get_dir_entry */
     if (get_dir_entry(file_name, dir_entry) == -1)
