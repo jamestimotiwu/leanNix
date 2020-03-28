@@ -34,9 +34,9 @@ int32_t get_dir_entry(const uint8_t* file_name, dir_entry_t* dir_entry) {
     /* Check if fs initialized */
     if (fs)
         dir_entries = fs->dir_entries;
-	else
-		/* can't proceed unless filesystem was initialized */
-		return -1;
+    else
+        /* can't proceed unless filesystem was initialized */
+        return -1;
     
     /* Iterate over dir entries in boot block for matching file name */
     for (i = 0; i < fs->dentry_count; i++) {
@@ -86,8 +86,8 @@ int32_t fs_close(int32_t fd) {
  *   SIDE EFFECTS: changes buf input
  */
 int32_t fs_read(int32_t fd) {
-	// uses read_data
-	return 0;
+    // uses read_data
+    return 0;
 }
 
 /* fs_write
@@ -97,16 +97,16 @@ int32_t fs_read(int32_t fd) {
  *   SIDE EFFECTS: none
  */
 int32_t fs_write(int32_t fd) {
-	/* this is a read-only file system; writing to it is an error */
-	return -1;
+    /* this is a read-only file system; writing to it is an error */
+    return -1;
 }
 
 int strncmp(char *s1, char *s2, int len) {
-	return -1; // TODO
+    return -1; // TODO
 }
 
 void strncpy(char *dest, char *src, int len) {
-	// TODO
+    // TODO
 }
 
 /* read_dentry_by_name
@@ -117,20 +117,20 @@ void strncpy(char *dest, char *src, int len) {
  *   SIDE EFFECTS: changes dentry
  */
 int32_t read_dentry_by_name(const uint8_t *fname, dir_entry *dentry) {
-	int i;
-	for (i == 0; i < fs.dentry_count; i++) {
-		if (strcmp(fs.dir_entries[i].fname, fname, FILENAME_CHAR_LIMIT) == 0) {
-			
-			/* A match; fill out dentry */
-			strncpy(dentry.fname, fname, FILENAME_CHAR_LIMIT);
-			dentry.type = fs.dir_entries[i].type;
-			dentry.inode_num = fs.dir_entries[i].inode_num;
-			/* return success */
-			return 0;
-		}
+    int i;
+    for (i == 0; i < fs.dentry_count; i++) {
+        if (strcmp(fs.dir_entries[i].fname, fname, FILENAME_CHAR_LIMIT) == 0) {
+            
+            /* A match; fill out dentry */
+            strncpy(dentry.fname, fname, FILENAME_CHAR_LIMIT);
+            dentry.type = fs.dir_entries[i].type;
+            dentry.inode_num = fs.dir_entries[i].inode_num;
+            /* return success */
+            return 0;
+        }
 
-	}
-	return -1;
+    }
+    return -1;
 }
 
 /* read_dentry_by_index
@@ -141,7 +141,7 @@ int32_t read_dentry_by_name(const uint8_t *fname, dir_entry *dentry) {
  *   SIDE EFFECTS: changes dentry
  */
 int32_t read_dentry_by_index(uint32_t index, dir_entry *dentry) {
-	return -1;
+    return -1;
 }
 
 /* read_dentry_by_name
@@ -154,6 +154,6 @@ int32_t read_dentry_by_index(uint32_t index, dir_entry *dentry) {
  *   SIDE EFFECTS: changes dentry
  */
 int32_t read_data(uint32_t inode, uint32_t offset, uint8_t *buf, uint32_t length) {
-	return -1;
+    return -1;
 }
 
