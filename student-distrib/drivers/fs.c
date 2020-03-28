@@ -34,6 +34,9 @@ int32_t get_dir_entry(const uint8_t* file_name, dir_entry_t* dir_entry) {
     /* Check if fs initialized */
     if (fs)
         dir_entries = fs->dir_entries;
+	else
+		/* can't proceed unless filesystem was initialized */
+		return -1;
     
     /* Iterate over dir entries in boot block for matching file name */
     for (i = 0; i < fs->dentry_count; i++) {
@@ -73,3 +76,27 @@ int32_t fs_close(int32_t fd) {
     /* Close file given file descriptor */
     return 0;
 }
+
+/* fs_read
+ *   DESCRIPTION: reads bytes in a file
+ *   INPUTS: fd -- file descriptor
+ *   OUTPUTS: 0 if success, -1 otherwise
+ *   SIDE EFFECTS: none
+ */
+int32_t fs_read(int32_t fd) {
+	return 0;
+}
+
+/* fs_write
+ *   DESCRIPTION: doesn't write to file system because it is read-only 
+ *   INPUTS: fd -- file descriptor
+ *   OUTPUTS: -1
+ *   SIDE EFFECTS: none
+ */
+int32_t fs_write(int32_t fd) {
+	/* this is a read-only file system; writing to it is an error */
+	return -1;
+}
+
+
+
