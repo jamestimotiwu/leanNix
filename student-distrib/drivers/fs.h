@@ -36,3 +36,7 @@ typedef struct boot_block {
 } boot_block_t;
 
 boot_block_t* fs;
+
+void init_fs(uint32_t boot_block_addr);
+int32_t get_dir_entry(const uint8_t* file_name, dir_entry_t* dir_entry);
+int32_t fs_open(const uint8_t* file_name);

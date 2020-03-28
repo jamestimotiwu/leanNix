@@ -11,6 +11,7 @@ boot_block_t *fs;
 void init_fs(uint32_t boot_block_addr) {
     /* Set file system metadata block to address of boot block structure */
     fs = (boot_block_t *) boot_block_addr;
+    printf("Filesystem loaded with Block count: %d, Directory entries: %d \n", fs->blocks_count, fs->dentry_count);
 }
 
  /* get_dir_entry
