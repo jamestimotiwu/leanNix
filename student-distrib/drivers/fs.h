@@ -4,11 +4,13 @@
 #include "../types.h"
 #include "../multiboot.h"
 
+/* Directory entry and filename length limits */
 #define DIR_ENTRY_LIMIT		63
-
 #define FILENAME_CHAR_LIMIT	32
 
-/* 63 directory entries */
+#define BLOCK_LIMIT			1023
+
+/* Boot block structure */
 typedef struct boot_block {
 	uint32_t dentry_count;
 	uint32_t inodes_count;
@@ -17,9 +19,17 @@ typedef struct boot_block {
 	dir_entry_t dir_entry[DIR_ENTRY_LIMIT];
 } boot_block_t;
 
+/* Directory entry structure */
 typedef struct dir_entry {
 	uint8_t filename[FILENAME_CHAR_LIMIT];
-	uint32_t type;
+	uint32_t type;							/* 0 -> rtc, 1 -> directory, 2 -> file*/
 	uint32_t inode_num;
 	uint8_t reserved[24];
 } dir_entry_t;
+
+/*	Index node structure
+	Data block holds index to data block */
+typedef struct inode {
+	uint32_t length;
+	uint32_t data_block[BLOCK_LIMIT];
+} inode_t;
