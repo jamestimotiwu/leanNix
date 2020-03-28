@@ -65,7 +65,7 @@ void entry(unsigned long magic, unsigned long addr) {
 			printf("Module %d ends at address: 0x%#x\n", mod_count, (unsigned int)mod->mod_end);
 			printf("First few bytes of module:\n");
 
-			printf("Loading filesystem ...");
+			printf("Loading filesystem ... \n");
 			/* Initialize file system */
 			init_fs((uint32_t)mod->mod_start);
 
