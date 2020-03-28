@@ -101,14 +101,6 @@ int32_t fs_write(int32_t fd) {
     return -1;
 }
 
-int strncmp(char *s1, char *s2, int len) {
-    return -1; // TODO
-}
-
-void strncpy(char *dest, char *src, int len) {
-    // TODO
-}
-
 /* read_dentry_by_name
  *   DESCRIPTION: fills the dir_entry based on 
  *   INPUTS: fname -- the file name as a string
@@ -116,15 +108,15 @@ void strncpy(char *dest, char *src, int len) {
  *   OUTPUTS: 0 if successful, -1 if not (ie. fname not in directory)
  *   SIDE EFFECTS: changes dentry
  */
-int32_t read_dentry_by_name(const uint8_t *fname, dir_entry *dentry) {
+int32_t read_dentry_by_name(const uint8_t *fname, dir_entry_t *dentry) {
     int i;
-    for (i == 0; i < fs.dentry_count; i++) {
-        if (strcmp(fs.dir_entries[i].fname, fname, FILENAME_CHAR_LIMIT) == 0) {
+    for (i = 0; i < fs->dentry_count; i++) {
+        if (strncmp((int8_t*)fs->dir_entries[i].filename, (int8_t*)fname, FILENAME_CHAR_LIMIT) == 0) {
             
             /* A match; fill out dentry */
-            strncpy(dentry.fname, fname, FILENAME_CHAR_LIMIT);
-            dentry.type = fs.dir_entries[i].type;
-            dentry.inode_num = fs.dir_entries[i].inode_num;
+            strncpy((int8_t*)dentry->filename, (int8_t*)fname, FILENAME_CHAR_LIMIT);
+            dentry->type = fs->dir_entries[i].type;
+            dentry->inode_num = fs->dir_entries[i].inode_num;
             /* return success */
             return 0;
         }
@@ -140,7 +132,7 @@ int32_t read_dentry_by_name(const uint8_t *fname, dir_entry *dentry) {
  *   OUTPUTS: 0 if successful, -1 if not (ie. index doesn't exist)
  *   SIDE EFFECTS: changes dentry
  */
-int32_t read_dentry_by_index(uint32_t index, dir_entry *dentry) {
+int32_t read_dentry_by_index(uint32_t index, dir_entry_t *dentry) {
     return -1;
 }
 
@@ -150,10 +142,35 @@ int32_t read_dentry_by_index(uint32_t index, dir_entry *dentry) {
  *           offset -- offset into the file
  *           buf -- destination location of all the data
  *           length -- number of bytes to copy
- *   OUTPUTS: filled out in dentry
+ *   OUTPUTS: number of bytes left to copy
  *   SIDE EFFECTS: changes dentry
  */
 int32_t read_data(uint32_t inode, uint32_t offset, uint8_t *buf, uint32_t length) {
-    return -1;
+    uint32_t i, block_index;
+
+    node_t *node;
+    uint8_t *dblock;
+    
+    if (inode < 0 || inode >= fs->inodes_count)
+        /* inode out of range */
+        return -1;
+    
+    /* put address of inode struct into node */
+    node = (node_t *) ((uint8_t *)fs + BLOCK_SIZE*(inode + 1));
+
+    for (i = 0; i < length; i++) {
+        int j = i+offset;
+        
+        block_index = node->data_block[j / BLOCK_SIZE];
+        dblock = (uint8_t *)fs + BLOCK_SIZE*(block_index + fs->inodes_count);
+
+        // TODO: check that data block is within length
+        //
+
+        buf[i] = dblock[j % BLOCK_SIZE];
+        
+    }
+
+    return length - i;
 }
 
