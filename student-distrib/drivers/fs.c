@@ -78,12 +78,15 @@ int32_t fs_close(int32_t fd) {
 }
 
 /* fs_read
- *   DESCRIPTION: reads bytes in a file
+ *   DESCRIPTION: reads <count> bytes of data from file into <buf>
  *   INPUTS: fd -- file descriptor
+ *           count -- number of bytes to copy
+ *           buf -- the destination buffer for the data
  *   OUTPUTS: 0 if success, -1 otherwise
- *   SIDE EFFECTS: none
+ *   SIDE EFFECTS: changes buf input
  */
 int32_t fs_read(int32_t fd) {
+	// uses read_data
 	return 0;
 }
 
@@ -99,4 +102,13 @@ int32_t fs_write(int32_t fd) {
 }
 
 
+int32_t read_dentry_by_name(const uint8_t *fname, dir_entry *dentry) {
+
+}
+int32_t read_dentry_by_index(uint32_t index, dir_entry *dentry) {
+
+}
+int32_t read_dentry_by_name(uint32_t inode, uint32_t offset, uint8_t *buf, uint32_t length) {
+
+}
 
