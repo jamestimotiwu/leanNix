@@ -1,0 +1,75 @@
+/* fs_open.c - Filesystem file descriptor access
+ * vim:ts=4 noexpandtab
+ */
+
+#include "fs.h"
+#include "../types.h"
+#include "../lib.h"
+
+boot_block_t *fs;
+
+/* init_fs
+ *   DESCRIPTION: Loads file system given starting point of boot block
+ *   INPUTS:   boot_block_addr - address of boot block
+ *   OUTPUTS: None
+ *   SIDE EFFECTS:
+ */
+void init_fs(uint32_t boot_block_addr) {
+    /* Set file system metadata block to address of boot block structure */
+    fs = (boot_block_t *) boot_block_addr;
+    printf("Filesystem loaded with Block count: %d, Directory entries: %d \n", fs->blocks_count, fs->dentry_count);
+}
+
+ /* get_dir_entry
+  *   DESCRIPTION: Reads directory entry given a file_name and dir_entry
+  *   INPUTS:   file_name - character array of file name
+  *             dir_entry - directory entry structure to return
+  *   OUTPUTS: 0 if success, -1 if fail
+  *   SIDE EFFECTS:
+  */
+int32_t get_dir_entry(const uint8_t* file_name, dir_entry_t* dir_entry) {
+    dir_entry_t* dir_entries;
+    int i;
+
+    /* Check if fs initialized */
+    if (fs)
+        dir_entries = fs->dir_entries;
+    
+    /* Iterate over dir entries in boot block for matching file name */
+    for (i = 0; i < fs->dentry_count; i++) {
+        /* If filename match, populate dir_entry accordingly */
+        if (strncmp((const int8_t*) file_name, (const int8_t*) dir_entries[i].filename, FILENAME_CHAR_LIMIT)) {
+            memcpy(dir_entry, &dir_entries[i], sizeof(dir_entry));
+            return 0;
+        }
+    }
+    /* Return -1 if filename dne */
+    return -1;
+}
+
+/* fs_open
+ *   DESCRIPTION: Open file
+ *   INPUTS:   file_name - character array of file name
+ *   OUTPUTS: 0 if success, -1 if fail
+ *   SIDE EFFECTS:
+ */
+int32_t fs_open(const uint8_t* file_name) {
+    dir_entry_t* dir_entry;
+
+    /* Validate file exist calling get_dir_entry */
+    if (get_dir_entry(file_name, dir_entry) == -1)
+        return -1;
+
+    return 0;
+}
+
+/* fs_close
+ *   DESCRIPTION: Close file 
+ *   INPUTS:   file_name - character array of file name
+ *   OUTPUTS: 0 if success, -1 if fail
+ *   SIDE EFFECTS:
+ */
+int32_t fs_close(int32_t fd) {
+    /* Close file given file descriptor */
+    return 0;
+}

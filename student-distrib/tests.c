@@ -3,6 +3,7 @@
 #include "lib.h"
 
 #include "i8259.h"
+#include "page.h"
 // #include "drivers/rtc.h"
 
 #define PASS 1
@@ -86,6 +87,72 @@ int syscall_test() {
 
 	return result;
 }
+
+/* Test paging
+ *
+ * Test dereference bad address ranges
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ * Coverage: paging
+ */
+int test_paging_null() {
+	/* Test dereference null */
+	int* null_test = NULL;
+	int lvalue;
+	lvalue = *null_test; /* Dereference pointer to null */
+
+	return 0;
+}
+
+/* Test paging
+ *
+ * Test dereference good address ranges
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ * Coverage: paging
+ */
+int test_paging_kernel() {
+	/* Test present page address range */
+	int* present;
+	int lvalue;
+	
+	/* Test lower bound address at 4MB */
+	present = (int*)(MB_PAGE_SIZE);
+	lvalue = *present;
+
+	/* Test upper bound address of kernel at 8MB - 4*/
+	present = (int*)(MB_PAGE_SIZE + MB_PAGE_SIZE - 4);
+	lvalue = *present;
+
+	return 0;
+}
+
+/* Test paging
+ *
+ * Test dereference bad address ranges
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ * Coverage: paging
+ */
+int test_paging_out_kernel() {
+	/* Test dereference address range not present */
+	int* not_present;
+	int lvalue;
+
+	/* Test lower bound address before 4MB */
+	not_present = (int*)(MB_PAGE_SIZE - 4);
+	lvalue = *not_present;
+
+	/* Test upper bound address after 8MB */
+	not_present = (int*)(MB_PAGE_SIZE + MB_PAGE_SIZE);
+	lvalue = *not_present;
+
+	return 0;
+}
+
 /* Checkpoint 2 tests */
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
@@ -98,6 +165,9 @@ void launch_tests(){
 	TEST_OUTPUT("idt_test", idt_test());
 	//TEST_OUTPUT("test_divide_error", test_divide_error());
 	// launch your tests here
-	test_interrupts();
+	//test_interrupts();
+	//test_paging_null();
+	//test_paging_kernel();
+	test_paging_out_kernel();
 	TEST_OUTPUT("syscall_test", syscall_test());
 }
