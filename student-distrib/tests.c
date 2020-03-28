@@ -99,8 +99,19 @@ int syscall_test() {
 int rtc_frequency_test(){
 	TEST_HEADER;
 	int result = PASS;
-	//rtc_set_freq(1024);
 	rtc_set_freq(2);
+	// rtc_set_freq(4);
+	// rtc_set_freq(8);
+	// rtc_set_freq(16);
+	// rtc_set_freq(32);
+	// rtc_set_freq(64);
+	// rtc_set_freq(128);
+	// rtc_set_freq(256);
+	// rtc_set_freq(512);
+	// rtc_set_freq(1024);
+	// int out = rtc_set_freq(3);
+	// if(out == -1)
+	// 	result = FAIL;
 	return result;
 }
 

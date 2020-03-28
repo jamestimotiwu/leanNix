@@ -11,6 +11,7 @@ void rtc_int() {
 	test_interrupts();
 	outb(REG_C, RTC_PORT);	/* Select and read register C */
 	inb(CMOS_PORT);			/* Reset contents in CMOS port */
+	rtc_int_flag = 1;		/* Set interrupt flag */
 	send_eoi(RTC_IRQ);		/* Send EOI for IRQ8 */
   //printf("testing if rtc works");
 	//sti();
@@ -29,6 +30,7 @@ void rtc_init() {
 	outb(REG_B, RTC_PORT);			/* Set index again because read resets index in register */
 	outb((prev | 0x40), CMOS_PORT);	/* Write previous value | 0x40 to turn bit 6 of register in enable ints*/
 	sti();						/* Enable interrupts */
+	rtc_set_freq(2);
 	enable_irq(RTC_IRQ);
 	enable_irq(SLAVE_IRQ);
 }
@@ -92,9 +94,15 @@ int rtc_close(int32_t fd){
 }
 /* Blocks until next interrupt */
 int rtc_read(int32_t fd, void* buf, int32_t nbytes){
-
+	rtc_int_flag = 0;
+	while(rtc_int_flag == 0){
+		/* Wait for rtc interrupt to return 0 */
+	}
+	rtc_int_flag = 0;
+	return 0;
 }
 /* Changes frequency */
 int rtc_write(int32_t fd, const void* buf, int32_t nbytes){
 
+	return -1;
 }

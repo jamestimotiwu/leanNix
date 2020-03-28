@@ -5,13 +5,13 @@
 #include "../lib.h"
 #include "../i8259.h"
 
-#define RTC_IRQ   8
-#define RTC_PORT  0x70
-#define CMOS_PORT 0x71
-#define REG_A     0x8A
-#define REG_B     0x8B
-#define REG_C     0x8C
-#define SLAVE_IRQ 2
+#define RTC_IRQ    8
+#define RTC_PORT   0x70
+#define CMOS_PORT  0x71
+#define REG_A      0x8A
+#define REG_B      0x8B
+#define REG_C      0x8C
+#define SLAVE_IRQ  2
 
 
 #define _2_HZ      0x0F
@@ -25,12 +25,12 @@
 #define _512_HZ    0x07
 #define _1024_HZ   0x06
 
-
+volatile int rtc_int_flag;
 /* RTC interrupt handler */
 void rtc_int();
 /* RTC initializer */
 void rtc_init();
-/* Sets frequency to desired hertz */
+/* Sets frequency to desired hertz between 2 and 1024 */
 int rtc_set_freq(int freq);
 /* Initialize RTC frequency to 2hz */
 int rtc_open(const uint8_t* filename);
