@@ -87,6 +87,26 @@ int syscall_test() {
 	return result;
 }
 /* Checkpoint 2 tests */
+
+/* RTC frequency test
+ *
+ * Compares rtc at 1024HZ vs 2HZ
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ * Coverage: IDT, system call
+ */
+int rtc_frequency_test(){
+	TEST_HEADER;
+	int result = PASS;
+	//rtc_set_freq(1024);
+	rtc_set_freq(2);
+	return result;
+}
+
+
+
+
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
@@ -94,10 +114,9 @@ int syscall_test() {
 
 /* Test suite entry point */
 void launch_tests(){
-
-	TEST_OUTPUT("idt_test", idt_test());
+	//TEST_OUTPUT("idt_test", idt_test());
 	//TEST_OUTPUT("test_divide_error", test_divide_error());
 	// launch your tests here
-	test_interrupts();
-	TEST_OUTPUT("syscall_test", syscall_test());
+	//TEST_OUTPUT("syscall_test", syscall_test());
+	rtc_frequency_test();
 }
