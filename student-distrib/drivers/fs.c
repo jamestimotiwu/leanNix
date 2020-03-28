@@ -8,6 +8,12 @@
 
 boot_block_t *fs;
 
+/* init_fs
+ *   DESCRIPTION: Loads file system given starting point of boot block
+ *   INPUTS:   boot_block_addr - address of boot block
+ *   OUTPUTS: None
+ *   SIDE EFFECTS:
+ */
 void init_fs(uint32_t boot_block_addr) {
     /* Set file system metadata block to address of boot block structure */
     fs = (boot_block_t *) boot_block_addr;
