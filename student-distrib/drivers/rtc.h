@@ -33,12 +33,12 @@ void rtc_init();
 /* Sets frequency to desired hertz */
 int rtc_set_freq(int freq);
 /* Initialize RTC frequency to 2hz */
-int rtc_open();
+int rtc_open(const uint8_t* filename);
 /* Does nothing unless RTC is virtualized */
-int rtc_close();
+int rtc_close(int32_t fd);
 /* Blocks until next interrupt */
-int rtc_read();
+int rtc_read(int32_t fd, void* buf, int32_t nbytes);
 /* Changes frequency */
-int rtc_write();
+int rtc_write(int32_t fd, const void* buf, int32_t nbytes);
 
 #endif

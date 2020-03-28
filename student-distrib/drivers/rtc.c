@@ -82,19 +82,19 @@ int rtc_set_freq(int freq){
 	return 1;
 }
 /* Initialize RTC frequency to 2hz */
-int rtc_open(){
+int rtc_open(const uint8_t* filename){
 	rtc_set_freq(2);
 	return 0;
 }
 /* Does nothing unless RTC is virtualized */
-int rtc_close(){
+int rtc_close(int32_t fd){
 	return 0;
 }
 /* Blocks until next interrupt */
-int rtc_read(){
+int rtc_read(int32_t fd, void* buf, int32_t nbytes){
 
 }
 /* Changes frequency */
-int rtc_write(){
+int rtc_write(int32_t fd, const void* buf, int32_t nbytes){
 
 }
