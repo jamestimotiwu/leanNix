@@ -21,8 +21,12 @@ void init_fs(uint32_t boot_block_addr) {
   *   SIDE EFFECTS:
   */
 int32_t get_dir_entry(const uint8_t* file_name, dir_entry_t* dir_entry) {
-    dir_entry_t* dir_entries = fs->dir_entries;
+    dir_entry_t* dir_entries;
     int i;
+
+    /* Check if fs initialized */
+    if (fs)
+        dir_entries = fs->dir_entries;
     
     /* Iterate over dir entries in boot block for matching file name */
     for (i = 0; i < fs->dentry_count; i++) {
