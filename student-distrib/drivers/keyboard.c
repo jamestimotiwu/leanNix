@@ -438,8 +438,27 @@ screen_y = NUM_ROWS-1;
 
 }
 
+/* void reset_cursor(int x, int y)
+ *   DESCRIPTION: update the cursor position on the screen
+ *   INPUTS: screen_x position, screen_y position 
+ *   OUTPUTS: none
+ *   SIDE EFFECTS: function that handles the screen scroll-move vidoe mem texts up by 1 if needed and clear the bottom line
+ */
 
 
+// reference used: https://wiki.osdev.org/Text_Mode_Cursor
+
+void reset_cursor(int x, int y){
+
+  uint16_t position= y * NUM_COLS + x; 
+
+  outb(0x0F, 0x3D4);
+  outb((uint8_t) (position & 0xFF)  ,0x3D5);
+  outb(0x0E, 0x3D4);
+  outb((uint8_t) ((position >> 8) & 0xFF),0x3D5);
+
+
+}
 
 
 
