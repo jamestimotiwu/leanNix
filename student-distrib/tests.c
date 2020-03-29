@@ -155,29 +155,37 @@ int test_paging_out_kernel() {
 
 /* Checkpoint 2 tests */
 
+#define READ_BUF_SIZE 1024
+
 /* Test reading from the file system
  *
  * Description: use a path that exists, print out first 10 characters of file
  * Inputs: None
  * Outputs: PASS/FAIL
  * Side Effects: None
- * Coverage: read_data and in fs.c
+ * Coverage: fs_read in fs.c
  */
 int test_fs_read() {
-    int size = 80;
-    uint8_t buf[size+1];
-    buf[size] = '\0';
+    /* Very similar to ece391cat code */
+    uint8_t buf[READ_BUF_SIZE+1];
+    int cnt;
 
-    dir_entry_t dentry;
-    
-    if (read_dentry_by_name((uint8_t *)"verylargetextwithverylongname.txt", &dentry) != 0)
+    if (temp_setFile("frame0.txt") == -1)
         return FAIL;
 
-    uint32_t inode_num = dentry.inode_num;
+    while (0 != (cnt = fs_read(0, buf, READ_BUF_SIZE))) {
+        if (-1 == cnt) {
+            return FAIL;
+        }
 
-    read_data(inode_num, 5, buf, size);
+        /* set character all the read bytes to null char */
+        buf[cnt] = '\0';
+        printf("%s", buf);
 
-    printf("%s\n", buf);
+
+    }
+    
+    printf("\n");
 
     return PASS;
 }

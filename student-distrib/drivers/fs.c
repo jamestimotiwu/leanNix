@@ -77,6 +77,30 @@ int32_t fs_close(int32_t fd) {
     return 0;
 }
 
+/* temporary global var - remove it once file descriptors are implemented */
+static int32_t inode_to_read = -1;
+static uint32_t read_offset = 0;
+
+/* temp_setFile
+ *   DESCRIPTION: since file descriptors aren't implemented yet, use this.
+ *                It sets the file to be used by fs_read
+ *   INPUTS: fname -- file name
+ *   OUTPUTS: none
+ *   SIDE EFFECTS: changes global var
+ */
+int32_t temp_setFile(char *fname) {
+	dir_entry_t dentry;
+
+	/* set dentry and make sure it is valid */
+	if (read_dentry_by_name((uint8_t *)fname, &dentry) != 0)
+		return -1;
+
+	inode_to_read = dentry.inode_num;
+	read_offset = 0;
+	
+	return 0;
+}
+
 /* fs_read
  *   DESCRIPTION: reads <count> bytes of data from file into <buf>
  *   INPUTS: fd -- file descriptor
@@ -85,9 +109,25 @@ int32_t fs_close(int32_t fd) {
  *   OUTPUTS: 0 if success, -1 otherwise
  *   SIDE EFFECTS: changes buf input
  */
-int32_t fs_read(int32_t fd) {
-    // uses read_data
-    return 0;
+int32_t fs_read(uint32_t fd, uint8_t *buf, uint32_t count) {
+
+	if (inode_to_read == -1) {
+		/* inode must be initialized with temp_setFile */
+		return -1;
+	}
+
+	// TODO; check the type of the file (eg. FTYPE_DIR)
+
+	int cnt = read_data(inode_to_read, read_offset, buf, count);
+
+	/* Check if read caused error, eg. maybe a bad inode number */
+	if (cnt == -1)
+		return -1;
+
+	/* Next time file is read, start at the next position to be copied */
+	read_offset += cnt;
+
+    return cnt;
 }
 
 /* fs_write
@@ -158,7 +198,7 @@ int32_t read_dentry_by_index(uint32_t index, dir_entry_t *dentry) {
  *           offset -- offset into the file
  *           buf -- destination location of all the data
  *           length -- number of bytes to copy
- *   OUTPUTS: number of bytes left to copy
+ *   OUTPUTS: number of bytes copied to buf, or -1 if error
  *   SIDE EFFECTS: changes dentry
  */
 int32_t read_data(uint32_t inode, uint32_t offset, uint8_t *buf, uint32_t length) {
@@ -176,18 +216,27 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t *buf, uint32_t length
 
     for (i = 0; i < length; i++) {
         int j = i+offset;
+
+		if (j >= node->length) {
+			/* reached the end of the file */
+			/* return how many bytes were copied */
+			return i;
+		}
         
         block_index = node->data_block[j / BLOCK_SIZE];
 
-        dblock = (uint8_t *)fs + BLOCK_SIZE*(block_index + 1 + fs->inodes_count);
+		if (block_index >= fs->blocks_count) {
+			/* Bad data block found; return error */
+			return -1;
+		}
 
-        // TODO: check that data block is within length
-        //
+        dblock = (uint8_t *)fs + BLOCK_SIZE*(block_index + 1 + fs->inodes_count);
 
         buf[i] = dblock[j % BLOCK_SIZE];
         
     }
 
-    return length - i;
+	/* return how many bytes were copied */
+    return i;
 }
 
