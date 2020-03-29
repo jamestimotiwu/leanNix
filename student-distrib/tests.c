@@ -4,6 +4,7 @@
 
 #include "i8259.h"
 // #include "drivers/rtc.h"
+#include "drivers/terminal.h"
 
 #define PASS 1
 #define FAIL 0
@@ -88,21 +89,29 @@ int syscall_test() {
 }
 /* Checkpoint 2 tests */
 
-/* System call test
+/* test_terminal_scrolling
  *
- * Check that system calls work
+ * Check that terminal driver will scroll screen
  * Inputs: None
  * Outputs: PASS/FAIL
- * Side Effects: None
- * Coverage: IDT, system call
+ * Side Effects: prints to screen
+ * Coverage: terminal driver
  */
 int test_terminal_scrolling() {
     TEST_HEADER;
 
     int i;
-    for (i = 100; i < 112; i++) {
+    /* test screen scrolling */
+    for (i = 100; i < 105; i++) {
         printf("%d\n", i);
     }
+
+    /* also test wrap around */
+    for (i = 0; i < NUM_COLS*1.5; i++) {
+        printf("%d", i%10);
+    }
+    printf("\n");
+
     return PASS;
 
 }
