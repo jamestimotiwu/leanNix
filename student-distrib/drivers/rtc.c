@@ -8,7 +8,7 @@
  */
 void rtc_int() {
 	//cli();				/* Disable interrupts */
-	test_interrupts();
+	//test_interrupts();
 	outb(REG_C, RTC_PORT);	/* Select and read register C */
 	inb(CMOS_PORT);			/* Reset contents in CMOS port */
 	rtc_int_flag = 1;		/* Set interrupt flag */

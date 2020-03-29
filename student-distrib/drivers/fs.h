@@ -48,8 +48,7 @@ boot_block_t* fs;
 /* initialize file system (must be called before using any other fs functions) */
 void init_fs(uint32_t boot_block_addr);
 
-int32_t get_dir_entry(const uint8_t* file_name, dir_entry_t* dir_entry);
-
+/* helpers for file system */
 int32_t read_dentry_by_name(const uint8_t *fname, dir_entry_t *dentry);
 int32_t read_dentry_by_index(uint32_t index, dir_entry_t *dentry);
 int32_t read_data(uint32_t inode, uint32_t offset, uint8_t *buf, uint32_t length);
@@ -60,7 +59,4 @@ int32_t fs_close(int32_t fd);
 int32_t fs_read(uint32_t fd, uint8_t *buf, uint32_t count);
 int32_t fs_write(int32_t fd);
 
-
-/* Temporary function to use since fd not yet implemented */
-int32_t temp_setFile(char *fname);
 
