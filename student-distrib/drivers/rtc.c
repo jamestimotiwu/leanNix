@@ -103,6 +103,13 @@ int rtc_read(int32_t fd, void* buf, int32_t nbytes){
 }
 /* Changes frequency */
 int rtc_write(int32_t fd, const void* buf, int32_t nbytes){
-
-	return -1;
+	uint32_t newRate = *((int*)buf);
+	int result = rtc_set_freq(newRate);
+	return result;
+	// if(result == -1){
+	// 	return -1;
+	// }
+	// else{
+	// 	return nbytes;
+	// }
 }

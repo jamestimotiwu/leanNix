@@ -3,7 +3,7 @@
 #include "lib.h"
 
 #include "i8259.h"
-// #include "drivers/rtc.h"
+#include "drivers/rtc.h"
 
 #define PASS 1
 #define FAIL 0
@@ -99,7 +99,8 @@ int syscall_test() {
 int rtc_frequency_test(){
 	TEST_HEADER;
 	int result = PASS;
-	rtc_set_freq(2);
+	/* Test each frequency */
+	//rtc_set_freq(2);
 	// rtc_set_freq(4);
 	// rtc_set_freq(8);
 	// rtc_set_freq(16);
@@ -109,9 +110,11 @@ int rtc_frequency_test(){
 	// rtc_set_freq(256);
 	// rtc_set_freq(512);
 	// rtc_set_freq(1024);
-	// int out = rtc_set_freq(3);
-	// if(out == -1)
-	// 	result = FAIL;
+
+	int testFreq = 1024;
+	int out = rtc_write(0, &testFreq, 0);
+	if(out == -1)
+		result = FAIL;
 	return result;
 }
 
@@ -129,5 +132,5 @@ void launch_tests(){
 	//TEST_OUTPUT("test_divide_error", test_divide_error());
 	// launch your tests here
 	//TEST_OUTPUT("syscall_test", syscall_test());
-	rtc_frequency_test();
+	//TEST_OUTPUT("rtc frequency test", rtc_frequency_test());
 }
