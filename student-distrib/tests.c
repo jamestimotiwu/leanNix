@@ -3,6 +3,7 @@
 #include "lib.h"
 
 #include "i8259.h"
+#include "drivers/rtc.h"
 #include "page.h"
 #include "drivers/fs.h"
 
@@ -155,6 +156,68 @@ int test_paging_out_kernel() {
 
 /* Checkpoint 2 tests */
 
+<<<<<<< student-distrib/tests.c
+/* RTC frequency test
+ *
+ * Instructions: enable test and write desired value in testFreq
+ * Compares rtc at 1024HZ vs 2HZ
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ * Coverage: IDT, system call
+ */
+int rtc_frequency_test(){
+	TEST_HEADER;
+	int result = PASS;
+	/* Test each frequency */
+	int testFreq = 2;
+
+	int out = rtc_write(0, &testFreq, 0);
+	if(out == -1)
+		result = FAIL;
+	return result;
+}
+
+/* RTC read test
+ *
+ * Makes sure rtc_read blocks till next interrupt
+ * Instructions: enable test and comment out flag setting in rtc_int
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ * Coverage: IDT, system call
+ */
+int rtc_read_test(){
+	TEST_HEADER;
+	int result = PASS;
+	int x = rtc_read(0,0,0);
+	if(x != 0){
+		result = FAIL;
+	}
+	return result;
+}
+
+/* RTC read test
+ *
+ * See if frequency is set to 2HZ when rtc_open is called
+ * Instructions: set init frequency to something like 1024 and compare difference to test
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ * Coverage: IDT, system call
+ */
+int rtc_open_test(){
+	TEST_HEADER;
+	int result = PASS;
+	int x = rtc_open(0);
+	if(x != 0){
+		result = FAIL;
+	}
+	return result;
+}
+
+
+=======
 #define READ_BUFSIZE 1024
 
 /* Test reading from the file system
@@ -247,6 +310,7 @@ int test_ls_dir() {
     
     return PASS;
 }
+>>>>>>> student-distrib/tests.c
 
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
@@ -255,16 +319,21 @@ int test_ls_dir() {
 
 /* Test suite entry point */
 void launch_tests(){
+	//TEST_OUTPUT("idt_test", idt_test());
+	//TEST_OUTPUT("test_divide_error", test_divide_error());
+	// launch your tests here
+	
+	//TEST_OUTPUT("syscall_test", syscall_test());
+	/* RTC CP2 Tests */
+	TEST_OUTPUT("rtc frequency test", rtc_frequency_test());
+	//TEST_OUTPUT("rtc read test", rtc_read_test());
+	//TEST_OUTPUT("rtc open test", rtc_open_test());
 
-    TEST_OUTPUT("idt_test", idt_test());
-    //TEST_OUTPUT("test_divide_error", test_divide_error());
-    // launch your tests here
     //test_interrupts();
     //test_paging_null();
     //test_paging_kernel();
     //test_paging_out_kernel();
-    TEST_OUTPUT("syscall_test", syscall_test());
-    clear();
+    //clear();
 
     /* cp2 tests */
     //TEST_OUTPUT("test_ls_dir", test_ls_dir());

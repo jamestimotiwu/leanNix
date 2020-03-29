@@ -81,7 +81,10 @@ Problem Keyboard wasnt printing anything
 Solution: Added James' RTC files and called test_interrupt in tests.c
 
 Problem RTC handler not being called
-Solution: still trying to fix
+Solution: problem with send_eoi in i8259.c worked after fixing
+
+Problem: rtc_write, dereferencing void* pointer, void value not ignored compiler message
+Solution: *((int*)buf) needed to cast the void pointer to a pointer type then dereference
 
 
 ######
