@@ -80,6 +80,7 @@ int32_t fs_close(int32_t fd) {
 /* temporary global var - remove it once file descriptors are implemented */
 static int32_t inode_to_read = -1;
 static uint32_t read_offset = 0;
+static int type_to_read = -1;
 
 /* temp_setFile
  *   DESCRIPTION: since file descriptors aren't implemented yet, use this.
@@ -89,16 +90,45 @@ static uint32_t read_offset = 0;
  *   SIDE EFFECTS: changes global var
  */
 int32_t temp_setFile(char *fname) {
-	dir_entry_t dentry;
+    dir_entry_t dentry;
 
-	/* set dentry and make sure it is valid */
-	if (read_dentry_by_name((uint8_t *)fname, &dentry) != 0)
-		return -1;
+    /* set dentry and make sure it is valid */
+    if (read_dentry_by_name((uint8_t *)fname, &dentry) != 0)
+        return -1;
 
-	inode_to_read = dentry.inode_num;
-	read_offset = 0;
-	
-	return 0;
+    inode_to_read = dentry.inode_num;
+    read_offset = 0;
+    type_to_read = dentry.type;
+    
+    return 0;
+}
+
+/* read_dir_file
+ *   DESCRIPTION: reads <count> bytes of file names from boot block
+ *   INPUTS: offset -- how many bytes to skip over to start with
+ *           count -- number of bytes to copy
+ *           buf -- the destination buffer for the data
+ *   OUTPUTS: number of bytes copied, or -1 if error
+ *   SIDE EFFECTS: changes buf input
+ */
+int32_t read_dir_file(uint32_t offset, uint8_t *buf, uint32_t count) {
+    int i, j;
+    int dir;
+
+    for (i = 0; i < count; i++) {
+        j = i + offset;
+        dir = offset / FILENAME_CHAR_LIMIT; 
+
+        if (dir >= fs->dentry_count) {
+            /* No more bytes left to copy */
+            return i;
+        }
+
+        /* put the correct character in the buffer */
+        buf[i] = fs->dir_entries[dir].filename[j % FILENAME_CHAR_LIMIT];
+    }
+	return i;
+
 }
 
 /* fs_read
@@ -106,26 +136,38 @@ int32_t temp_setFile(char *fname) {
  *   INPUTS: fd -- file descriptor
  *           count -- number of bytes to copy
  *           buf -- the destination buffer for the data
- *   OUTPUTS: 0 if success, -1 otherwise
+ *   OUTPUTS: number of bytes copied, or -1 if error
  *   SIDE EFFECTS: changes buf input
  */
 int32_t fs_read(uint32_t fd, uint8_t *buf, uint32_t count) {
+    int cnt;
 
-	if (inode_to_read == -1) {
-		/* inode must be initialized with temp_setFile */
-		return -1;
-	}
+    if (inode_to_read == -1) {
+        /* inode must be initialized with temp_setFile */
+        return -1;
+    }
 
-	// TODO; check the type of the file (eg. FTYPE_DIR)
+    if (type_to_read == FTYPE_DIR) {
+        // inode_to_read is meaningless in this case
 
-	int cnt = read_data(inode_to_read, read_offset, buf, count);
+        int cnt = read_dir_file(read_offset, buf, count);
+        read_offset += cnt;
+        return cnt;
 
-	/* Check if read caused error, eg. maybe a bad inode number */
-	if (cnt == -1)
-		return -1;
+    } else if (type_to_read == FTYPE_RTC) {
 
-	/* Next time file is read, start at the next position to be copied */
-	read_offset += cnt;
+        // TODO implement this
+        return -1;
+    }
+
+    cnt = read_data(inode_to_read, read_offset, buf, count);
+
+    /* Check if read caused error, eg. maybe a bad inode number */
+    if (cnt == -1)
+        return -1;
+
+    /* Next time file is read, start at the next position to be copied */
+    read_offset += cnt;
 
     return cnt;
 }
@@ -150,7 +192,7 @@ int32_t fs_write(int32_t fd) {
  */
 int32_t read_dentry_by_name(const uint8_t *fname, dir_entry_t *dentry) {
     int i;
-	/* loop through all the directory entries in boot block, searching for match */
+    /* loop through all the directory entries in boot block, searching for match */
     for (i = 0; i < fs->dentry_count; i++) {
         if (strncmp((int8_t*)fs->dir_entries[i].filename, (int8_t*)fname, FILENAME_CHAR_LIMIT) == 0) {
             
@@ -177,19 +219,19 @@ int32_t read_dentry_by_name(const uint8_t *fname, dir_entry_t *dentry) {
 int32_t read_dentry_by_index(uint32_t index, dir_entry_t *dentry) {
     dir_entry_t dentry_src;
 
-	if (index >= fs->dentry_count)
-		/* directory index is out of range -> error */
-		return -1;
+    if (index >= fs->dentry_count)
+        /* directory index is out of range -> error */
+        return -1;
 
-	dentry_src = fs->dir_entries[index];
+    dentry_src = fs->dir_entries[index];
 
-	/* copy dentry_src into dentry */
-	strncpy((int8_t*)dentry->filename, (int8_t*)dentry_src.filename, FILENAME_CHAR_LIMIT);
-	dentry->type = dentry_src.type;
-	dentry->inode_num = dentry_src.inode_num;
+    /* copy dentry_src into dentry */
+    strncpy((int8_t*)dentry->filename, (int8_t*)dentry_src.filename, FILENAME_CHAR_LIMIT);
+    dentry->type = dentry_src.type;
+    dentry->inode_num = dentry_src.inode_num;
 
-	/* A success */
-	return 0;
+    /* A success */
+    return 0;
 }
 
 /* read_dentry_by_name
@@ -217,18 +259,18 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t *buf, uint32_t length
     for (i = 0; i < length; i++) {
         int j = i+offset;
 
-		if (j >= node->length) {
-			/* reached the end of the file */
-			/* return how many bytes were copied */
-			return i;
-		}
+        if (j >= node->length) {
+            /* reached the end of the file */
+            /* return how many bytes were copied */
+            return i;
+        }
         
         block_index = node->data_block[j / BLOCK_SIZE];
 
-		if (block_index >= fs->blocks_count) {
-			/* Bad data block found; return error */
-			return -1;
-		}
+        if (block_index >= fs->blocks_count) {
+            /* Bad data block found; return error */
+            return -1;
+        }
 
         dblock = (uint8_t *)fs + BLOCK_SIZE*(block_index + 1 + fs->inodes_count);
 
@@ -236,7 +278,7 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t *buf, uint32_t length
         
     }
 
-	/* return how many bytes were copied */
+    /* return how many bytes were copied */
     return i;
 }
 
