@@ -41,6 +41,9 @@
 #define Pressed 1
 #define Released 0
 
+/* These are used by terminal driver but are located in keyboard.c */
+extern volatile int cur_buf_length;
+extern volatile char kb_buf[KB_BUF_SIZE];
 
 int32_t term_open(const uint8_t *fname);
 int32_t term_close(int32_t fd);
@@ -49,10 +52,12 @@ int32_t term_write(int32_t fd, void *buf, uint32_t count);
 
 extern void keyboard_int();
 extern void keyboard_init();
-void get_char_map(char sc); 
+char get_char_map(char sc); 
 void reset_kb_buf();
 void reset_cursor(int x, int y);
 void tab_func();
 void backsp_func();
 void enter_func();
 #endif
+
+
