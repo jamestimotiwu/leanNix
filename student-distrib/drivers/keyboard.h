@@ -4,6 +4,7 @@
 #include "../x86_desc.h"
 #include "../lib.h"
 #include "../i8259.h"
+#include "../types.h"
 
 #define KB_IRQ     0x1
 #define KB_DATA    0x60
@@ -41,6 +42,10 @@
 #define Released 0
 
 
+int32_t term_open(const uint8_t *fname);
+int32_t term_close(int32_t fd);
+int32_t term_read(int32_t fd, void *buf, uint32_t count);
+int32_t term_write(int32_t fd, void *buf, uint32_t count);
 
 extern void keyboard_int();
 extern void keyboard_init();

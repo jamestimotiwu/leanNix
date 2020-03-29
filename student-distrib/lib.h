@@ -7,6 +7,7 @@
 
 #include "types.h"
 
+
 /* Testing RTC*/
 void test_interrupts(void);
 

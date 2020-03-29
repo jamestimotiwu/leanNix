@@ -87,6 +87,26 @@ int syscall_test() {
 	return result;
 }
 /* Checkpoint 2 tests */
+
+/* System call test
+ *
+ * Check that system calls work
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ * Coverage: IDT, system call
+ */
+int test_terminal_scrolling() {
+    TEST_HEADER;
+
+    int i;
+    for (i = 100; i < 112; i++) {
+        printf("%d\n", i);
+    }
+    return PASS;
+
+}
+
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
@@ -98,6 +118,8 @@ void launch_tests(){
 	TEST_OUTPUT("idt_test", idt_test());
 	//TEST_OUTPUT("test_divide_error", test_divide_error());
 	// launch your tests here
-	test_interrupts();
+	//test_interrupts();
 	TEST_OUTPUT("syscall_test", syscall_test());
+
+	TEST_OUTPUT("test_terminal_scrolling", test_terminal_scrolling());
 }
