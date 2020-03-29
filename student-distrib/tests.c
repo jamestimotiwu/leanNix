@@ -351,8 +351,8 @@ void launch_tests(){
 	//test_paging_null();
 	//test_paging_kernel();
 	//test_paging_out_kernel();
-	test_fs_open_good_file();
-	test_fs_open_bad_file();
+	//test_fs_open_good_file();
+	//test_fs_open_bad_file();
 	
 	//TEST_OUTPUT("syscall_test", syscall_test());
 	/* RTC CP2 Tests */
