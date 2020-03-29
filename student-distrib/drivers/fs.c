@@ -102,7 +102,7 @@ int32_t fs_write(int32_t fd) {
 }
 
 /* read_dentry_by_name
- *   DESCRIPTION: fills the dir_entry based on 
+ *   DESCRIPTION: fills the dir_entry based on the string file name
  *   INPUTS: fname -- the file name as a string
  *           dentry -- the directory entry to be filled out
  *   OUTPUTS: 0 if successful, -1 if not (ie. fname not in directory)
@@ -110,6 +110,7 @@ int32_t fs_write(int32_t fd) {
  */
 int32_t read_dentry_by_name(const uint8_t *fname, dir_entry_t *dentry) {
     int i;
+	/* loop through all the directory entries in boot block, searching for match */
     for (i = 0; i < fs->dentry_count; i++) {
         if (strncmp((int8_t*)fs->dir_entries[i].filename, (int8_t*)fname, FILENAME_CHAR_LIMIT) == 0) {
             
@@ -119,6 +120,7 @@ int32_t read_dentry_by_name(const uint8_t *fname, dir_entry_t *dentry) {
             dentry->inode_num = fs->dir_entries[i].inode_num;
             /* return success */
             return 0;
+
         }
 
     }
@@ -126,14 +128,28 @@ int32_t read_dentry_by_name(const uint8_t *fname, dir_entry_t *dentry) {
 }
 
 /* read_dentry_by_index
- *   DESCRIPTION: fills the dir_entry based on the
- *   INPUTS: fname -- the file name as a string
+ *   DESCRIPTION: fills the dir_entry based on the index into the boot block
+ *   INPUTS: index -- index 
  *           dentry -- the directory entry to be filled out
  *   OUTPUTS: 0 if successful, -1 if not (ie. index doesn't exist)
  *   SIDE EFFECTS: changes dentry
  */
 int32_t read_dentry_by_index(uint32_t index, dir_entry_t *dentry) {
-    return -1;
+    dir_entry_t dentry_src;
+
+	if (index >= fs->dentry_count)
+		/* directory index is out of range -> error */
+		return -1;
+
+	dentry_src = fs->dir_entries[index];
+
+	/* copy dentry_src into dentry */
+	strncpy((int8_t*)dentry->filename, (int8_t*)dentry_src.filename, FILENAME_CHAR_LIMIT);
+	dentry->type = dentry_src.type;
+	dentry->inode_num = dentry_src.inode_num;
+
+	/* A success */
+	return 0;
 }
 
 /* read_dentry_by_name
@@ -151,7 +167,7 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t *buf, uint32_t length
     node_t *node;
     uint8_t *dblock;
     
-    if (inode < 0 || inode >= fs->inodes_count)
+    if (inode >= fs->inodes_count)
         /* inode out of range */
         return -1;
     
@@ -162,7 +178,8 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t *buf, uint32_t length
         int j = i+offset;
         
         block_index = node->data_block[j / BLOCK_SIZE];
-        dblock = (uint8_t *)fs + BLOCK_SIZE*(block_index + fs->inodes_count);
+
+        dblock = (uint8_t *)fs + BLOCK_SIZE*(block_index + 1 + fs->inodes_count);
 
         // TODO: check that data block is within length
         //

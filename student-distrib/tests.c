@@ -4,7 +4,7 @@
 
 #include "i8259.h"
 #include "page.h"
-// #include "drivers/rtc.h"
+#include "drivers/fs.h"
 
 #define PASS 1
 #define FAIL 0
@@ -154,6 +154,52 @@ int test_paging_out_kernel() {
 }
 
 /* Checkpoint 2 tests */
+
+/* Test reading from the file system
+ *
+ * Description: use a path that exists, print out first 10 characters of file
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ * Coverage: read_data and in fs.c
+ */
+int test_fs_read() {
+    int size = 80;
+    uint8_t buf[size+1];
+    buf[size] = '\0';
+
+    dir_entry_t dentry;
+    
+    if (read_dentry_by_name((uint8_t *)"verylargetextwithverylongname.txt", &dentry) != 0)
+        return FAIL;
+
+    uint32_t inode_num = dentry.inode_num;
+
+    read_data(inode_num, 5, buf, size);
+
+    printf("%s\n", buf);
+
+    return PASS;
+}
+
+/* Testing file name that isn't in directory
+ *
+ * Description: use a path that doesn't exist, make sure -1 is returned
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ * Coverage: read_dentry_by_name
+ */
+int test_dir_path_dne() {
+    dir_entry_t dentry;
+    
+    /* Check that this function works (it should return -1 */
+    if (read_dentry_by_name((uint8_t *)"thisfiledoesn'texist", &dentry) == -1)
+        return PASS;
+
+    return FAIL;
+}
+
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
@@ -168,6 +214,9 @@ void launch_tests(){
 	//test_interrupts();
 	//test_paging_null();
 	//test_paging_kernel();
-	test_paging_out_kernel();
+	//test_paging_out_kernel();
 	TEST_OUTPUT("syscall_test", syscall_test());
+    clear();
+    TEST_OUTPUT("test_dir_path_dne", test_dir_path_dne());
+    TEST_OUTPUT("test_fs_read", test_fs_read());
 }
