@@ -90,6 +90,7 @@ int syscall_test() {
 
 /* RTC frequency test
  *
+ * Instructions: enable test and write desired value in testFreq
  * Compares rtc at 1024HZ vs 2HZ
  * Inputs: None
  * Outputs: PASS/FAIL
@@ -100,24 +101,51 @@ int rtc_frequency_test(){
 	TEST_HEADER;
 	int result = PASS;
 	/* Test each frequency */
-	//rtc_set_freq(2);
-	// rtc_set_freq(4);
-	// rtc_set_freq(8);
-	// rtc_set_freq(16);
-	// rtc_set_freq(32);
-	// rtc_set_freq(64);
-	// rtc_set_freq(128);
-	// rtc_set_freq(256);
-	// rtc_set_freq(512);
-	// rtc_set_freq(1024);
+	int testFreq = 2;
 
-	int testFreq = 1024;
 	int out = rtc_write(0, &testFreq, 0);
 	if(out == -1)
 		result = FAIL;
 	return result;
 }
 
+/* RTC read test
+ *
+ * Makes sure rtc_read blocks till next interrupt
+ * Instructions: enable test and comment out flag setting in rtc_int
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ * Coverage: IDT, system call
+ */
+int rtc_read_test(){
+	TEST_HEADER;
+	int result = PASS;
+	int x = rtc_read(0,0,0);
+	if(x != 0){
+		result = FAIL;
+	}
+	return result;
+}
+
+/* RTC read test
+ *
+ * See if frequency is set to 2HZ when rtc_open is called
+ * Instructions: set init frequency to something like 1024 and compare difference to test
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ * Coverage: IDT, system call
+ */
+int rtc_open_test(){
+	TEST_HEADER;
+	int result = PASS;
+	int x = rtc_open(0);
+	if(x != 0){
+		result = FAIL;
+	}
+	return result;
+}
 
 
 
@@ -132,5 +160,8 @@ void launch_tests(){
 	//TEST_OUTPUT("test_divide_error", test_divide_error());
 	// launch your tests here
 	//TEST_OUTPUT("syscall_test", syscall_test());
-	//TEST_OUTPUT("rtc frequency test", rtc_frequency_test());
+	/* RTC CP2 Tests */
+	TEST_OUTPUT("rtc frequency test", rtc_frequency_test());
+	//TEST_OUTPUT("rtc read test", rtc_read_test());
+	//TEST_OUTPUT("rtc open test", rtc_open_test());
 }
