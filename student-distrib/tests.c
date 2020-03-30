@@ -3,15 +3,12 @@
 #include "lib.h"
 
 #include "i8259.h"
-<<<<<<< HEAD
 #include "drivers/rtc.h"
 #include "page.h"
 #include "drivers/fs.h"
-=======
 // #include "drivers/rtc.h"
 #include "drivers/terminal.h"
 #include "drivers/keyboard.h"
->>>>>>> origin/michael/terminal
 
 #define PASS 1
 #define FAIL 0
@@ -432,7 +429,6 @@ void launch_tests() {
 	//TEST_OUTPUT("rtc frequency test", rtc_frequency_test());
 	//TEST_OUTPUT("rtc read test", rtc_read_test());
 	//TEST_OUTPUT("rtc open test", rtc_open_test());
-	//clear();
 
 	/* Filesystem CP2 tests */
 	//TEST_OUTPUT("test_fs_open_good_file", test_fs_open_good_file());
