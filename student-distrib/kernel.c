@@ -13,7 +13,6 @@
 #include "drivers/keyboard.h"
 #include "drivers/rtc.h"
 
-#include "interrupts.h"
 #include "page.h"
 #include "drivers/fs.h"
 

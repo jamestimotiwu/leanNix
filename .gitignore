@@ -359,3 +359,4 @@ MigrationBackup/
 
 # Ignore auto-dependencies
 *.dep
+makemp3.sh
