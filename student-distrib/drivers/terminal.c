@@ -48,6 +48,7 @@ void term_clear() {
     /* set cursor back to 0,0 */
     screen_x = 0;
     screen_y = 0;
+    reset_cursor(0, 0);
 }
 
 /* term_test_int
@@ -108,8 +109,8 @@ int term_keyboardChar(uint8_t c) {
     }
 
     kb_buf[cur_buf_length++] = c;
-    reset_cursor(screen_x, screen_y);
     term_putc(c);
+    reset_cursor(screen_x, screen_y);
     return 1;
 }
 
@@ -136,7 +137,7 @@ void term_keyboardBackspace() {
 
     // remove last character from buffer
     cur_buf_length--;
-    
+
     // handle backspace on the same line
     if (screen_x >= 1) {
         screen_x--;
@@ -146,8 +147,10 @@ void term_keyboardBackspace() {
         screen_x = NUM_COLS-1;
         screen_y--;
         term_setChar(' ');
-
     }
+    
+    // set the cursor to last character position (ie. where the space is)
+    reset_cursor(screen_x, screen_y);
 }
 
 
@@ -162,6 +165,7 @@ void term_keyboardEnter() {
 
     kb_buf[cur_buf_length++] = '\n';
     term_putc('\n');
+    reset_cursor(0, screen_y);
 
     if (readWaiting) {
         readWaiting = 0;
