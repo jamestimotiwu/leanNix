@@ -101,6 +101,9 @@ Solution: problem with send_eoi in i8259.c worked after fixing
 Problem: rtc_write, dereferencing void* pointer, void value not ignored compiler message
 Solution: *((int*)buf) needed to cast the void pointer to a pointer type then dereference
 
+Problem: Keyboard prints a random character after the pressed character
+Solution: Make sure keyboard doesn't read the scancode of the release
+
 
 ######
 
