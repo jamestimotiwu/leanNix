@@ -90,7 +90,7 @@ int32_t read_dir_file(uint32_t offset, uint8_t* buf, uint32_t count) {
 
 	for (i = 0; i < count; i++) {
 		j = i + offset;
-		dir = offset / FILENAME_CHAR_LIMIT;
+		dir = j / FILENAME_CHAR_LIMIT;
 
 		if (dir >= fs->dentry_count) {
 			/* No more bytes left to copy */
