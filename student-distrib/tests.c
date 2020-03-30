@@ -340,6 +340,7 @@ int test_ls_dir() {
 	}
 
 	return PASS;
+}
 
 /* test_terminal_scrolling
  *
@@ -446,3 +447,5 @@ void launch_tests() {
     TEST_OUTPUT("test_terminal_write", test_terminal_write());
     TEST_OUTPUT("test_terminal_read", test_terminal_read());
 }
+
+
