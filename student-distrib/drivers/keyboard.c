@@ -1,35 +1,180 @@
 #include "keyboard.h"
+#include "terminal.h"
+
+//default status of special keys
+// 0 denotes released ( unpressed ) state 
+// 1 denotes pressed state 
+//statically declared in orde to preserve the value between interrupt calls
+static int caps = Released;
+static int ctrl = Released;
+static int alt = Released;
+static int shiftL = Released;
+static int shiftR = Released;
+
+
+// length of current keyboard buffer 
+volatile int cur_buf_length = 0;
+
+//keyboard buffer 
+volatile char kb_buf[KB_BUF_SIZE];
+
+#define STATUS_CAPSLOCK 0x1
+#define STATUS_SHIFT    0x2
+
+// keyboard status 
+// 0 = caps_lock unpressed + shift unpressed (0x00)
+// 1 = caps_lock pressed   + shift unpressed (0x01)
+// 2 = caps_lock unpreesed + shift pressed   (0x10)
+// 3 = caps_lock pressed   + shift pressed   (0x11)
+volatile int key_stat = 0;
+
+
+
+#define KEY_STAT_SIZE 4
+#define MAX_KEY_RANGE 60
 
 /* Mapping for the keyboard codes */
-char kb_map[60] = {
-  '\0', '0',
-  '1', '2', '3', '4', '5', '6', '7', '8', '9', '0',
-  '-', '=', '0', '0',
-  'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p',
-  '[', ']', '0', '0',
-  'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l',
-  ';', '0', '0', '0', '0',
-  'z', 'x', 'c', 'v', 'b', 'n', 'm',
-  ',', '.', '/', '0', '0', '0', '0', '0', '0'
+// Don't prrint anything on hitting a functional key such as shift,alt...etc
+char kb_map[KEY_STAT_SIZE][MAX_KEY_RANGE] = {
+
+    // caps_lock unpressed + shift unpressed 
+    {NOT_PRINT, NOT_PRINT, '1', '2', '3', '4','5', '6', '7', '8', '9', '0', '-', '=', NOT_PRINT, NOT_PRINT,
+        'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', NOT_PRINT, NOT_PRINT, 'a', 's',
+        'd', 'f', 'g', 'h', 'j', 'k', 'l' , ';', '\'', '`', NOT_PRINT, '\\', 'z', 'x', 'c', 'v',
+        'b', 'n', 'm',',', '.', '/', NOT_PRINT, '*', NOT_PRINT, ' ', NOT_PRINT},
+
+    // caps_lock pressed + shift unpressed 
+    {NOT_PRINT, NOT_PRINT, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', NOT_PRINT, NOT_PRINT,
+        'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '[', ']', NOT_PRINT, NOT_PRINT, 'A', 'S',
+        'D', 'F', 'G', 'H', 'J', 'K', 'L' , ';', '\'', '`', NOT_PRINT, '\\', 'Z', 'X', 'C', 'V',
+        'B', 'N', 'M', ',', '.', '/', NOT_PRINT, '*', NOT_PRINT, ' ', NOT_PRINT},
+
+    // caps_lock unpreesed + shift pressed 
+
+    {NOT_PRINT, NOT_PRINT, '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '+', NOT_PRINT, NOT_PRINT,
+        'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '{', '}', NOT_PRINT, NOT_PRINT, 'A', 'S',
+        'D', 'F', 'G', 'H', 'J', 'K', 'L' , ':', '"', '~', NOT_PRINT, '|', 'Z', 'X', 'C', 'V',
+        'B', 'N', 'M', '<', '>', '?', NOT_PRINT, '*', NOT_PRINT, ' ', NOT_PRINT},
+
+
+    // caps_lock pressed + shift pressed 
+    {NOT_PRINT, NOT_PRINT, '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '+', NOT_PRINT, NOT_PRINT,
+        'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '{', '}', NOT_PRINT, NOT_PRINT, 'a', 's',
+        'd', 'f', 'g', 'h', 'j', 'k', 'l' , ':', '"', '~', NOT_PRINT, '\\', 'z', 'x', 'c', 'v',
+        'b', 'n', 'm', '<', '>', '?', NOT_PRINT, '*', NOT_PRINT, ' ', NOT_PRINT}
+
+
 };
 
 /* keyboard_int()
  *   DESCRIPTION: interrupt handler for the keyboard
  *   INPUT/OUTPUT: none
- *   SIDE EFFECTS: prints the character that was just pressed
+ *   SIDE EFFECTS: defines the functional key status 
  */
 void keyboard_int(){
-  // printf("KEYBOARD INTERRUPT! \n");
-  // while(1);
-  unsigned scancode = inb(KB_DATA);
-  if(scancode < 60 && scancode >= 0){
-    //clear();
-    putc(kb_map[scancode]);
-  }
-  // clear();
-  // putc(kb_map[scancode]);
-  send_eoi(KB_IRQ);
+
+    cli();
+    
+    /* Get the scancode */
+    uint8_t temp_sc; 
+    uint8_t sc = inb(KB_DATA);  //get keybaord input 
+    uint8_t pressedChar;
+    //defines and handles the state of funtional keys 
+    temp_sc = sc; 
+
+    /* Keeps track if caps/shift/alt was pressed */
+    int updateKeyStateFlag = 1;
+
+    /* Check for shift/caps/alt key press/release */
+    if(temp_sc == CAPS_LOCK){
+        /* Swap the caps lock state */
+        if (caps == Pressed)
+            caps = Released;
+        else
+            caps= Pressed; 
+
+    } else if(temp_sc == ALT_P) {
+        alt = Pressed;
+    } else if(temp_sc== ALT_R){
+        alt = Released;
+    } else if(temp_sc == CTRL_P){ 
+        ctrl = Pressed;
+    } else if(temp_sc == CTRL_R){
+        ctrl = Released;
+    } else if (temp_sc == SHIFT_L_P) {
+        shiftL = Pressed;
+    } else if (temp_sc == SHIFT_L_R) {
+        shiftL = Released;
+    } else if (temp_sc == SHIFT_R_P) {
+        shiftR = Pressed;
+    } else if (temp_sc == SHIFT_R_R) {
+        shiftR = Released;
+    } else {
+        /* It was none of the above - don't update status */
+        updateKeyStateFlag = 0;
+    }
+
+    if (updateKeyStateFlag) {
+
+        /* Update key_stat, in case the key was shift/caps */
+        key_stat = 0;
+
+        if (shiftR == Pressed || shiftL == Pressed)
+            key_stat |= STATUS_SHIFT;
+
+        if (caps == Pressed)
+            key_stat |= STATUS_CAPSLOCK;
+
+        send_eoi(KB_IRQ);  //send EOI signal when done handling 
+        sti();
+        return; // exit from function execution (nothing left to print/do)
+    }
+
+
+    if(temp_sc == TAB){
+
+        tab_func();    //call tab function 
+    }
+    else if(temp_sc == ENTER){
+
+        enter_func();     // call enter function 
+    }
+    else if(temp_sc == BACK_SPACE){
+
+        backsp_func();   //call backspace function 
+    }
+    else if(temp_sc == CHAR_L && ctrl == Pressed){
+
+        /* Ctrl-L pressed: clear the screen */
+        // TODO: and the buffer????
+
+        //clear();   //if ctrl+L is pressed, clear screen(video mem)
+        //screen_x =0;
+        //screen_y =0;
+        term_clear();
+        reset_cursor(0, 0); //reset cursor at the upper left corner
+        // Dont do this, keyboard buffer shouldn't change after clearing screen
+        //reset_kb_buf();   //reset keyboard buffer
+
+        send_eoi(KB_IRQ);  //send EOI signal when done handling 
+        sti();
+        return;
+
+    }
+
+
+
+    pressedChar = (uint8_t) get_char_map(temp_sc);  //else simply print char L to the screen
+    if (pressedChar != NOT_PRINT && pressedChar != NULL_BYTE)
+        term_keyboardChar(pressedChar);
+
+
+    send_eoi(KB_IRQ);  //send EOI signal when done handling 
+    sti();
+
 }
+
+
 
 /* keyboard_init()
  *   DESCRIPTION: initializes the keyboard
@@ -38,6 +183,208 @@ void keyboard_int(){
  *   SIDE EFFECTS: enables irq associated with keyboard
  */
 void keyboard_init(){
-  enable_irq(KB_IRQ);
-  //puts("KB initialized");
+    enable_irq(KB_IRQ);
+    cur_buf_length=0;
+    //puts("KB initialized");
 }
+
+
+
+/* void get_char_map(char sc)
+ *   DESCRIPTION: get char from the kb_map and outputs on to the screen.
+ *   INPUT: sc --  scancode from keyboard
+ *   OUTPUT: the ascii character code to be printed
+ *   SIDE EFFECTS: outputs character to the screen/ update the keyboard buffer 
+ */
+char get_char_map(uint8_t sc){
+
+    /* If it isn't within range, then don't print it */
+    if (sc >= MAX_KEY_RANGE)
+        return NOT_PRINT;
+
+    return kb_map[key_stat][sc];
+
+
+    /*
+    if(out == NOT_PRINT || out == NULL_BYTE){
+        return NOT_PRINT;          //do not print null bytes
+    }
+    */
+
+    /* NOT PRITING ANYMORE
+    if(cur_buf_length >= KB_BUF_SIZE-1){
+        //buffer size = 128 = 127 + new line char
+        //(new line is always added at the end of the buffer before return)
+
+        return;             //if buffer fills up, return 
+    }
+    */
+
+
+    //if cur_buf_length is less than max buffer size, add character to the keyboard buffer
+    //kb_buf[cur_buf_length++] = out;  
+
+
+
+    /*
+     * if((screen_x==NUM_COLS-1) && (screen_y==NUM_ROWS-1)){
+        scroll_screen();   // if current position is at the end of screen (bottom right corner), scroll screen
+        putc(out); 
+        reset_cursor(screen_x, screen_y); 
+    }
+    else{
+
+        putc(out); 
+
+    }
+    */
+
+}
+
+
+
+/* void reset_kb_buf()
+ *   DESCRIPTION: resets and clear buffer
+ *   INPUT/OUTPUT: None
+ *   SIDE EFFECTS: resets and clears buffer
+ */
+void reset_kb_buf(){
+
+    int i; 
+    /* set everything in buffer to 0 */
+    for(i=0; i< KB_BUF_SIZE; i++){
+
+        kb_buf[i] = NULL_BYTE;   
+
+
+    }
+
+    cur_buf_length =0;  
+
+
+}
+
+
+/* void tab_func()
+ *   DESCRIPTION: function for the tab when it's pressed 
+ *   INPUT/OUTPUT: None
+ *   SIDE EFFECTS: fuction for the tab when it's pressed 
+ */
+
+void tab_func(){
+
+    term_keyboardTab();
+    /*
+    int tab_space =3;  //add 3 spaces on the terminal screen / buffer
+    int x;
+    char space = char_space; // ' '
+
+    if(cur_buf_length >= KB_BUF_SIZE){
+
+
+        return;      //return if current buffer size is larger thant max buf size
+    }
+
+
+    for(x=0 ; x< tab_space; x++){  
+        kb_buf[cur_buf_length++] = space;  // fill keyboard buffer with space  
+
+
+
+        video_mem[screen_y * NUM_COLS + screen_x] = space; //fill in spaces
+        video_mem[screen_y * NUM_COLS + screen_x] = ATTRIB; //color black
+        screen_x++;
+        if((screen_x==NUM_COLS-1) && (screen_y==NUM_ROWS-1)){
+            scroll_screen();   //if current position is at the end of screen (bottom right corner), scroll screen
+        }
+        reset_cursor(screen_x, screen_y);  //update the cursor position on the screen 
+
+
+    }
+    */
+
+
+
+}
+
+
+/* void enter_func()
+ *   DESCRIPTION: function for the enter when it's pressed 
+ *   INPUT/OUTPUT: None
+ *   SIDE EFFECTS: fuction for the enter when it's pressed 
+ */
+void enter_func(){
+
+    term_keyboardEnter();
+
+    /*
+    if(cur_buf_length >= KB_BUF_SIZE){
+        return;         //check if current buffer length is greater than the max buf size 
+    }
+
+
+
+    screen_x = 0;   // x position always becomes 0 (start of the row) on the screen
+
+
+    if(screen_y == NUM_ROWS -1){
+        scroll_screen();          // if current y position is at the last line of screen, scroll screen
+        reset_cursur(screen_x, screen_y); // update the cursur position (screen_x =0, screen_y = last line) 
+
+    }
+    else{ 
+        screen_y++;  // increment y position of the screen by 1
+
+        reset_cursur(screen_x, screen_y); //update cursur to new position
+
+    }
+
+    kb_buf[cur_buf_length++] = NEW_LINE; //always add newline char at the end of buffer
+    */
+}
+
+/* void backsp_func()
+ *   DESCRIPTION: function for the backspace when it's pressed 
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   SIDE EFFECTS: function that handles the backspace from keyboard 
+ */
+
+void backsp_func(){
+
+    term_keyboardBackspace();
+
+    //if (cur_buf_length == 0)
+     //   return; // if keyboard buffer is empty, don't do anything
+
+    /* Descrease the buffer size */
+    //cur_buf_length--;
+    // TODO: clear last character somehow?
+
+
+    /*
+    if(((screen_x==0) && (screen_y==0)) || (cur_buf_length==0)){
+
+
+        return;     // if the current position left top corner or keyboard buffer is empty, return
+    }
+
+    else{
+
+        screen_x--;  //decrement x position by 1
+        video_mem[screen_y * NUM_COLS + screen_x] = NULL_BYTE; //erase char from screen
+
+    }
+
+    cur_buf_length--;   // decrement keyboard buffer length by 1
+    kb_buf[cur_buf_length] = NULL_BYTE;  //update buffer with null byte for deleted char
+    reset_cursor(screen_x, screen_y);  // update the cursor position
+    */
+
+}
+
+
+
+
+
+

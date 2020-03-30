@@ -3,9 +3,15 @@
 #include "lib.h"
 
 #include "i8259.h"
+<<<<<<< HEAD
 #include "drivers/rtc.h"
 #include "page.h"
 #include "drivers/fs.h"
+=======
+// #include "drivers/rtc.h"
+#include "drivers/terminal.h"
+#include "drivers/keyboard.h"
+>>>>>>> origin/michael/terminal
 
 #define PASS 1
 #define FAIL 0
@@ -337,6 +343,71 @@ int test_ls_dir() {
 	}
 
 	return PASS;
+
+/* test_terminal_scrolling
+ *
+ * Check that terminal driver will scroll screen
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: prints to screen
+ * Coverage: terminal driver
+ */
+int test_terminal_scrolling() {
+    TEST_HEADER;
+
+    int i;
+    /* test screen scrolling */
+    for (i = 100; i < 105; i++) {
+        printf("%d\n", i);
+    }
+
+    /* also test wrap around */
+    for (i = 0; i < NUM_COLS*1.5; i++) {
+        printf("%d", i%10);
+    }
+    printf("\n");
+
+    return PASS;
+
+}
+
+/* test_terminal_read
+ *
+ * Check that terminal driver read function works
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: prints to screen
+ * Coverage: terminal driver
+ */
+int test_terminal_read() {
+    TEST_HEADER;
+
+    uint8_t buf[KB_BUF_SIZE+1];
+    printf("Enter a string: ");
+    int i = terminal_read(0, buf, KB_BUF_SIZE);
+    buf[i] = '\0';
+    printf("you entered: %s", buf);
+
+    return PASS;
+}
+
+/* test_terminal_write
+ *
+ * Check that terminal driver write function works
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: prints to screen
+ * Coverage: terminal driver write
+ */
+int test_terminal_write() {
+    TEST_HEADER;
+
+    char str[] = "Hello, world!\n";
+    printf("writing hello: ");
+    terminal_write(0, str, sizeof(str));
+
+    return PASS;
+
 }
 
 /* Checkpoint 3 tests */
@@ -371,4 +442,11 @@ void launch_tests() {
 	//TEST_OUTPUT("test_fs_read", test_fs_read("frame0.txt"));
 	//TEST_OUTPUT("test_fs_read", test_fs_read("grep"));
 	//TEST_OUTPUT("test_ls_dir", test_ls_dir());
+	// launch your tests here
+	//test_interrupts();
+	TEST_OUTPUT("syscall_test", syscall_test());
+
+	TEST_OUTPUT("test_terminal_scrolling", test_terminal_scrolling());
+    TEST_OUTPUT("test_terminal_write", test_terminal_write());
+    TEST_OUTPUT("test_terminal_read", test_terminal_read());
 }
