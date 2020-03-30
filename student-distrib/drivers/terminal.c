@@ -150,6 +150,8 @@ void term_keyboardBackspace() {
  *   SIDE EFFECT: changes keyboard buffer and display; read() syscall returns
  */
 void term_keyboardEnter() {
+    cli(); // so that readWaiting doesn't change its value unexpectedly
+
     kb_buf[cur_buf_length++] = '\n';
     term_putc('\n');
 
@@ -158,8 +160,10 @@ void term_keyboardEnter() {
         // don't change cur_buf_length because the read syscall will do that
         return;
     } else {
+        /* reset the buffer by setting its length to 0 */
         cur_buf_length = 0;
     }
+    sti();
 
 }
 
@@ -264,17 +268,24 @@ int32_t terminal_read(int32_t fd, void *buf, uint32_t count) {
  *   INPUTS: fd -- file descriptor for the terminal
  *           buf -- buffer 
  *           count -- how many bytes to write
- *   OUTPUTS: 0 for success, else -1
+ *   OUTPUTS: how many bytes were written, or -1 if failure
  *   SIDE EFFECTS: none
  */
 int32_t terminal_write(int32_t fd, void *buf, uint32_t count) {
     int i;
+    uint8_t *input = (uint8_t *) buf;
+
     for (i = 0; i < count; i++) {
 
-        if (term_keyboardChar(((uint8_t *)buf)[i]) == 0)
+        /* write to terminal using standard function, not the keyboard function */
+        term_putc(input[i]);
+
+        // don't use term keyboard anymore -- that is only for keyboard input
+        //if (term_keyboardChar(((uint8_t *)buf)[i]) == 0)
             /* no longer able to write to buffer, so exit */
-            break;
+        //    break;
     }
+    /* return the number of bytes written */
     return i;
 }
 

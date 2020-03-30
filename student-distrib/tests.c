@@ -128,11 +128,29 @@ int test_terminal_scrolling() {
 int test_terminal_read() {
     TEST_HEADER;
 
-    uint8_t buf[KB_BUF_SIZE];
+    uint8_t buf[KB_BUF_SIZE+1];
     printf("Enter a string: ");
     int i = terminal_read(0, buf, KB_BUF_SIZE);
     buf[i] = '\0';
     printf("you entered: %s", buf);
+
+    return PASS;
+}
+
+/* test_terminal_write
+ *
+ * Check that terminal driver write function works
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: prints to screen
+ * Coverage: terminal driver write
+ */
+int test_terminal_write() {
+    TEST_HEADER;
+
+    char str[] = "Hello, world!\n";
+    printf("writing hello: ");
+    terminal_write(0, str, sizeof(str));
 
     return PASS;
 }
@@ -152,5 +170,6 @@ void launch_tests(){
 	TEST_OUTPUT("syscall_test", syscall_test());
 
 	TEST_OUTPUT("test_terminal_scrolling", test_terminal_scrolling());
+    TEST_OUTPUT("test_terminal_write", test_terminal_write());
     TEST_OUTPUT("test_terminal_read", test_terminal_read());
 }

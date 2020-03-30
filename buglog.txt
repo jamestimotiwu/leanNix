@@ -69,6 +69,21 @@ Bug: After implementing some PIC stuff, the qemu window would close during
 the hlt-jmp loop. This was fixed by resetting some masks on the PIC so that
 interrupts could go through, which prevented qemu from closing.
 
+Problem: When reading and printing the binary files, the ELF string at the
+beginning wasn't showing up. However, reading the text files was working just
+fine. The reason was that the terminal driver still wasn't working yet, and
+when printing characters it wrote over the ELF string. This wasn't an issue
+with text files because each line ends with a newline character. The solution
+was just to merge with the terminal driver code.
+
+Problem: After making some changes to the keyboard driver, the text was working
+when typing in lower case letters, but when the shift/capslock/alt key was pressed
+it would stop working completely.
+Solution: The function handling the interrupt sets the interrupt flag and sends the
+PIC and EOI signal at the end. However, certain keys caused the function to return
+earlier and I forgot to reenable interrupts and send the EOI in this case. The fix
+was to add these lines wherever the function returned.
+
 
 ######
 
