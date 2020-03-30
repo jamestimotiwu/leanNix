@@ -153,7 +153,8 @@ void keyboard_int(){
         //screen_y =0;
         term_clear();
         reset_cursor(0, 0); //reset cursor at the upper left corner
-        reset_kb_buf();   //reset keyboard buffer
+        // Dont do this, keyboard buffer shouldn't change after clearing screen
+        //reset_kb_buf();   //reset keyboard buffer
 
         send_eoi(KB_IRQ);  //send EOI signal when done handling 
         sti();
@@ -272,8 +273,7 @@ void reset_kb_buf(){
 
 void tab_func(){
 
-    term_putc('\t');
-
+    term_keyboardTab();
     /*
     int tab_space =3;  //add 3 spaces on the terminal screen / buffer
     int x;
@@ -315,7 +315,7 @@ void tab_func(){
  */
 void enter_func(){
 
-    term_putc('\n');
+    term_keyboardEnter();
 
     /*
     if(cur_buf_length >= KB_BUF_SIZE){
@@ -352,11 +352,13 @@ void enter_func(){
 
 void backsp_func(){
 
-    if (cur_buf_length == 0)
-        return; // if keyboard buffer is empty, don't do anything
+    term_keyboardBackspace();
+
+    //if (cur_buf_length == 0)
+     //   return; // if keyboard buffer is empty, don't do anything
 
     /* Descrease the buffer size */
-    cur_buf_length--;
+    //cur_buf_length--;
     // TODO: clear last character somehow?
 
 
@@ -380,10 +382,6 @@ void backsp_func(){
     */
 
 }
-
-
-
-
 
 
 
