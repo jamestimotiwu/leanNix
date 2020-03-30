@@ -134,11 +134,19 @@ void term_keyboardBackspace() {
         return;
 
 
-    // only handle backspace when on the same line
+    // remove last character from buffer
+    cur_buf_length--;
+    
+    // handle backspace on the same line
     if (screen_x >= 1) {
-        cur_buf_length--;
         screen_x--;
         term_setChar(' ');
+    } else if (screen_y >= 0) {
+        // handle the backspace on the line break
+        screen_x = NUM_COLS-1;
+        screen_y--;
+        term_setChar(' ');
+
     }
 }
 
@@ -174,6 +182,10 @@ void term_keyboardEnter() {
  *   SIDE EFFECTS: changes video memory
  */
 void term_putc(uint8_t c) {
+    /* If c is null or other unprintable character, don't print it */
+    if (c == NOT_PRINT || c == NULL_BYTE)
+        return;
+
     if(c == '\n' || c == '\r') {
         screen_y++;
         screen_x = 0;
@@ -196,7 +208,6 @@ void term_putc(uint8_t c) {
         *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
         *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
         screen_x++;
-        // screen_y = (screen_y + (screen_x / NUM_COLS)) % NUM_ROWS;
     }
 }
 
