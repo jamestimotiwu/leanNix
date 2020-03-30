@@ -1,5 +1,7 @@
 #include "rtc.h"
 
+volatile int rtc_int_flag;
+
 /* rtc_int
  *   DESCRIPTION: rtc interrupt handler test
  *   INPUTS: none

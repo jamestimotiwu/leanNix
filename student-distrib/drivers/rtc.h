@@ -25,7 +25,6 @@
 #define _512_HZ    0x07
 #define _1024_HZ   0x06
 
-volatile int rtc_int_flag;
 /* RTC interrupt handler */
 void rtc_int();
 /* RTC initializer */

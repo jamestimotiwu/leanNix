@@ -57,6 +57,6 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t *buf, uint32_t length
 int32_t fs_open(const uint8_t* file_name);
 int32_t fs_close(int32_t fd);
 int32_t fs_read(uint32_t fd, uint8_t *buf, uint32_t count);
-int32_t fs_write(int32_t fd);
+int32_t fs_write(int32_t fd, uint8_t *buf, uint32_t count);
 
 

@@ -3,6 +3,7 @@
  */
 
 #include "fs.h"
+#include "rtc.h"
 #include "../types.h"
 #include "../lib.h"
 
@@ -22,8 +23,10 @@ void init_fs(uint32_t boot_block_addr) {
 
 /* temporary global var - remove it once file descriptors are implemented */
 static int32_t inode_to_read = -1;
-static uint32_t read_offset = 0;
 static int type_to_read = -1;
+
+/* offset into the file being read */
+static uint32_t read_offset = 0;
 
 /* fs_open
  *   DESCRIPTION: Open file
@@ -42,6 +45,10 @@ int32_t fs_open(const uint8_t* file_name) {
 	read_offset = 0;
 	type_to_read = dentry.type;
 
+	if (type_to_read == FTYPE_RTC) {
+		rtc_open(file_name);
+	}
+
 	return 0;
 }
 
@@ -53,6 +60,16 @@ int32_t fs_open(const uint8_t* file_name) {
  */
 int32_t fs_close(int32_t fd) {
 	/* Close file given file descriptor */
+	if (inode_to_read != -1) {
+		/* fail because there is nothing to close */
+		return -1;
+	}
+	if (type_to_read == FTYPE_RTC) {
+		rtc_close(fd);
+	}
+	inode_to_read = -1;
+	type_to_read = -1;
+	read_offset = 0;
 	return 0;
 }
 
@@ -110,8 +127,8 @@ int32_t fs_read(uint32_t fd, uint8_t* buf, uint32_t count) {
 	}
 	else if (type_to_read == FTYPE_RTC) {
 
-		// TODO implement this
-		return -1;
+		return rtc_read(fd, buf, count);
+
 	}
 
 	cnt = read_data(inode_to_read, read_offset, buf, count);
@@ -127,14 +144,26 @@ int32_t fs_read(uint32_t fd, uint8_t* buf, uint32_t count) {
 }
 
 /* fs_write
- *   DESCRIPTION: doesn't write to file system because it is read-only
+ *   DESCRIPTION: tries to write to open file (only possible for RTC file)
  *   INPUTS: fd -- file descriptor
- *   OUTPUTS: -1
+ *           buf -- data
+ *           count -- length of the data
+ *   OUTPUTS: 0 if success, -1 if failure
  *   SIDE EFFECTS: none
  */
-int32_t fs_write(int32_t fd) {
-	/* this is a read-only file system; writing to it is an error */
-	return -1;
+int32_t fs_write(int32_t fd, uint8_t *buf, uint32_t count) {
+	if (inode_to_read == -1) {
+		/* file must have been opened */
+		return -1;
+	}
+	if (type_to_read == FTYPE_RTC) {
+
+		return rtc_write(fd, buf, count);
+
+	} else {
+		/* this is a read-only file system; writing to it is an error */
+		return -1;
+	}
 }
 
 /* read_dentry_by_name
@@ -186,14 +215,14 @@ int32_t read_dentry_by_index(uint32_t index, dir_entry_t* dentry) {
 	return 0;
 }
 
-/* read_dentry_by_name
- *   DESCRIPTION: fills the dir_entry with the name,
+/* read_data
+ *   DESCRIPTION: reads some amount of bytes from the file
  *   INPUTS: inode -- the inode
  *           offset -- offset into the file
  *           buf -- destination location of all the data
  *           length -- number of bytes to copy
  *   OUTPUTS: number of bytes copied to buf, or -1 if error
- *   SIDE EFFECTS: changes dentry
+ *   SIDE EFFECTS: changes read_offset, the buffer
  */
 int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length) {
 	uint32_t i, block_index;
