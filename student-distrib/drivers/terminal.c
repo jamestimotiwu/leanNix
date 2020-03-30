@@ -170,7 +170,6 @@ void term_keyboardEnter() {
     if (readWaiting) {
         readWaiting = 0;
         // don't change cur_buf_length because the read syscall will do that
-        return;
     } else {
         /* reset the buffer by setting its length to 0 */
         cur_buf_length = 0;
@@ -270,7 +269,6 @@ int32_t terminal_read(int32_t fd, void *buf, uint32_t count) {
     int i;
     readWaiting = 1;
 
-    // TODO: replace this with halt;jmp
     while (readWaiting) {
         // Do nothing; wait for this to exit (like spinlock)
     }
@@ -281,9 +279,11 @@ int32_t terminal_read(int32_t fd, void *buf, uint32_t count) {
         else
             break;
     }
-    if (i >= cur_buf_length-1)
+    if (i >= cur_buf_length) {
+        // the read includes the final newline
         // Reset the buffer
         cur_buf_length = 0;
+    }
 
     return i;
 
