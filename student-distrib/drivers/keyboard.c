@@ -166,7 +166,7 @@ void keyboard_int(){
 
     pressedChar = (uint8_t) get_char_map(temp_sc);  //else simply print char L to the screen
     if (pressedChar != NOT_PRINT && pressedChar != NULL_BYTE)
-        term_putc((uint8_t) pressedChar);
+        term_keyboardChar(pressedChar);
 
 
     send_eoi(KB_IRQ);  //send EOI signal when done handling 

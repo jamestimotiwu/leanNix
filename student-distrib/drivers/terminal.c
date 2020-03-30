@@ -8,6 +8,9 @@ static int screen_x;
 static int screen_y;
 static char* video_mem = (char *)VIDEO;
 
+/* used by the read system call */
+volatile static int readWaiting = 0;
+
 
 // reference used: https://wiki.osdev.org/Text_Mode_Cursor
 
@@ -27,6 +30,12 @@ void reset_cursor(int x, int y){
     outb((uint8_t) ((position >> 8) & 0xFF),0x3D5);
 }
 
+/* term_clear
+ *   DESCRIPTION: clears all video memory and cursor position
+ *   INPUT: none
+ *   OUTPUT: none
+ *   SIDE EFFECTS: video memory is lost
+ */
 void term_clear() {
     int32_t i;
 
@@ -41,6 +50,12 @@ void term_clear() {
     screen_y = 0;
 }
 
+/* term_test_int
+ *   DESCRIPTION: used to test RTC; scrambles video memory
+ *   INPUT: none
+ *   OUTPUT: none
+ *   SIDE EFFECTS: changes video mem
+ */
 void term_test_int() {
     int32_t i;
     for (i = 0; i < NUM_ROWS * NUM_COLS; i++) {
@@ -48,6 +63,12 @@ void term_test_int() {
     }
 }
 
+/* term_scroll
+ *   DESCRIPTION: scrolls the terminal down one line
+ *   INPUT: none
+ *   OUTPUT: none
+ *   SIDE EFFECTS: changes videm memory
+ */
 void term_scroll() {
     int x,y, to, from;
 
@@ -73,48 +94,81 @@ void term_scroll() {
     screen_y = NUM_ROWS-1;
 }
 
-void term_keyboardChar(uint8_t c) {
+/* term_keyboardChar
+ *   DESCRIPTION: prints a character and updates keyboard buffer
+ *   INPUT: c -- the character
+ *   OUTPUT: 1 if the buffer changes, otherwise 0
+ *   SIDE EFFECT: changes keyboard buffer and display
+ */
+int term_keyboardChar(uint8_t c) {
     /* similar to term_putc, but this also effects the buffer */
     if (cur_buf_length >= KB_BUF_SIZE-1){
         // leave space for a newline
-        return;
+        return 0;
     }
 
     kb_buf[cur_buf_length++] = c;
+    reset_cursor(screen_x, screen_y);
     term_putc(c);
+    return 1;
 }
 
 void term_keyboardTab() {
     /* print a tab character */
+    // calculate how many spaces left to print until next tabstop
+    int spaces = 4 - (screen_x % TAB_STOP);
+
+    while (spaces--)
+        term_keyboardChar(' ');
 }
 
+/* term_keyboardBackspace
+ *   DESCRIPTION: called when the backspace key is pressed
+ *   INPUT: none
+ *   OUTPUT: none
+ *   SIDE EFFECT: changes keyboard buffer and display
+ */
 void term_keyboardBackspace() {
-    // pass
+    // pass if buffer is empty
     if (cur_buf_length == 0)
         return;
 
-    cur_buf_length--;
 
+    // only handle backspace when on the same line
     if (screen_x >= 1) {
+        cur_buf_length--;
         screen_x--;
         term_setChar(' ');
     }
 }
 
-static int readWaiting = 0;
 
+/* term_keyboardEnter
+ *   DESCRIPTION: called when the enter key is pressed
+ *   INPUT: none
+ *   OUTPUT: none
+ *   SIDE EFFECT: changes keyboard buffer and display; read() syscall returns
+ */
 void term_keyboardEnter() {
     kb_buf[cur_buf_length++] = '\n';
     term_putc('\n');
 
     if (readWaiting) {
-
+        readWaiting = 0;
+        // don't change cur_buf_length because the read syscall will do that
+        return;
+    } else {
+        cur_buf_length = 0;
     }
-
-    reset_kb_buf();
 
 }
 
+/* term_putc
+ *   DESCRIPTION: prints a single character onto the terminal (not buffered)
+ *   INPUT: c -- the character to print
+ *   OUTPUT: none
+ *   SIDE EFFECTS: changes video memory
+ */
 void term_putc(uint8_t c) {
     if(c == '\n' || c == '\r') {
         screen_y++;
@@ -142,33 +196,86 @@ void term_putc(uint8_t c) {
     }
 }
 
+/* term_setChar
+ *   DESCRIPTION: writes a character to video mem at current cursor location
+ *   INPUT: c -- the character
+ *   OUTPUT: none
+ *   SIDE EFFECT: changes video memory
+ */
 void term_setChar(uint8_t c) {
     *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
     *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
 }
 
-/* term_open
+/* terminal_open
  *   DESCRIPTION: opens the terminal syscall
  *   INPUTS: fname -- filename for terminal driver
  *   OUTPUTS: 0 for success, else -1
  *   SIDE EFFECTS: none
  */
-int32_t term_open(const uint8_t *fname) {
+int32_t terminal_open(const uint8_t *fname) {
     return 0;
 }
 
-// TODO
-int32_t term_close(int32_t fd) {
+/* terminal_close
+ *   DESCRIPTION: close the terminal syscall
+ *   INPUTS: fd -- file descriptor for the terminal
+ *   OUTPUTS: 0 for success, else -1
+ *   SIDE EFFECTS: none
+ */
+int32_t terminal_close(int32_t fd) {
     return 0;
 }
 
-// TODO
-int32_t term_read(int32_t fd, void *buf, uint32_t count) {
-    return 0;
+
+/* terminal_read
+ *   DESCRIPTION: read the buffered input of the terminal
+ *   INPUTS: fd -- file descriptor for the terminal
+ *           buf -- destination for read data
+ *           count -- how many bytes of data to read
+ *   OUTPUTS: 0 for success, else -1
+ *   SIDE EFFECTS: none
+ */
+int32_t terminal_read(int32_t fd, void *buf, uint32_t count) {
+    int i;
+    readWaiting = 1;
+
+    // TODO: replace this with halt;jmp
+    while (readWaiting) {
+        // Do nothing; wait for this to exit (like spinlock)
+    }
+
+    for (i = 0; i < count; i++) {
+        if (i < cur_buf_length)
+            ((uint8_t *)buf)[i] = kb_buf[i];
+        else
+            break;
+    }
+    if (i >= cur_buf_length-1)
+        // Reset the buffer
+        cur_buf_length = 0;
+
+    return i;
+
 }
 
-int32_t term_write(int32_t fd, void *buf, uint32_t count) {
-    return 0;
+/* terminal_write
+ *   DESCRIPTION: write to the terminal
+ *   INPUTS: fd -- file descriptor for the terminal
+ *           buf -- buffer 
+ *           count -- how many bytes to write
+ *   OUTPUTS: 0 for success, else -1
+ *   SIDE EFFECTS: none
+ */
+int32_t terminal_write(int32_t fd, void *buf, uint32_t count) {
+    int i;
+    for (i = 0; i < count; i++) {
+
+        if (term_keyboardChar(((uint8_t *)buf)[i]) == 0)
+            /* no longer able to write to buffer, so exit */
+            break;
+    }
+    return i;
 }
 
 
