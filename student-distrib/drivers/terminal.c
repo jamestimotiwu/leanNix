@@ -82,9 +82,6 @@ void term_putc(uint8_t c) {
             term_scroll();
 
     } else {
-        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
-        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
-        screen_x++;
 
         if (screen_x >= NUM_COLS) {
             /* wrap around screen */
@@ -95,6 +92,10 @@ void term_putc(uint8_t c) {
             /* now y is off screen, so scroll down one line */
             term_scroll();            
         }
+        
+        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
+        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
+        screen_x++;
         // screen_y = (screen_y + (screen_x / NUM_COLS)) % NUM_ROWS;
     }
 }

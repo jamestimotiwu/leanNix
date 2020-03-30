@@ -85,11 +85,14 @@ void keyboard_int(){
     /* Keeps track if caps/shift/alt was pressed */
     int updateKeyStateFlag = 1;
 
+    /* Check for shift/caps/alt key press/release */
     if(temp_sc == CAPS_LOCK){
+        /* Swap the caps lock state */
         if (caps == Pressed)
             caps = Released;
         else
             caps= Pressed; 
+
     } else if(temp_sc == ALT_P) {
         alt = Pressed;
     } else if(temp_sc== ALT_R){
@@ -152,6 +155,8 @@ void keyboard_int(){
         reset_cursor(0, 0); //reset cursor at the upper left corner
         reset_kb_buf();   //reset keyboard buffer
 
+        send_eoi(KB_IRQ);  //send EOI signal when done handling 
+        sti();
         return;
 
     }
