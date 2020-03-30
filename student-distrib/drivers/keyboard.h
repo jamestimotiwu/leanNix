@@ -52,7 +52,7 @@ int32_t term_write(int32_t fd, void *buf, uint32_t count);
 
 extern void keyboard_int();
 extern void keyboard_init();
-char get_char_map(char sc); 
+char get_char_map(uint8_t sc); 
 void reset_kb_buf();
 void reset_cursor(int x, int y);
 void tab_func();

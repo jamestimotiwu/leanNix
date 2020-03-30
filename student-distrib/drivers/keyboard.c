@@ -22,19 +22,20 @@ volatile char kb_buf[KB_BUF_SIZE];
 #define STATUS_SHIFT    0x2
 
 // keyboard status 
-// 0 = caps_lock unpressed + shift unpressed
-// 1 = caps_lock pressed   + shift unpressed 
-// 2 = caps_lock unpreesed + shift pressed 
-// 3 = caps_lock pressed   + shift pressed 
+// 0 = caps_lock unpressed + shift unpressed (0x00)
+// 1 = caps_lock pressed   + shift unpressed (0x01)
+// 2 = caps_lock unpreesed + shift pressed   (0x10)
+// 3 = caps_lock pressed   + shift pressed   (0x11)
 volatile int key_stat = 0;
 
 
 
 #define KEY_STAT_SIZE 4
+#define MAX_KEY_RANGE 60
 
 /* Mapping for the keyboard codes */
 // Don't prrint anything on hitting a functional key such as shift,alt...etc
-char kb_map[KEY_STAT_SIZE][60] = {
+char kb_map[KEY_STAT_SIZE][MAX_KEY_RANGE] = {
 
     // caps_lock unpressed + shift unpressed 
     {NOT_PRINT, NOT_PRINT, '1', '2', '3', '4','5', '6', '7', '8', '9', '0', '-', '=', NOT_PRINT, NOT_PRINT,
@@ -75,24 +76,20 @@ void keyboard_int(){
     cli();
     
     /* Get the scancode */
-    unsigned char temp_sc; 
-    unsigned char sc = inb(KB_DATA);  //get keybaord input 
-
-    /* don't do this because, shift, caps etc. outside this range
-    if(sc < 1 || sc > 60) {
-        return;                  // check if the scancode read is within normal boundary between 1~60
-    }
-    */
-
+    uint8_t temp_sc; 
+    uint8_t sc = inb(KB_DATA);  //get keybaord input 
+    uint8_t pressedChar;
     //defines and handles the state of funtional keys 
-
     temp_sc = sc; 
 
     /* Keeps track if caps/shift/alt was pressed */
     int updateKeyStateFlag = 1;
 
     if(temp_sc == CAPS_LOCK){
-        caps= Pressed; 
+        if (caps == Pressed)
+            caps = Released;
+        else
+            caps= Pressed; 
     } else if(temp_sc == ALT_P) {
         alt = Pressed;
     } else if(temp_sc== ALT_R){
@@ -119,13 +116,15 @@ void keyboard_int(){
         /* Update key_stat, in case the key was shift/caps */
         key_stat = 0;
 
-        if (shiftR || shiftL)
+        if (shiftR == Pressed || shiftL == Pressed)
             key_stat |= STATUS_SHIFT;
 
-        if (caps)
+        if (caps == Pressed)
             key_stat |= STATUS_CAPSLOCK;
 
-        return; // exit from function execution
+        send_eoi(KB_IRQ);  //send EOI signal when done handling 
+        sti();
+        return; // exit from function execution (nothing left to print/do)
     }
 
 
@@ -159,8 +158,9 @@ void keyboard_int(){
 
 
 
-    char pressedChar = get_char_map(temp_sc);  //else simply print char L to the screen
-    term_putc(pressedChar);
+    pressedChar = (uint8_t) get_char_map(temp_sc);  //else simply print char L to the screen
+    if (pressedChar != NOT_PRINT && pressedChar != NULL_BYTE)
+        term_putc((uint8_t) pressedChar);
 
 
     send_eoi(KB_IRQ);  //send EOI signal when done handling 
@@ -190,11 +190,14 @@ void keyboard_init(){
  *   OUTPUT: the ascii character code to be printed
  *   SIDE EFFECTS: outputs character to the screen/ update the keyboard buffer 
  */
-char get_char_map(char sc){
+char get_char_map(uint8_t sc){
 
-    char out = kb_map[key_stat][(uint8_t) sc];
+    /* If it isn't within range, then don't print it */
+    if (sc >= MAX_KEY_RANGE)
+        return NOT_PRINT;
 
-    return out;
+    return kb_map[key_stat][sc];
+
 
     /*
     if(out == NOT_PRINT || out == NULL_BYTE){
