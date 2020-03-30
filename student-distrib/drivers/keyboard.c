@@ -146,32 +146,22 @@ void keyboard_int(){
     else if(temp_sc == CHAR_L && ctrl == Pressed){
 
         /* Ctrl-L pressed: clear the screen */
-        // TODO: and the buffer????
-
-        //clear();   //if ctrl+L is pressed, clear screen(video mem)
-        //screen_x =0;
-        //screen_y =0;
         term_clear();
-        reset_cursor(0, 0); //reset cursor at the upper left corner
-        // Dont do this, keyboard buffer shouldn't change after clearing screen
-        //reset_kb_buf();   //reset keyboard buffer
+        // but don't reset the buffer
 
         send_eoi(KB_IRQ);  //send EOI signal when done handling 
         sti();
         return;
-
     }
 
-
-
     pressedChar = (uint8_t) get_char_map(temp_sc);  //else simply print char L to the screen
+    /* check to make sure the character is printable */
     if (pressedChar != NOT_PRINT && pressedChar != NULL_BYTE)
         term_keyboardChar(pressedChar);
 
 
     send_eoi(KB_IRQ);  //send EOI signal when done handling 
     sti();
-
 }
 
 
@@ -191,7 +181,7 @@ void keyboard_init(){
 
 
 /* void get_char_map(char sc)
- *   DESCRIPTION: get char from the kb_map and outputs on to the screen.
+ *   DESCRIPTION: get char from the kb_map
  *   INPUT: sc --  scancode from keyboard
  *   OUTPUT: the ascii character code to be printed
  *   SIDE EFFECTS: outputs character to the screen/ update the keyboard buffer 
@@ -202,42 +192,8 @@ char get_char_map(uint8_t sc){
     if (sc >= MAX_KEY_RANGE)
         return NOT_PRINT;
 
+    /* otherwise, use lookup table to find correct character */
     return kb_map[key_stat][sc];
-
-
-    /*
-    if(out == NOT_PRINT || out == NULL_BYTE){
-        return NOT_PRINT;          //do not print null bytes
-    }
-    */
-
-    /* NOT PRITING ANYMORE
-    if(cur_buf_length >= KB_BUF_SIZE-1){
-        //buffer size = 128 = 127 + new line char
-        //(new line is always added at the end of the buffer before return)
-
-        return;             //if buffer fills up, return 
-    }
-    */
-
-
-    //if cur_buf_length is less than max buffer size, add character to the keyboard buffer
-    //kb_buf[cur_buf_length++] = out;  
-
-
-
-    /*
-     * if((screen_x==NUM_COLS-1) && (screen_y==NUM_ROWS-1)){
-        scroll_screen();   // if current position is at the end of screen (bottom right corner), scroll screen
-        putc(out); 
-        reset_cursor(screen_x, screen_y); 
-    }
-    else{
-
-        putc(out); 
-
-    }
-    */
 
 }
 
@@ -259,6 +215,7 @@ void reset_kb_buf(){
 
     }
 
+    // mark the buffer as empty
     cur_buf_length =0;  
 
 
@@ -268,79 +225,24 @@ void reset_kb_buf(){
 /* void tab_func()
  *   DESCRIPTION: function for the tab when it's pressed 
  *   INPUT/OUTPUT: None
- *   SIDE EFFECTS: fuction for the tab when it's pressed 
+ *   SIDE EFFECTS: changes video mem
  */
 
 void tab_func(){
 
+    /* this function calculates correct num of spaces to print */
     term_keyboardTab();
-    /*
-    int tab_space =3;  //add 3 spaces on the terminal screen / buffer
-    int x;
-    char space = char_space; // ' '
-
-    if(cur_buf_length >= KB_BUF_SIZE){
-
-
-        return;      //return if current buffer size is larger thant max buf size
-    }
-
-
-    for(x=0 ; x< tab_space; x++){  
-        kb_buf[cur_buf_length++] = space;  // fill keyboard buffer with space  
-
-
-
-        video_mem[screen_y * NUM_COLS + screen_x] = space; //fill in spaces
-        video_mem[screen_y * NUM_COLS + screen_x] = ATTRIB; //color black
-        screen_x++;
-        if((screen_x==NUM_COLS-1) && (screen_y==NUM_ROWS-1)){
-            scroll_screen();   //if current position is at the end of screen (bottom right corner), scroll screen
-        }
-        reset_cursor(screen_x, screen_y);  //update the cursor position on the screen 
-
-
-    }
-    */
-
-
-
 }
 
 
 /* void enter_func()
  *   DESCRIPTION: function for the enter when it's pressed 
  *   INPUT/OUTPUT: None
- *   SIDE EFFECTS: fuction for the enter when it's pressed 
+ *   SIDE EFFECTS: changes video mem
  */
 void enter_func(){
 
     term_keyboardEnter();
-
-    /*
-    if(cur_buf_length >= KB_BUF_SIZE){
-        return;         //check if current buffer length is greater than the max buf size 
-    }
-
-
-
-    screen_x = 0;   // x position always becomes 0 (start of the row) on the screen
-
-
-    if(screen_y == NUM_ROWS -1){
-        scroll_screen();          // if current y position is at the last line of screen, scroll screen
-        reset_cursur(screen_x, screen_y); // update the cursur position (screen_x =0, screen_y = last line) 
-
-    }
-    else{ 
-        screen_y++;  // increment y position of the screen by 1
-
-        reset_cursur(screen_x, screen_y); //update cursur to new position
-
-    }
-
-    kb_buf[cur_buf_length++] = NEW_LINE; //always add newline char at the end of buffer
-    */
 }
 
 /* void backsp_func()
@@ -349,37 +251,9 @@ void enter_func(){
  *   OUTPUTS: none
  *   SIDE EFFECTS: function that handles the backspace from keyboard 
  */
-
 void backsp_func(){
 
     term_keyboardBackspace();
-
-    //if (cur_buf_length == 0)
-     //   return; // if keyboard buffer is empty, don't do anything
-
-    /* Descrease the buffer size */
-    //cur_buf_length--;
-    // TODO: clear last character somehow?
-
-
-    /*
-    if(((screen_x==0) && (screen_y==0)) || (cur_buf_length==0)){
-
-
-        return;     // if the current position left top corner or keyboard buffer is empty, return
-    }
-
-    else{
-
-        screen_x--;  //decrement x position by 1
-        video_mem[screen_y * NUM_COLS + screen_x] = NULL_BYTE; //erase char from screen
-
-    }
-
-    cur_buf_length--;   // decrement keyboard buffer length by 1
-    kb_buf[cur_buf_length] = NULL_BYTE;  //update buffer with null byte for deleted char
-    reset_cursor(screen_x, screen_y);  // update the cursor position
-    */
 
 }
 
