@@ -477,11 +477,11 @@ void launch_tests() {
     //TEST_OUTPUT("test_terminal_scrolling", test_terminal_scrolling());
     TEST_OUTPUT("test_terminal_write", test_terminal_write());
     TEST_OUTPUT("test_terminal_read", test_terminal_read());
+    TEST_OUTPUT("test_fs_read", test_fs_read("frame1.txt"));
     //TEST_OUTPUT("rtc_fs_test", rtc_fs_test(2, 20));
     TEST_OUTPUT("rtc_fs_test", rtc_fs_test(4, 20));
     TEST_OUTPUT("rtc_fs_test", rtc_fs_test(8, 20));
     TEST_OUTPUT("rtc_fs_test", rtc_fs_test(1024, NUM_COLS-1));
-    TEST_OUTPUT("test_fs_read", test_fs_read("frame1.txt"));
 
 
 }

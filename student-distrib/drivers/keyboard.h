@@ -45,11 +45,7 @@
 extern volatile int cur_buf_length;
 extern volatile char kb_buf[KB_BUF_SIZE];
 
-int32_t term_open(const uint8_t *fname);
-int32_t term_close(int32_t fd);
-int32_t term_read(int32_t fd, void *buf, uint32_t count);
-int32_t term_write(int32_t fd, void *buf, uint32_t count);
-
+/* keyboard functions */
 extern void keyboard_int();
 extern void keyboard_init();
 char get_char_map(uint8_t sc); 

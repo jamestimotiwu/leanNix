@@ -114,6 +114,12 @@ int term_keyboardChar(uint8_t c) {
     return 1;
 }
 
+/* term_keyboardTab
+ *   DESCRIPTION: prints a tab character
+ *   INPUT: none
+ *   OUTPUT: none
+ *   SIDE EFFECT: prints 1-4 space characters
+ */
 void term_keyboardTab() {
     /* print a tab character */
     // calculate how many spaces left to print until next tabstop
@@ -198,15 +204,6 @@ void term_putc(uint8_t c) {
 
     } else {
 
-        /* Moved this to happen after printing -- this scrolls one char too early
-        if (screen_x >= NUM_COLS) {
-            screen_y++;
-            screen_x = 0;
-        }
-        if (screen_y >= NUM_ROWS) {
-            term_scroll();            
-        } */
-        
         *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
         *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
         screen_x++;

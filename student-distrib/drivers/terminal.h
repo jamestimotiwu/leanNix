@@ -10,6 +10,7 @@
 
 #define TAB_STOP 4
 
+/* basic terminal functionality */
 void term_clear();
 void term_putc(uint8_t c);
 void term_test_int();

@@ -37,7 +37,13 @@ void rtc_init() {
 	enable_irq(RTC_IRQ);
 	enable_irq(SLAVE_IRQ);
 }
-/* Sets frequency to desired hertz */
+
+/* rtc_set_freq
+ *   DESCRIPTION Sets frequency to desired hertz
+ *   INPUTS: freq -- the desired frequency
+ *   OUTPUTS: -1 if error, 0 for success
+ *   SIDE EFFECTS: changes RTC freq
+ */
 int rtc_set_freq(int freq){
 	char new_rate;
 
@@ -86,16 +92,33 @@ int rtc_set_freq(int freq){
 	sti();
 	return 1;
 }
-/* Initialize RTC frequency to 2hz */
+
+/* rtc_open
+ *   DESCRIPTION: Initialize RTC frequency to 2hz
+ *   INPUT: filename -- not currently used
+ *   OUTPUT: 0 for success
+ *   SIDE EFFECT: changes RTC frequency
+ */
 int rtc_open(const uint8_t* filename){
 	rtc_set_freq(2);
 	return 0;
 }
-/* Does nothing unless RTC is virtualized */
+
+/* rtc_close
+ *   DESCRIPTION: Does nothing unless RTC is virtualized
+ *   INPUTS: fd -- not yet used
+ *   OUTPUTS: 0 for success
+ */
 int rtc_close(int32_t fd){
 	return 0;
 }
-/* Blocks until next interrupt */
+
+/* rtc_read
+ *   DESCRIPTION: Blocks until next interrupt
+ *   INPUTS: fd, buf, nbytes -- required for read syscall, but not used
+ *   OUTPUTS: 0 for success
+ *   SIDE EFFECTS: blocks execution
+ */
 int rtc_read(int32_t fd, void* buf, int32_t nbytes){
 	rtc_int_flag = 0;
 	while(rtc_int_flag == 0){
@@ -104,7 +127,14 @@ int rtc_read(int32_t fd, void* buf, int32_t nbytes){
 	rtc_int_flag = 0;
 	return 0;
 }
-/* Changes frequency */
+
+/* rtc_write
+ *   DESCRIPTION: Changes frequency
+ *   INPUTS: fd -- not used
+ *           buf -- buffer containing the 4 byte int
+ *           nbytes -- size of buffer (should be 4)
+ *   OUTPUTS: number of bytes written, or -1 if failure
+ */
 int rtc_write(int32_t fd, const void* buf, int32_t nbytes){
 	uint32_t newRate = *((int*)buf);
 	int result = rtc_set_freq(newRate);
