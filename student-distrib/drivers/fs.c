@@ -59,18 +59,20 @@ int32_t fs_open(const uint8_t* file_name) {
  *   SIDE EFFECTS:
  */
 int32_t fs_close(int32_t fd) {
+	int retValue = 0;
 	/* Close file given file descriptor */
-	if (inode_to_read != -1) {
+	if (inode_to_read == -1) {
 		/* fail because there is nothing to close */
 		return -1;
 	}
+	/* must call RTC close if the filetype is RTC */
 	if (type_to_read == FTYPE_RTC) {
-		rtc_close(fd);
+		retValue = rtc_close(fd);
 	}
 	inode_to_read = -1;
 	type_to_read = -1;
 	read_offset = 0;
-	return 0;
+	return retValue;
 }
 
 

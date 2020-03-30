@@ -226,13 +226,15 @@ int rtc_open_test() {
  * Like RTC rtc read test, but using file system functions
  * Instructions: set init frequency to something like 1024 and compare difference to test
  * Inputs: freq -- the frequency to set RTC at
+ *         count -- number of characters to print
  * Outputs: PASS/FAIL
  * Side Effects: None
  * Coverage: RTC virtualization in fs
  */
-int rtc_fs_test(int freq) {
+int rtc_fs_test(int freq, int count) {
     TEST_HEADER;
     int result = PASS;
+    int i;
 
     if (fs_open((uint8_t *) "rtc") == -1)
         return FAIL;
@@ -240,13 +242,22 @@ int rtc_fs_test(int freq) {
     uint8_t buf[3];
 
     fs_write(0, (void *)&freq, 4);
-    
-    if (fs_read(0, buf, 2) == -1) {
-        result = FAIL;
-    }
-    fs_close(0);
 
-    return result;
+    printf("freq=%d:\n", freq);
+    
+    for (i = 0; i < count; i++) {
+        if (fs_read(0, buf, 2) == -1) {
+            result = FAIL;
+        }
+        /* Print single character every RTC int */
+        printf("1");
+    }
+    printf("\n");
+
+    if (fs_close(0) == -1)
+        return FAIL;
+
+    return PASS;
 }
 
 /* Test open file in file system
@@ -460,13 +471,16 @@ void launch_tests() {
     //TEST_OUTPUT("test_fs_open_bad_file", test_fs_open_bad_file());
     //TEST_OUTPUT("test_dir_path_dne", test_dir_path_dne());
     //TEST_OUTPUT("test_fs_read", test_fs_read("grep"));
-    //TEST_OUTPUT("test_ls_dir", test_ls_dir());
+    TEST_OUTPUT("test_ls_dir", test_ls_dir());
     //TEST_OUTPUT("test_fs_read", test_fs_read("verylargetextwithverylongname.tx"));
 
     //TEST_OUTPUT("test_terminal_scrolling", test_terminal_scrolling());
     TEST_OUTPUT("test_terminal_write", test_terminal_write());
     TEST_OUTPUT("test_terminal_read", test_terminal_read());
-    TEST_OUTPUT("rtc_fs_test", rtc_fs_test(2));
+    //TEST_OUTPUT("rtc_fs_test", rtc_fs_test(2, 20));
+    TEST_OUTPUT("rtc_fs_test", rtc_fs_test(4, 20));
+    TEST_OUTPUT("rtc_fs_test", rtc_fs_test(8, 20));
+    TEST_OUTPUT("rtc_fs_test", rtc_fs_test(1024, NUM_COLS-1));
     TEST_OUTPUT("test_fs_read", test_fs_read("frame1.txt"));
 
 }
