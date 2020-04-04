@@ -236,17 +236,17 @@ int rtc_fs_test(int freq, int count) {
     int result = PASS;
     int i;
 
-    if (fs_open((uint8_t *) "rtc") == -1)
+    if (rtc_open((uint8_t *) "rtc") == -1)
         return FAIL;
 
     uint8_t buf[3];
 
-    fs_write(0, (void *)&freq, 4);
+    rtc_write(0, (void *)&freq, 4);
 
     printf("freq=%d:\n", freq);
     
     for (i = 0; i < count; i++) {
-        if (fs_read(0, buf, 2) == -1) {
+        if (rtc_read(0, buf, 2) == -1) {
             result = FAIL;
         }
         /* Print single character every RTC int */
@@ -254,7 +254,7 @@ int rtc_fs_test(int freq, int count) {
     }
     printf("\n");
 
-    if (fs_close(0) == -1)
+    if (rtc_close(0) == -1)
         return FAIL;
 
     return PASS;
@@ -363,7 +363,7 @@ int test_ls_dir() {
     if (fs_open((const uint8_t*)".") == -1)
         return FAIL;
 
-    while (0 != (cnt = fs_read(0, buf, LS_BUFSIZE))) {
+    while (0 != (cnt = directory_read(0, buf, LS_BUFSIZE))) {
         if (-1 == cnt) {
             return FAIL;
         }
@@ -373,40 +373,14 @@ int test_ls_dir() {
         /* print out newline */
         putc('\n');
     }
-    fs_close(0);
-
-    return PASS;
-}
-
-/* test_terminal_scrolling
- *
- * Check that terminal driver will scroll screen
- * Inputs: None
- * Outputs: PASS/FAIL
- * Side Effects: prints to screen
- * Coverage: terminal driver
- */
-int test_terminal_scrolling() {
-    TEST_HEADER;
-
-    int i;
-    /* test screen scrolling */
-    for (i = 100; i < 105; i++) {
-        printf("%d\n", i);
-    }
-
-    /* also test wrap around */
-    for (i = 0; i < NUM_COLS*1.5; i++) {
-        printf("%d", i%10);
-    }
-    printf("\n");
+    directory_close(0);
 
     return PASS;
 }
 
 /* test_terminal_read
  *
- * Check that terminal driver read function works
+ * Check that terminal driver read and write function works
  * Inputs: None
  * Outputs: PASS/FAIL
  * Side Effects: prints to screen
@@ -415,32 +389,14 @@ int test_terminal_scrolling() {
 int test_terminal_read() {
     TEST_HEADER;
 
-    uint8_t buf[KB_BUF_SIZE+1];
-    printf("Enter a string: ");
-    int i = terminal_read(0, buf, KB_BUF_SIZE);
-    buf[i] = '\0';
-    printf("you entered: %s", buf);
+    uint8_t buf[KB_BUF_SIZE];
+    while (1) {
+        printf("Enter a string: ");
+        int i = terminal_read(0, buf, KB_BUF_SIZE);
+        terminal_write(0, buf, i);
+    }
 
     return PASS;
-}
-
-/* test_terminal_write
- *
- * Check that terminal driver write function works
- * Inputs: None
- * Outputs: PASS/FAIL
- * Side Effects: prints to screen
- * Coverage: terminal driver write
- */
-int test_terminal_write() {
-    TEST_HEADER;
-
-    char str[] = "Hello, world!\n";
-    printf("terminal write test: ");
-    terminal_write(0, str, sizeof(str));
-
-    return PASS;
-
 }
 
 /* Checkpoint 3 tests */
@@ -474,14 +430,13 @@ void launch_tests() {
     TEST_OUTPUT("test_ls_dir", test_ls_dir());
     //TEST_OUTPUT("test_fs_read", test_fs_read("verylargetextwithverylongname.tx"));
 
-    //TEST_OUTPUT("test_terminal_scrolling", test_terminal_scrolling());
-    TEST_OUTPUT("test_terminal_write", test_terminal_write());
-    TEST_OUTPUT("test_terminal_read", test_terminal_read());
-    TEST_OUTPUT("test_fs_read", test_fs_read("frame1.txt"));
+    //TEST_OUTPUT("test_fs_read", test_fs_read("frame1.txt"));
     //TEST_OUTPUT("rtc_fs_test", rtc_fs_test(2, 20));
     TEST_OUTPUT("rtc_fs_test", rtc_fs_test(4, 20));
     TEST_OUTPUT("rtc_fs_test", rtc_fs_test(8, 20));
     TEST_OUTPUT("rtc_fs_test", rtc_fs_test(1024, NUM_COLS-1));
+
+    TEST_OUTPUT("test_terminal_read", test_terminal_read());
 
 
 }

@@ -53,10 +53,15 @@ int32_t read_dentry_by_name(const uint8_t *fname, dir_entry_t *dentry);
 int32_t read_dentry_by_index(uint32_t index, dir_entry_t *dentry);
 int32_t read_data(uint32_t inode, uint32_t offset, uint8_t *buf, uint32_t length);
 
-/* used by system calls */
+/* regular file system calls */
 int32_t fs_open(const uint8_t* file_name);
-int32_t fs_close(int32_t fd);
+int32_t fs_close(uint32_t fd);
 int32_t fs_read(uint32_t fd, uint8_t *buf, uint32_t count);
-int32_t fs_write(int32_t fd, uint8_t *buf, uint32_t count);
+int32_t fs_write(uint32_t fd, uint8_t *buf, uint32_t count);
 
+/* directory file system calls */
+int32_t directory_open(const uint8_t* file_name);
+int32_t directory_close(uint32_t fd);
+int32_t directory_read(uint32_t fd, uint8_t *buf, uint32_t count);
+int32_t directory_write(uint32_t fd, uint8_t *buf, uint32_t count);
 

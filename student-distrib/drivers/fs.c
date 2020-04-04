@@ -45,10 +45,6 @@ int32_t fs_open(const uint8_t* file_name) {
 	read_offset = 0;
 	type_to_read = dentry.type;
 
-	if (type_to_read == FTYPE_RTC) {
-		rtc_open(file_name);
-	}
-
 	return 0;
 }
 
@@ -58,23 +54,61 @@ int32_t fs_open(const uint8_t* file_name) {
  *   OUTPUTS: 0 if success, -1 if fail
  *   SIDE EFFECTS:
  */
-int32_t fs_close(int32_t fd) {
-	int retValue = 0;
+int32_t fs_close(uint32_t fd) {
 	/* Close file given file descriptor */
 	if (inode_to_read == -1) {
 		/* fail because there is nothing to close */
 		return -1;
 	}
-	/* must call RTC close if the filetype is RTC */
-	if (type_to_read == FTYPE_RTC) {
-		retValue = rtc_close(fd);
-	}
+
 	inode_to_read = -1;
 	type_to_read = -1;
 	read_offset = 0;
-	return retValue;
+	return 0;
 }
 
+
+/* fs_read
+ *   DESCRIPTION: reads <count> bytes of data from file into <buf>
+ *   INPUTS: fd -- file descriptor
+ *           count -- number of bytes to copy
+ *           buf -- the destination buffer for the data
+ *   OUTPUTS: number of bytes copied, or -1 if error
+ *   SIDE EFFECTS: changes buf input
+ */
+int32_t fs_read(uint32_t fd, uint8_t* buf, uint32_t count) {
+	int cnt;
+
+	if (inode_to_read == -1 || buf == NULL) {
+		/* inode must be initialized with open & buf can't be null*/
+		return -1;
+	}
+
+
+	cnt = read_data(inode_to_read, read_offset, buf, count);
+
+	/* Check if read caused error, eg. maybe a bad inode number */
+	if (cnt == -1)
+		return -1;
+
+	/* Next time file is read, start at the next position to be copied */
+	read_offset += cnt;
+
+	return cnt;
+}
+
+/* fs_write
+ *   DESCRIPTION: tries to write to open file (only possible for RTC file)
+ *   INPUTS: fd -- file descriptor
+ *           buf -- data
+ *           count -- length of the data
+ *   OUTPUTS: 0 if success, -1 if failure
+ *   SIDE EFFECTS: none
+ */
+int32_t fs_write(uint32_t fd, uint8_t *buf, uint32_t count) {
+	/* this is a read-only file system; writing to it is an error */
+	return -1;
+}
 
 /* read_dir_file
  *   DESCRIPTION: reads <count> bytes of file names from boot block
@@ -103,70 +137,72 @@ int32_t read_dir_file(uint32_t offset, uint8_t* buf, uint32_t count) {
 	return i;
 }
 
-/* fs_read
- *   DESCRIPTION: reads <count> bytes of data from file into <buf>
+/* directory_read
+ *   DESCRIPTION: reads <count> bytes of data from directory file
  *   INPUTS: fd -- file descriptor
  *           count -- number of bytes to copy
  *           buf -- the destination buffer for the data
  *   OUTPUTS: number of bytes copied, or -1 if error
  *   SIDE EFFECTS: changes buf input
  */
-int32_t fs_read(uint32_t fd, uint8_t* buf, uint32_t count) {
+int32_t directory_read(uint32_t fd, uint8_t* buf, uint32_t count) {
 	int cnt;
 
-	if (inode_to_read == -1) {
-		/* inode must be initialized with open */
+	if (inode_to_read == -1 || buf == NULL || type_to_read != FTYPE_DIR) {
+		/* inode must be initialized with open & buf can't be null */
 		return -1;
 	}
 
-	if (type_to_read == FTYPE_DIR) {
-		// inode_to_read is meaningless in this case
-
-		int cnt = read_dir_file(read_offset, buf, count);
-		read_offset += cnt;
-		return cnt;
-
-	}
-	else if (type_to_read == FTYPE_RTC) {
-
-		return rtc_read(fd, buf, count);
-
-	}
-
-	cnt = read_data(inode_to_read, read_offset, buf, count);
-
-	/* Check if read caused error, eg. maybe a bad inode number */
-	if (cnt == -1)
-		return -1;
-
-	/* Next time file is read, start at the next position to be copied */
+	cnt = read_dir_file(read_offset, buf, count);
 	read_offset += cnt;
-
 	return cnt;
 }
 
-/* fs_write
- *   DESCRIPTION: tries to write to open file (only possible for RTC file)
+/* directory_write
+ *   DESCRIPTION: write <count> bytes of data into directory file
  *   INPUTS: fd -- file descriptor
- *           buf -- data
- *           count -- length of the data
- *   OUTPUTS: 0 if success, -1 if failure
+ *           count -- number of bytes to copy
+ *           buf -- input buffer for the data
+ *   OUTPUTS: number of bytes copied, or -1 if error
  *   SIDE EFFECTS: none
  */
-int32_t fs_write(int32_t fd, uint8_t *buf, uint32_t count) {
-	if (inode_to_read == -1) {
-		/* file must have been opened */
-		return -1;
-	}
-	if (type_to_read == FTYPE_RTC) {
-
-		return rtc_write(fd, buf, count);
-
-	} else {
-		/* this is a read-only file system; writing to it is an error */
-		return -1;
-	}
+int32_t directory_write(uint32_t fd, uint8_t* buf, uint32_t count) {
+	return -1;
 }
+
+/* directory_open
+ *   DESCRIPTION: Open file
+ *   INPUTS: fname -- file name
+ *   OUTPUTS: none
+ *   SIDE EFFECTS: changes global var
+ */
+int32_t directory_open(const uint8_t* file_name) {
+	dir_entry_t dentry;
+
+	/* set dentry and make sure it is valid */
+	if (read_dentry_by_name((uint8_t*)file_name, &dentry) != 0)
+		return -1;
+
+	inode_to_read = dentry.inode_num;
+	read_offset = 0;
+	type_to_read = dentry.type;
+
+	return 0;
+}
+
+/* directory_close
+ *   DESCRIPTION: close the directory file
+ *   INPUTS: fd -- file descriptor
+ *   OUTPUTS: 0 for success, -1 for error
+ *   SIDE EFFECTS: none
+ */
+int32_t directory_close(uint32_t fd) {
+	inode_to_read = -1;
+	read_offset = 0;
+	type_to_read = -1;
+	return 0;
+}
+
 
 /* read_dentry_by_name
  *   DESCRIPTION: fills the dir_entry based on the string file name
