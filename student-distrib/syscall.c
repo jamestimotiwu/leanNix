@@ -10,10 +10,12 @@ void syscall_int() {
 }
 
 int32_t syscall_halt(uint8_t status) {
+    printf("halt: %d\n", status);
     return 0;
 }
 
 int32_t syscall_execute(uint8_t *command) {
+    printf("execute: %s\n", command);
     return 0;
 }
 
@@ -24,21 +26,23 @@ int32_t syscall_execute(uint8_t *command) {
  *   SIDE EFFECTS: creates open file descriptor
  */
 int32_t syscall_open(const uint8_t* file_name) {
-    printf("syscall_open\n");
+    printf("open: %s\n", file_name);
     return 0;
 }
 
 int32_t syscall_close(uint32_t fd) {
-    printf("syscall_close\n");
+    printf("close: %d\n", fd);
     return 0;
 }
 
 int32_t syscall_read(uint32_t fd, uint8_t *buf, uint32_t count) {
-    printf("syscall_read\n");
+    printf("read: %d, %d\n", fd, count);
     return 0;
 }
 
 int32_t syscall_write(uint32_t fd, uint8_t *buf, uint32_t count) {
-    printf("syscall_write\n");
+    printf("write: %d, %d\n", fd, count);
     return 0;
 }
+
+

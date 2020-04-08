@@ -381,11 +381,12 @@ int syscall_test() {
 
     //int sysnum = SYS_READ;
     asm volatile ("\n\
-        movl $0, %%eax \n\
+        movl $6, %%eax \n\
+        movl $3, %%ebx \n\
         int $0x80"
         :
         :
-        : "eax");
+        : "eax", "ebx");
 
     return result;
 }
