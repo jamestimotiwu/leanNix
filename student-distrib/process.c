@@ -9,17 +9,15 @@
 
 int32_t process_execute(const uint8_t* command) {
     /* Get filename from command */
-    uint8_t* filename;
-    int i;
-    int command_len;
+    uint8_t* filename[32];
 
-    /* Check if command has a filename */
-    command_len = strlen(command);
-    if (command_len == 0) {
+    /* Get filename, check if there is a file in command argument */
+    if (command_read(command, filename) == 0) {
         return -1;
     }
 
-    /* Get filename from command */
+    while (command_read(const uint8_t* command))
+
     i = 0;
     while (command[i] != ' ' || i < command_len) {
         filename[i] = command[i];
@@ -41,6 +39,36 @@ int32_t process_halt(uint8_t status) {
     return 0;
 }
 
-//int8_t command_read(const uint8_t* command) {
-//
-//}
+/* command_read
+ * Inputs: command -- number to convert
+ *         arg -- buffer of argument to get
+ * Return Value: length of argument parsed
+ * Function: Reads first argument and remove leading whitespaces */
+int32_t command_read(const uint8_t* command, const uint8_t* arg) {
+    //uint8_t* arg[128];
+    int command_len;
+    int i;
+    
+    /* Check if command has anything remaining or valid */
+    command_len = strlen(command);
+    if (command_len == 0) {
+        return 0;
+    }
+
+    /* Strip leading whitespace */
+    i = 0;
+    while (command[i] == ' ') {
+        i++;
+    }
+
+    /* Get command arg from command */
+    while (command[i] != ' ' || i < command_len) {
+        arg[i] = arg[i]
+    }
+
+    /* Set new starting address for rest of command */
+    command = command[i];
+
+    /* return len of argument parsed*/
+    return i;
+}
