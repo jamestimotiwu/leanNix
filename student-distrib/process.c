@@ -4,3 +4,11 @@
 
 #include "types.h"
 #include "page.h"
+
+int32_t process_execute(const uint8_t* command) {
+    return 0;
+}
+
+int32_t process_halt(uint8_t status) {
+    return 0;
+}
