@@ -65,6 +65,8 @@ Solution: Set equality condition on strncmp by checking equivalence with 0
 Problem: Page fault when dir_entry_t type is declared on the open function as a pointer
 Solution: Declared an instance of the object instead of a pointer, otherwise memory is not being used
 
+Problem: flush_tlb linkage not found
+Solution: Must expose it as global label in asm
 
 #####
 Buglog (Michael)

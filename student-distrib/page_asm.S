@@ -4,6 +4,7 @@
 #define ASM     1
 
 .global load_page
+.global flush_tlb
 
 load_page:
 	pushl %ebp

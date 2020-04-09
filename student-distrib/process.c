@@ -3,14 +3,16 @@
  */
 
 #include "types.h"
+#include "drivers/fs.h"
 #include "page.h"
 
 int32_t process_execute(const uint8_t* command) {
     /* Deconstr command arg */
     /* Check exec magic headers */
 
-    /* Set up pages */
-    /* Flush tlb */
+    uint32_t proc_num = 0;
+    /* Set up pages and flush tlb */
+    page_map_user(proc_num);
 
     return 0;
 }
