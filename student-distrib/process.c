@@ -6,6 +6,12 @@
 #include "page.h"
 
 int32_t process_execute(const uint8_t* command) {
+    /* Deconstr command arg */
+    /* Check exec magic headers */
+
+    /* Set up pages */
+    /* Flush tlb */
+
     return 0;
 }
 
