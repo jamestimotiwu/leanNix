@@ -8,3 +8,14 @@
 void syscall_int() {
     printf("SYSTEM CALL!\n");
 }
+
+PCB_t* get_PCB(){
+  PCB_t* position;
+  /* AND ESP with mask*/
+  asm volatile(
+    "andl %%esp, %%eax"
+    :"=a"(position) /* output */
+    :"a"(PCB_MASK)  /* input */
+  );
+  return position;
+}
