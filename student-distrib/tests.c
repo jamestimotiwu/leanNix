@@ -386,7 +386,7 @@ int test_syscall_wrapper(){
     TEST_HEADER; 
 
     int result;
-    result = system_halt(3);
+    result = system_execute("shell");
     
     if(result==0)  // if result in eax after syscall is 0, passed the test
         return PASS; 

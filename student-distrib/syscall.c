@@ -2,23 +2,43 @@
 #include "syscall.h"
 
 
-/* system call halt */
+/* execute
+ *   DESCRIPTION: syscall that halts and returns execution to parent process
+ *   INPUTS: status -- status of the halt
+ *   OUTPUTS: none, because it doesn't return
+ *   SIDE EFFECTS: ends execution of a program
+ */
 int32_t halt (uint8_t status){
+    /* restore parent data */
+    /* restore parent paging */
+    /* close any relevant FDs */
+    /* jump to execute return */
 
-  printf("syscall halt: %u\n", status);
-   return 0; 
-
-
-
+    return 0; 
 }
 
-/* system call execute */ 
+/* execute
+ *   DESCRIPTION: syscall that executes a command
+ *   INPUTS: command - the file to execute
+ *   OUTPUTS: 0 if success, else -1
+ *   SIDE EFFECTS: starts executing a different program
+ */
 int32_t execute(const uint8_t* command){
 
-printf("syscall execute invoked\n");
- return 0;
+    /* parse args */
+    if (command == NULL)
+        return -1;
 
+    /* check file validity */
+    /* set up paging */
+    /* load file into memory */
+    /* create PCB/open FDs */
+    /* prepare for context switch */
+    /* push IRET context onto stack */
+    /* IRET */
+    /* return */
 
+    return 0;
 }
 
 /* system call read */ 

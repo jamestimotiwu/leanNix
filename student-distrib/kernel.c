@@ -175,7 +175,10 @@ void entry(unsigned long magic, unsigned long addr) {
 	/* Run tests */
 	launch_tests();
 #endif
+
 	/* Execute the first program ("shell") ... */
+	// TODO: first call shouldn't use int $0x80
+	system_execute("shell");
 
 	/* Spin (nicely, so we don't chew up cycles) */
 	asm volatile (".1: hlt; jmp .1;");
