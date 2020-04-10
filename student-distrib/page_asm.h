@@ -6,4 +6,9 @@
  */
 void load_page();
 
+/**
+ * Tlb flushing
+ */
+void flush_tlb();
+
 #endif

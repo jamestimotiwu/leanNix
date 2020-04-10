@@ -11,6 +11,8 @@ git checkout mp3.img
 
 Buglog (James):
 
+# Checkpoint 1
+
 Problem: Issues using batch script to launch boot image
 
 Problem: Initializing GDT
@@ -50,6 +52,8 @@ Problem: Interrupt / trap vectors
 Problem: How to test throw exceptions?
 Solution: Divide by error -> a / 0 should throw an error
 
+# Checkpoint 2
+
 Problem: Print output displaying to top of screen after fully filled
 
 Problem: Paging keeps crashing/boot looping
@@ -62,9 +66,25 @@ Solution: The struct being declared is moved above
 Problem: strncmp had issues checking equality during filename check
 Solution: Set equality condition on strncmp by checking equivalence with 0
 
+# Checkpoint 3
+
 Problem: Page fault when dir_entry_t type is declared on the open function as a pointer
 Solution: Declared an instance of the object instead of a pointer, otherwise memory is not being used
 
+Problem: flush_tlb linkage not found
+Solution: Must expose it as global label in asm
+
+Problem: When creating the parse command function, assignment makes pointer from integer without a cast
+Solution: To set the new starting address of the array, need to dereference the array first.
+
+Problem: Assignment of read-only function
+Solution: Don't use const in the arguments if you want to be able to write to the string.
+
+Problem: Reading command does not break out of a loop
+Solution: Always increment your index if you use an index in a while loop
+
+Problem: Strange bug that fills the buffer with special characters on the first word of the command.
+Solution: Still working on it.
 
 #####
 Buglog (Michael)
