@@ -10,6 +10,7 @@
 #include "drivers/terminal.h"
 #include "drivers/keyboard.h"
 
+
 #define PASS 1
 #define FAIL 0
 
@@ -400,6 +401,28 @@ int test_terminal_read() {
 }
 
 /* Checkpoint 3 tests */
+int test_syscall(){
+    TEST_HEADER; 
+int result;
+int syscall_num=4; // modify this number to see if syscall wrapper works
+    asm volatile
+    (
+        "movl %1, %%eax\n\t"
+        "int $0x80"
+        : "=a"(result)
+        : "g"(syscall_num)
+    );
+    
+  if(result==0)  // if result in eax after syscall is 0, passed the test
+   return PASS; 
+ 
+  return FAIL;  //syscall number out of range (1~6) should return -1 in eax 
+
+
+}
+
+
+
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
 
@@ -427,17 +450,17 @@ void launch_tests() {
     //TEST_OUTPUT("test_fs_open_bad_file", test_fs_open_bad_file());
     //TEST_OUTPUT("test_dir_path_dne", test_dir_path_dne());
     //TEST_OUTPUT("test_fs_read", test_fs_read("grep"));
-    TEST_OUTPUT("test_ls_dir", test_ls_dir());
+    //TEST_OUTPUT("test_ls_dir", test_ls_dir());
     //TEST_OUTPUT("test_fs_read", test_fs_read("verylargetextwithverylongname.tx"));
 
     //TEST_OUTPUT("test_fs_read", test_fs_read("frame1.txt"));
     //TEST_OUTPUT("rtc_fs_test", rtc_fs_test(2, 20));
-    TEST_OUTPUT("rtc_fs_test", rtc_fs_test(4, 20));
-    TEST_OUTPUT("rtc_fs_test", rtc_fs_test(8, 20));
-    TEST_OUTPUT("rtc_fs_test", rtc_fs_test(1024, NUM_COLS-1));
+    //TEST_OUTPUT("rtc_fs_test", rtc_fs_test(4, 20));
+    //TEST_OUTPUT("rtc_fs_test", rtc_fs_test(8, 20));
+    //TEST_OUTPUT("rtc_fs_test", rtc_fs_test(1024, NUM_COLS-1));
 
-    TEST_OUTPUT("test_terminal_read", test_terminal_read());
-
+    //TEST_OUTPUT("test_terminal_read", test_terminal_read());
+    TEST_OUTPUT("test_syscall", test_syscall());
 
 }
 
