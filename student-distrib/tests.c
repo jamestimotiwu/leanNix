@@ -7,7 +7,6 @@
 #include "drivers/rtc.h"
 #include "page.h"
 #include "drivers/fs.h"
-// #include "drivers/rtc.h"
 #include "drivers/terminal.h"
 #include "drivers/keyboard.h"
 
@@ -381,6 +380,18 @@ int test_syscall(){
         return PASS; 
  
     return FAIL;  //syscall number out of range (1~6) should return -1 in eax 
+}
+
+int test_syscall_wrapper(){
+    TEST_HEADER; 
+
+    int result;
+    result = system_halt(3);
+    
+    if(result==0)  // if result in eax after syscall is 0, passed the test
+        return PASS; 
+ 
+    return FAIL;  //syscall number out of range (1~6) should return -1 in eax 
 
 
 }
@@ -421,7 +432,8 @@ void launch_tests() {
     //TEST_OUTPUT("rtc_fs_test", rtc_fs_test(1024, NUM_COLS-1));
 
     /* CP3 Tests */
-    TEST_OUTPUT("test_syscall", test_syscall());
+    //TEST_OUTPUT("test_syscall", test_syscall());
+    TEST_OUTPUT("test_syscall_wrapper", test_syscall_wrapper());
 
 }
 

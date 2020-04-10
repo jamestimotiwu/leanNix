@@ -1,20 +1,11 @@
 #include "lib.h"
 #include "syscall.h"
 
-/* syscall_int()
- *   DESCRIPTION: sys call c code
- *   INPUT/OUTPUT: none
- *   SIDE EFFECTS: prints to screen
- */
-void syscall_int() {
-    printf("SYSTEM CALL!\n");
-}
-
 
 /* system call halt */
 int32_t halt (uint8_t status){
 
-  printf("syscall halt invoked\n");
+  printf("syscall halt: %u\n", status);
    return 0; 
 
 
@@ -65,4 +56,5 @@ printf("syscall close invoked\n");
 return 0;
 
 }
+
 
