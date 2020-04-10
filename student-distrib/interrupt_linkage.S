@@ -26,55 +26,61 @@ keyboard_interrupt_assembly:
   popal
   iret
 
-syscall_jump_table:
-    .long syscall_halt
-    .long syscall_execute
-    .long syscall_read
-    .long syscall_write
-    .long syscall_open
-    .long syscall_close
-
 # syscall interrupt
 syscall_assembly:
-  # push all registers except for eax, because that is expected to change
+
+# first, save all registers except for eax since eax will contain sys_call_table #
   pushl %ebp
   pushl %edi
   pushl %esi
   pushl %edx
   pushl %ecx
-  pushl %ebx
+  pushl %ebx 
+  pushfl 
 
-  # jump table index starts at 0, but eax index starts at 1
-  addl $-1, %eax
-  cmpl $NUM_SYSCALLS, %eax
-  jae syscall_error
+# check if the syscall # in in valid range (for cp3, 1~6)
+  cmpl $1, %eax 
+  jl invalid_syscall
+  cmpl $NUM_SYSCALLS, %eax 
+  jg invalid_syscall
 
-
-  # not all system calls use all 3 arguments, but for simplicity use
-  # the same code for all the system calls
-  pushl %edx # 3rd arg
-  pushl %ecx # 2nd arg
-  pushl %ebx # 1st arg
-  # call the function corresponding with eax register
-  call *syscall_jump_table(,%eax,4)
-  addl $12, %esp
-
+# check syscall # is in valid range, push registers that will be used for arguments
+  pushl %edx  # 3rd arg
+  pushl %ecx  # 2nd arg
+  pushl %ebx  # 1st arg
+  call *syscall_table(,%eax,4)  # call function from syscall_table with syscall # stored in eax register
+  addl $12, %esp # tear down args on stack
+# restore all saved registers and return 
+  popfl 
   popl %ebx
   popl %ecx
   popl %edx
   popl %esi
-  popl %edi
+  popl %edi 
   popl %ebp
   iret
 
-syscall_error:
-  movl $-1, %eax # invalid syscall number: return -1
+
+
+# For invalid_syscall, restore registers and return -1 (in eax) 
+invalid_syscall: 
+  movl $-1, %eax
+  popfl
   popl %ebx
   popl %ecx
   popl %edx
   popl %esi
-  popl %edi
+  popl %edi 
   popl %ebp
   iret
+
+
+
+
+
+# syscall jumptable 
+syscall_table:
+    .long 0x0, halt, execute, read, write, open, close
+
 
 .end
