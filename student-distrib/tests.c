@@ -2,6 +2,7 @@
 #include "x86_desc.h"
 #include "lib.h"
 
+#include "syscall.h"
 #include "i8259.h"
 #include "drivers/rtc.h"
 #include "page.h"
@@ -9,6 +10,7 @@
 #include "process.h"
 #include "drivers/terminal.h"
 #include "drivers/keyboard.h"
+
 
 #define PASS 1
 #define FAIL 0
@@ -72,25 +74,6 @@ int test_divide_error() {
 	int b = 0;
 	a = a / b;
 	assertion_failure();
-	return result;
-}
-
-/* System call test
- *
- * Check that system calls work
- * Inputs: None
- * Outputs: PASS/FAIL
- * Side Effects: None
- * Coverage: IDT, system call
- */
-int syscall_test() {
-	TEST_HEADER;
-
-	int result = PASS;
-
-	/* should cause SYSTEM CALL! to print out */
-	asm volatile ("int $0x80");
-
 	return result;
 }
 
@@ -325,25 +308,6 @@ int test_fs_read(char* fname) {
 	return PASS;
 }
 
-/* Testing file name that isn't in directory
- *
- * Description: use a path that doesn't exist, make sure -1 is returned
- * Inputs: None
- * Outputs: PASS/FAIL
- * Side Effects: None
- * Coverage: read_dentry_by_name
- */
-int test_dir_path_dne() {
-	TEST_HEADER;
-	dir_entry_t dentry;
-
-	/* Check that this function works (it should return -1 */
-	if (read_dentry_by_name((uint8_t*)"thisfiledoesn'texist", &dentry) == -1)
-		return PASS;
-
-	return FAIL;
-}
-
 #define LS_BUFSIZE FILENAME_CHAR_LIMIT
 
 /* Test reading from "." ie. listing the directory
@@ -402,15 +366,56 @@ int test_terminal_read() {
 int test_command_read() {
 	TEST_HEADER;
 
-	uint8_t result[KB_BUF_SIZE];
-	uint8_t result2[32];
+	int8_t result[KB_BUF_SIZE];
+	int8_t result2[KB_BUF_SIZE];
+	int8_t string[KB_BUF_SIZE];
 	int offset;
-
+	strcpy(string, "test    this");
 	offset = 0;
-	offset = command_read((uint8_t*)"test thing ", result2, offset);
-	offset = command_read((uint8_t*)"test thing ", result, offset);
+	offset = command_read(string, result, offset);
+
+	//printf("%d", offset);
+	offset = command_read(string, result2, offset);
+
+	printf(result2);
+	printf(result);
+
 	return PASS;
 }
+
+/* Checkpoint 3 tests */
+int test_syscall(){
+    TEST_HEADER; 
+    int result;
+    int syscall_num=4; // modify this number to see if syscall wrapper works
+    asm volatile
+    (
+        "movl %1, %%eax\n\t"
+        "int $0x80"
+        : "=a"(result)
+        : "g"(syscall_num)
+    );
+    
+    if(result==0)  // if result in eax after syscall is 0, passed the test
+        return PASS; 
+ 
+    return FAIL;  //syscall number out of range (1~6) should return -1 in eax 
+}
+
+int test_syscall_wrapper(){
+    TEST_HEADER; 
+
+    int result;
+    result = system_execute((uint8_t *) "shell");
+    
+    if(result==0)  // if result in eax after syscall is 0, passed the test
+        return PASS; 
+ 
+    return FAIL;  //syscall number out of range (1~6) should return -1 in eax 
+
+
+}
+
 
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
@@ -418,37 +423,37 @@ int test_command_read() {
 
 /* Test suite entry point */
 void launch_tests() {
-	//TEST_OUTPUT("idt_test", idt_test());
-	//TEST_OUTPUT("test_divide_error", test_divide_error());
+    //TEST_OUTPUT("idt_test", idt_test());
+    //TEST_OUTPUT("test_divide_error", test_divide_error());
 
-	/* Paging tests */
-	//test_interrupts();
-	//test_paging_null();
-	//test_paging_kernel();
-	//test_paging_out_kernel();
+    /* Paging tests */
+    //test_interrupts();
+    //test_paging_null();
+    //test_paging_kernel();
+    //test_paging_out_kernel();
 
-	//TEST_OUTPUT("syscall_test", syscall_test());
 
-	/* RTC CP2 Tests */
-	//TEST_OUTPUT("rtc frequency test", rtc_frequency_test());
-	//TEST_OUTPUT("rtc read test", rtc_read_test());
-	//TEST_OUTPUT("rtc open test", rtc_open_test());
+    /* RTC CP2 Tests */
+    //TEST_OUTPUT("rtc frequency test", rtc_frequency_test());
+    //TEST_OUTPUT("rtc read test", rtc_read_test());
+    //TEST_OUTPUT("rtc open test", rtc_open_test());
 
-	/* Filesystem CP2 tests */
-	//TEST_OUTPUT("test_fs_open_good_file", test_fs_open_good_file());
-	//TEST_OUTPUT("test_fs_open_bad_file", test_fs_open_bad_file());
-	//TEST_OUTPUT("test_dir_path_dne", test_dir_path_dne());
-	//TEST_OUTPUT("test_fs_read", test_fs_read("grep"));
-	//TEST_OUTPUT("test_ls_dir", test_ls_dir());
-	//TEST_OUTPUT("test_fs_read", test_fs_read("verylargetextwithverylongname.tx"));
+    /* Filesystem CP2 tests */
+    //TEST_OUTPUT("test_fs_open_good_file", test_fs_open_good_file());
+    //TEST_OUTPUT("test_fs_open_bad_file", test_fs_open_bad_file());
+    //TEST_OUTPUT("test_fs_read", test_fs_read("grep"));
+    //TEST_OUTPUT("test_ls_dir", test_ls_dir());
+    //TEST_OUTPUT("test_fs_read", test_fs_read("verylargetextwithverylongname.tx"));
 
-	//TEST_OUTPUT("test_fs_read", test_fs_read("frame1.txt"));
-	//TEST_OUTPUT("rtc_fs_test", rtc_fs_test(2, 20));
-	/*TEST_OUTPUT("rtc_fs_test", rtc_fs_test(4, 20));
-	TEST_OUTPUT("rtc_fs_test", rtc_fs_test(8, 20));
-	TEST_OUTPUT("rtc_fs_test", rtc_fs_test(1024, NUM_COLS-1));*/
+    //TEST_OUTPUT("test_fs_read", test_fs_read("frame1.txt"));
+    //TEST_OUTPUT("rtc_fs_test", rtc_fs_test(2, 20));
+    //TEST_OUTPUT("rtc_fs_test", rtc_fs_test(4, 20));
+    //TEST_OUTPUT("rtc_fs_test", rtc_fs_test(8, 20));
+    //TEST_OUTPUT("rtc_fs_test", rtc_fs_test(1024, NUM_COLS-1));
 
-	//TEST_OUTPUT("test_terminal_read", test_terminal_read());
+    /* CP3 Tests */
+    //TEST_OUTPUT("test_syscall", test_syscall());
+    TEST_OUTPUT("test_syscall_wrapper", test_syscall_wrapper());
 	TEST_OUTPUT("test_command_read", test_command_read());
 
 }
