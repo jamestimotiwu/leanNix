@@ -1,12 +1,19 @@
 #define ASM 1
 #include "syscall.h"
+#include "x86_desc.h"
 
 .text
 .globl rtc_interrupt_assembly
 .globl keyboard_interrupt_assembly
 .globl syscall_assembly
+.global ret_to_user
 
+proc_bottom:
+    .long 0x08400000 - 4
 # These are interrupt handlers used directly by IDT
+
+proc_start:
+    .long 0x08000000 + 24
 
 # rtc interrupt
 rtc_interrupt_assembly:
@@ -75,7 +82,24 @@ invalid_syscall:
   iret
 
 
+# Return to user from execute, push user DS, esp, eflags, cs, eip
+ret_to_user:
+    # Set ds register to load to gdt entry
+    movl USER_DS, %eax
+    movw %ax, %ds
+    pushl %eax
+    # esp -> bottom of 4MB proc page (0x084000000 - 4)
+    pushl proc_bottom
+    # eflags
+    pushfl
+    # user cs
+    movl USER_CS, %eax
+    movw %ax, %cs
+    pushl %eax
+    # push eip (0x08000000 + 24 bytes)
+    pushl (proc_start)
 
+    iret
 
 
 # syscall jumptable 

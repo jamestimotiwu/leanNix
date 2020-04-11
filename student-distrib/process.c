@@ -19,12 +19,12 @@ int32_t process_execute(const uint8_t* command) {
     offset = 0;
     
     /* Get filename, check if there is a file in command argument */
-    offset = command_read(command, filename, offset); 
+    offset = command_read((uint8_t*)command, (uint8_t*)filename, offset);
     if (offset == 0)
         return -1;
 
     /* Getargs for rest of command */
-    offset = command_read(command, args, offset);
+    offset = command_read((uint8_t*)command, (uint8_t*)args, offset);
     if (offset == 0)
         return -1;
 
