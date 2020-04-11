@@ -1,6 +1,9 @@
 /* fs.h - Defines filesystem structs
  * vim:ts=4 noexpandtab
  */
+#ifndef _FS_H
+#define _FS_H
+
 #include "../types.h"
 #include "../multiboot.h"
 
@@ -18,6 +21,8 @@
 #define FTYPE_RTC  0
 #define FTYPE_DIR  1
 #define FTYPE_FILE 2
+
+
 
 /* Directory entry structure -- 64B */
 typedef struct dir_entry {
@@ -65,3 +70,8 @@ int32_t directory_close(uint32_t fd);
 int32_t directory_read(uint32_t fd, uint8_t *buf, uint32_t count);
 int32_t directory_write(uint32_t fd, uint8_t *buf, uint32_t count);
 
+/* program loading utility functions */
+uint32_t program_load(const uint8_t *cmd, uint32_t pid);
+int32_t program_valid(const uint8_t *cmd);
+
+#endif

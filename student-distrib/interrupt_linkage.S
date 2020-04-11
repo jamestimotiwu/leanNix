@@ -1,7 +1,12 @@
+#define ASM 1
+#include "syscall.h"
+#include "x86_desc.h"
+
 .text
 .globl rtc_interrupt_assembly
 .globl keyboard_interrupt_assembly
 .globl syscall_assembly
+.globl execute_iret
 
 # These are interrupt handlers used directly by IDT
 
@@ -38,7 +43,7 @@ syscall_assembly:
 # check if the syscall # in in valid range (for cp3, 1~6)
   cmpl $1, %eax 
   jl invalid_syscall
-  cmpl $6, %eax 
+  cmpl $NUM_SYSCALLS, %eax 
   jg invalid_syscall
 
 # check syscall # is in valid range, push registers that will be used for arguments
@@ -80,6 +85,23 @@ syscall_table:
     .long 0x0, halt, execute, read, write, open, close
 
 
+# arguments: esp, eip
+execute_iret:
+    pushl %ebp
+    movl %esp, %ebp
 
+    # setup the stack so that iret returns to user mode
+    pushl $USER_DS # push user data segment
+    movl 8(%ebp), %eax # new esp argument
+    pushl %eax     # push esp
+    pushfl         # push eflags (TODO IF?)
+    pushl $USER_CS # push user cs
+    movl 12(%ebp), %eax # new eip argument
+    pushl %eax     # push eip
+
+    iret
+
+    leave
+    ret
 
 .end

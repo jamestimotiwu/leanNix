@@ -233,27 +233,6 @@ void term_setChar(uint8_t c) {
     *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
 }
 
-/* terminal_open
- *   DESCRIPTION: opens the terminal syscall
- *   INPUTS: fname -- filename for terminal driver
- *   OUTPUTS: 0 for success, else -1
- *   SIDE EFFECTS: none
- */
-int32_t terminal_open(const uint8_t *fname) {
-    return 0;
-}
-
-/* terminal_close
- *   DESCRIPTION: close the terminal syscall
- *   INPUTS: fd -- file descriptor for the terminal
- *   OUTPUTS: 0 for success, else -1
- *   SIDE EFFECTS: none
- */
-int32_t terminal_close(int32_t fd) {
-    return 0;
-}
-
-
 /* terminal_read
  *   DESCRIPTION: read the buffered input of the terminal
  *   INPUTS: fd -- file descriptor for the terminal

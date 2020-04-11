@@ -1,34 +1,64 @@
 #include "lib.h"
 #include "syscall.h"
+#include "drivers/fs.h"
+#include "page.h"
+#include "interrupt_linkage.h"
+#include "process.h"
 
-/* syscall_int()
- *   DESCRIPTION: sys call c code
- *   INPUT/OUTPUT: none
- *   SIDE EFFECTS: prints to screen
+
+/* execute
+ *   DESCRIPTION: syscall that halts and returns execution to parent process
+ *   INPUTS: status -- status of the halt
+ *   OUTPUTS: none, because it doesn't return
+ *   SIDE EFFECTS: ends execution of a program
  */
-void syscall_int() {
-    printf("SYSTEM CALL!\n");
-}
-
-
-
-/* system call halt */
 int32_t halt (uint8_t status){
+    /* restore parent data */
+    /* restore parent paging */
+    /* close any relevant FDs */
+    /* jump to execute return */
 
-  printf("syscall halt invoked\n");
-   return 0; 
-
-
-
+    return 0; 
 }
 
-/* system call execute */ 
+static int pid = 0;
+
+/* execute
+ *   DESCRIPTION: syscall that executes a command
+ *   INPUTS: command - the file to execute
+ *   OUTPUTS: 0 if success, else -1
+ *   SIDE EFFECTS: starts executing a different program
+ */
 int32_t execute(const uint8_t* command){
+    uint32_t entry;
 
-printf("syscall execute invoked\n");
- return 0;
+    if (command == NULL)
+        return -1;
 
+    /* parse args */
 
+    /* check file validity */
+    if (!program_valid(command))
+        return -1;
+
+    /* set up paging */
+    page_map_user(pid);
+    // todo: flush to tlb?
+
+    /* load file into memory */
+    entry = program_load(command, pid); /* also get the entry point */
+
+    /* create PCB/open FDs */
+
+    /* prepare for context switch */
+
+    /* push IRET context onto stack and do IRET */
+    /* set up iret stack and execute (esp=entry, ebp=) */
+    execute_iret(PROGRAM_VIRTUAL_STACK, entry);
+
+    /* return */
+
+    return 0;
 }
 
 /* system call read */ 
@@ -50,6 +80,7 @@ int32_t write(int32_t fd, const void* buf, int32_t nbytes){
 
 }
 
+
 /* system call open */ 
 int32_t open(const uint8_t* filename){
 
@@ -66,3 +97,4 @@ printf("syscall close invoked\n");
 return 0;
 
 }
+
