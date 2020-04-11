@@ -10,11 +10,12 @@
 
 proc_bottom:
     .long 0x08400000 - 4
-# These are interrupt handlers used directly by IDT
 
+# Get instruction pointer of program execution start
 proc_start:
     .long 0x08000000 + 24
 
+# These are interrupt handlers used directly by IDT
 # rtc interrupt
 rtc_interrupt_assembly:
   pushal # save all the registers
@@ -81,7 +82,6 @@ invalid_syscall:
   popl %ebp
   iret
 
-
 # Return to user from execute, push user DS, esp, eflags, cs, eip
 ret_to_user:
     # Set ds register to load to gdt entry
@@ -96,11 +96,10 @@ ret_to_user:
     movl USER_CS, %eax
     movw %ax, %cs
     pushl %eax
-    # push eip (0x08000000 + 24 bytes)
+    # eip (0x08000000 + 24 bytes)
     pushl (proc_start)
 
     iret
-
 
 # syscall jumptable 
 syscall_table:
