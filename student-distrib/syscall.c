@@ -80,6 +80,7 @@ int32_t write(int32_t fd, const void* buf, int32_t nbytes){
 
 }
 
+
 /* system call open */ 
 int32_t open(const uint8_t* filename){
 
@@ -96,5 +97,14 @@ printf("syscall close invoked\n");
 return 0;
 
 }
-
-
+/* get the PCB */
+PCB_t* get_PCB(){
+  PCB_t* position;
+  /* AND ESP with mask*/
+  asm volatile(
+    "andl %%esp, %%eax"
+    :"=a"(position) /* output */
+    :"a"(PCB_MASK)  /* input */
+  );
+  return position;
+}
