@@ -2,6 +2,9 @@
  * and selectors
  * vim:ts=4 noexpandtab
  */
+#ifndef PAGE_H
+#define PAGE_H
+
 #include "types.h"
 
 #define NUM_PAGES       1024
@@ -11,6 +14,11 @@
 
 #define KB_BASE_OFFSET  12
 #define MB_BASE_OFFSET  22
+
+/* Program image page address translation; virtual address always 0x08048000*/
+#define PROC_PAGE_INDEX     32
+#define PROC_PAGE_OFFSET    0x48000
+#define PROC_PAGE_PADDR     (MB_PAGE_SIZE << 1) // Starting at 8MB
 
  /*
  Base address - 31:12 physical addr of 4k-aligned tabled
@@ -115,3 +123,7 @@ page_dir_entry_t page_dir[NUM_PAGES] __attribute__((aligned(PAGE_SIZE)));
 page_table_entry_t page_table[NUM_PAGES] __attribute__((aligned(PAGE_SIZE)));
 
 void init_pages(void);
+void page_map_user(uint32_t proc_num);
+
+#endif
+
