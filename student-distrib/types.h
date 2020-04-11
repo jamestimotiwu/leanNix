@@ -13,7 +13,7 @@
 
 /* Max number of open file descriptors per program */
 #define MAX_NUM_FD 8
-#define MAX_ARGS   64
+#define MAX_ARGS   128
 
 /* Types defined here just like in <stdint.h> */
 typedef int int32_t;
@@ -60,7 +60,7 @@ typedef struct PCB{
   /* shell or level above */
   int32_t level;
   /* argument storage for later use */
-  int32_t arguments[MAX_ARGS];
+  int8_t arguments[MAX_ARGS];
 }PCB_t;
 
 
