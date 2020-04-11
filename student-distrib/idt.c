@@ -1,6 +1,38 @@
 #include "idt.h"
 #include "syscall.h"
 
+/* set_int_gate
+ *   DESCRIPTION: initializes the ith idt entry to be a interrupt gate by
+ *                setting the correct reserved bits
+ *   INPUTS: i -- index into table
+ *   OUTPUTS: none
+ *   SIDE EFFECTS: changes the table
+ */
+void set_int_gate(int i) {
+    /* Manual Figure 5-2 */
+    idt[i].reserved0 = 0;
+    idt[i].reserved1 = 1;
+    idt[i].reserved2 = 1;
+    idt[i].reserved3 = 0;
+    idt[i].reserved4 = 0;
+}
+
+/* set_trap_gate
+ *   DESCRIPTION: initializes the ith idt entry to be a trap gate by
+ *                setting the correct reserved bits
+ *   INPUTS: i -- index into table
+ *   OUTPUTS: none
+ *   SIDE EFFECTS: changes the table
+ */
+void set_trap_gate(int i) {
+    /* Manual Figure 5-2 */
+    idt[i].reserved0 = 0;
+    idt[i].reserved1 = 1;
+    idt[i].reserved2 = 1;
+    idt[i].reserved3 = 1;
+    idt[i].reserved4 = 0;
+}
+
 /* init_idt
  *   DESCRIPTION: clears all entires in the IDT, then initializes some of
  *                them to the correct interrupt handler
@@ -12,12 +44,14 @@ void init_idt() {
 	int i;
 	/* Initialize IDT */
 	for (i = 0; i < NUM_VEC; i++) {
-		/* Manual Figure 5-2 */
-		idt[i].reserved0 = 0;
-		idt[i].reserved1 = 1;
-		idt[i].reserved2 = 1;
-		idt[i].reserved3 = 0;
-		idt[i].reserved4 = 0;
+
+        // TODO: some other entries should also be set to trap gate
+        if (i == IDT_SYSTEM_CALL) {
+            set_trap_gate(i);
+        } else {
+            set_int_gate(i);
+        }
+
 		/* Size of gate 1:32 bits, 0: 16 bits */
 		idt[i].size = 1;
 		/* DPL set to 0 */
@@ -72,3 +106,4 @@ void init_idt() {
 	/* set idtr */
 	lidt(idt_desc_ptr);
 }
+
