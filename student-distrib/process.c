@@ -10,6 +10,9 @@
 
 //static int32_t command_read(const uint8_t* command, uint8_t* arg);
 
+/* start at -1 since shell will start with pid of 0 */
+int32_t current_pid = -1;
+
 /* get the PCB */
 PCB_t* get_PCB(){
   PCB_t* position;
@@ -21,6 +24,19 @@ PCB_t* get_PCB(){
   );
   return position;
 }
+
+/* 8KB */
+#define MAX_PCB_SIZE (8<<10)
+/* 8MB */
+#define PCB_OFFSET (8<<20)
+
+
+PCB_t *create_pcb(int32_t pid) {
+	/* PCB address: 8MB - 8KB*(pid+1) */
+	PCB_t *pcb = (PCB_t *) (PCB_OFFSET - MAX_PCB_SIZE*(pid+1));
+	return pcb;
+}
+
 
 int32_t process_execute(const uint8_t* command) {
     /* Get filename from command */

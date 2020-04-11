@@ -11,6 +11,9 @@
 #define PCB_MASK 0x7FE000
 /* PCB Functionality */
 
+/* Basic file descriptors */
+#define STDIN 0
+#define STDOUT 1
 
 /* jump table for file operations */
 typedef int32_t (*read_op)(int32_t fd, void* buf, int32_t nbytes);
@@ -52,6 +55,8 @@ typedef struct PCB{
 
 PCB_t* get_PCB(); //get PCB
 
+extern int32_t current_pid;
+
 /* physical addresses: first program starts at 8MB, others start at 8MB+4MB*pid */
 #define PROGRAM_START_ADDR 0x800000
 #define MAX_PROGRAM_SIZE 0x400000
@@ -65,4 +70,7 @@ int32_t process_halt(uint8_t status);
 
 int32_t command_read(int8_t* command, int8_t* arg, uint32_t offset);
 
+PCB_t *create_pcb(int32_t pid);
+
 #endif
+

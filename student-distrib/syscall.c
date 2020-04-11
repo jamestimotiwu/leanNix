@@ -21,7 +21,7 @@ int32_t halt (uint8_t status){
     return 0; 
 }
 
-static int pid = 0;
+//static int pid = 0;
 
 /* execute
  *   DESCRIPTION: syscall that executes a command
@@ -31,6 +31,10 @@ static int pid = 0;
  */
 int32_t execute(const uint8_t* command){
     uint32_t entry;
+    PCB_t *pcb;
+    int32_t esp;
+    int32_t parent_pid = current_pid;
+    current_pid++;
 
     if (command == NULL)
         return -1;
@@ -42,13 +46,28 @@ int32_t execute(const uint8_t* command){
         return -1;
 
     /* set up paging */
-    page_map_user(pid);
+    page_map_user(current_pid);
     // todo: flush to tlb?
 
     /* load file into memory */
-    entry = program_load(command, pid); /* also get the entry point */
+    entry = program_load(command, current_pid); /* also get the entry point */
 
     /* create PCB/open FDs */
+    pcb = create_pcb(current_pid);
+    pcb->process_id = current_pid;
+
+    /* get the stack pointer, put it in esp and the pcb */
+    asm volatile("movl %%esp, %0"
+            : "=rm"((esp)) /* outputs */
+            :
+            : "memory");
+
+    pcb->stack_ptr = esp;
+    pcb->parent_id = parent_pid;
+    pcb->level = 0;
+    //pcb->arguments = {};
+    pcb->fd_arr[fd] = ;
+
 
     /* prepare for context switch */
 
@@ -63,20 +82,21 @@ int32_t execute(const uint8_t* command){
 
 /* system call read */ 
 int32_t read(int32_t fd, void* buf, int32_t nbytes){
+    PCB_t *pcb;
+    if (fd < 0 || fd >= MAX_NUM_FD)
+        return -1;
 
+    create_pcb(current_pid);
 
- printf("syscall read invoked\n");
- return 0; 
-
-
+    return 0; 
 
 }
 
 /* system call write */ 
 int32_t write(int32_t fd, const void* buf, int32_t nbytes){
+    PCB_t *pcb = create_pcb(current_pid);
 
- printf("syscall write invoked\n");
- return 0;
+    return 0;
 
 }
 
@@ -84,8 +104,8 @@ int32_t write(int32_t fd, const void* buf, int32_t nbytes){
 /* system call open */ 
 int32_t open(const uint8_t* filename){
 
-printf("syscall open invoked\n");
-return 0; 
+    printf("syscall open invoked\n");
+    return 0; 
 
 
 }
