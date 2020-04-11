@@ -118,11 +118,13 @@ Solution: Make sure keyboard doesn't read the scancode of the release
 
 Buglog (Jin)
 
+cp1
 Problem: compiler error "undefined reference" error with "collect 2: ld returned 1 exit status" in idt_init.c 
 The linkage error was kept appearing during compile. 
 Solution: Piazza post helped find the solution that the error may be caused by unincluded header file. 
 Included the right header file and error disappeared. 
 
+cp2
 Problem: "Ignoring packet error " when using target remote to test_debug with gdb on Devel. 
 Solution: It was normal error and piazza post explained that closing and reopening test_debug 
 while still in gdb command line on devel. Reopend test_debug and redid target remote to boot the OS. 
@@ -132,6 +134,10 @@ problem: the implemented test case for system call did not invoke any systemcall
 Solution: First, I thought it was a problem of my assembly linkage code but later found out that
 the test case asm volatile code was implemented incorrectly. I had to put '=a' for the output 
 to get the return value from eax register after the system call in kernel. 
+
+Problem: the wrapper for the system call assembly linkage doesn't invoke syscall functions in kernel space. 
+Solution: the sequence of how registers are stored was wrong. Fixed it by pushing registers in the right sequence in the
+assembly linkage.
 
 
 
