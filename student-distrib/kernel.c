@@ -8,6 +8,7 @@
 #include "i8259.h"
 #include "debug.h"
 #include "tests.h"
+#include "syscall.h"
 
 #include "idt.h"
 #include "drivers/keyboard.h"
@@ -177,8 +178,7 @@ void entry(unsigned long magic, unsigned long addr) {
 #endif
 
 	/* Execute the first program ("shell") ... */
-	// TODO: first call shouldn't use int $0x80
-	system_execute("shell");
+	execute((uint8_t *) "shell");
 
 	/* Spin (nicely, so we don't chew up cycles) */
 	asm volatile (".1: hlt; jmp .1;");

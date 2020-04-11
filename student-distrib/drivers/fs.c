@@ -299,3 +299,69 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length
 	return i;
 }
 
+#define LOAD_BUF_SIZE 4096
+#define ELF_HEADER_LEN 4
+static uint8_t ELF_HEADER[ELF_HEADER_LEN] = {0x7F, 'E', 'L', 'F'};
+
+/* program_load
+ *   DESCRIPTION: loads a program into the correct location
+ *   INPUTS: cmd -- the program to load
+ *           pid -- the programs pid (used to determine correct mem address
+ *   OUTPUTS: entry point
+ *   SIDE EFFECTS: changes memory
+ */
+uint32_t program_load(const uint8_t *cmd, uint32_t pid) {
+    uint32_t offset=0; // TODO skip header?
+    uint32_t entry; /* entry point into the program (bytes 24-27) */
+    //
+    // TODO (is this right?)
+    uint8_t* addr = (uint8_t *) 0x800000 + 0x400000*pid;
+
+    /* Assume this step works because valid_program() should have been run already */
+    dir_entry_t dentry;
+    read_dentry_by_name(cmd, &dentry);
+
+    
+    /* bytes 24-27 contain the offset */
+    read_data(dentry.inode_num, 24, (uint8_t *) &entry, 4);
+    
+    int count;
+    while ((count = read_data(dentry.inode_num, offset, addr, LOAD_BUF_SIZE)) != LOAD_BUF_SIZE) {
+        addr += count;
+        offset += count;
+    }
+
+    return entry;
+}
+
+
+
+/* program_valid
+ *   DESCRIPTION: checks if the program is a valid executable
+ *   INPUTS: cmd -- the program to run (without arguments)
+ *   OUTPUTS: 1 if valid, else 0
+ *   SIDE EFFECTS: none
+ */
+int32_t program_valid(const uint8_t *cmd) {
+    int i;
+    uint8_t elfHeader[ELF_HEADER_LEN];
+
+    dir_entry_t dentry;
+    /* Check that the file exists */
+    if (read_dentry_by_name(cmd, &dentry) == -1)
+        return 0;
+
+    read_data(dentry.inode_num, 0, elfHeader, ELF_HEADER_LEN);
+    
+    /* Check that the ELF header matches */
+    for (i = 0; i < ELF_HEADER_LEN; i++) {
+        if (elfHeader[i] != ELF_HEADER[i])
+            return 0;
+    }
+
+    return 1; /* program is valid */
+}
+
+
+
+

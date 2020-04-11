@@ -14,7 +14,6 @@
 /* syscall handler asm code */
 void syscall_assembly();
 
-// TODO: remove these since they aren't used by C code ?
 /* system call halt */
 int32_t halt (uint8_t status);  // sys_call_table #1
 

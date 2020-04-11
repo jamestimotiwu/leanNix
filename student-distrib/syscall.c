@@ -1,5 +1,8 @@
 #include "lib.h"
 #include "syscall.h"
+#include "drivers/fs.h"
+#include "page.h"
+#include "interrupt_linkage.h"
 
 
 /* execute
@@ -17,6 +20,8 @@ int32_t halt (uint8_t status){
     return 0; 
 }
 
+static int pid = 0;
+
 /* execute
  *   DESCRIPTION: syscall that executes a command
  *   INPUTS: command - the file to execute
@@ -25,17 +30,30 @@ int32_t halt (uint8_t status){
  */
 int32_t execute(const uint8_t* command){
 
-    /* parse args */
     if (command == NULL)
         return -1;
 
+    /* parse args */
+
     /* check file validity */
+    if (!program_valid(command))
+        return -1;
+
     /* set up paging */
+    page_map_user(pid);
+
     /* load file into memory */
+    program_load(command, pid);
+
     /* create PCB/open FDs */
+
     /* prepare for context switch */
-    /* push IRET context onto stack */
-    /* IRET */
+
+    /* push IRET context onto stack and do IRET */
+    uint32_t esp = 0;
+    uint32_t eip = 0; // TODO 
+    execute_iret(esp, eip);
+
     /* return */
 
     return 0;
