@@ -68,3 +68,9 @@ int32_t command_read(int8_t* command, int8_t* arg, uint32_t offset) {
     /* return len of argument parsed*/
     return offset;
 }
+
+uint32_t get_user_stack(uint32_t pid) {
+
+}
+
+

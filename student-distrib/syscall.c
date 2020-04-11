@@ -29,6 +29,7 @@ static int pid = 0;
  *   SIDE EFFECTS: starts executing a different program
  */
 int32_t execute(const uint8_t* command){
+    uint32_t entry;
 
     if (command == NULL)
         return -1;
@@ -41,18 +42,19 @@ int32_t execute(const uint8_t* command){
 
     /* set up paging */
     page_map_user(pid);
+    // todo: flush to tlb?
 
     /* load file into memory */
-    program_load(command, pid);
+    entry = program_load(command, pid); /* also get the entry point */
 
     /* create PCB/open FDs */
 
     /* prepare for context switch */
 
     /* push IRET context onto stack and do IRET */
-    uint32_t esp = 0;
-    uint32_t eip = 0; // TODO 
-    execute_iret(esp, eip);
+    uint32_t esp = 0; /* TODO: set this to bottom 4MB of the page */
+    /* set up iret stack and execute (esp=entry, ebp=) */
+    execute_iret(esp, entry);
 
     /* return */
 

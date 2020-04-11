@@ -303,6 +303,12 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length
 #define ELF_HEADER_LEN 4
 static uint8_t ELF_HEADER[ELF_HEADER_LEN] = {0x7F, 'E', 'L', 'F'};
 
+/* physical addresses: first program starts at 8MB, others start at 8MB+4MB*pid */
+#define PROGRAM_START_ADDR 0x800000
+#define MAX_PROGRAM_SIZE 0x400000
+/* virtual address used by program (128MB + 0x48000) */
+#define PROGRAM_VIRTUAL_START 0x08048000
+
 /* program_load
  *   DESCRIPTION: loads a program into the correct location
  *   INPUTS: cmd -- the program to load
@@ -313,9 +319,10 @@ static uint8_t ELF_HEADER[ELF_HEADER_LEN] = {0x7F, 'E', 'L', 'F'};
 uint32_t program_load(const uint8_t *cmd, uint32_t pid) {
     uint32_t offset=0; // TODO skip header?
     uint32_t entry; /* entry point into the program (bytes 24-27) */
-    //
-    // TODO (is this right?)
-    uint8_t* addr = (uint8_t *) 0x800000 + 0x400000*pid;
+    
+    // program loaded into (physical) addr = 8MB + 4MB*(pid)
+    //uint8_t* addr = (uint8_t *) (0x800000 + 0x400000*pid); // use virtual addr instead
+    uint8_t *addr = (uint8_t *) PROGRAM_VIRTUAL_START;
 
     /* Assume this step works because valid_program() should have been run already */
     dir_entry_t dentry;
