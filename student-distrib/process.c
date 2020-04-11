@@ -10,6 +10,18 @@
 
 //static int32_t command_read(const uint8_t* command, uint8_t* arg);
 
+/* get the PCB */
+PCB_t* get_PCB(){
+  PCB_t* position;
+  /* AND ESP with mask*/
+  asm volatile(
+    "andl %%esp, %%eax"
+    :"=a"(position) /* output */
+    :"a"(PCB_MASK)  /* input */
+  );
+  return position;
+}
+
 int32_t process_execute(const uint8_t* command) {
     /* Get filename from command */
     int8_t filename[32];

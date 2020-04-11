@@ -97,14 +97,4 @@ printf("syscall close invoked\n");
 return 0;
 
 }
-/* get the PCB */
-PCB_t* get_PCB(){
-  PCB_t* position;
-  /* AND ESP with mask*/
-  asm volatile(
-    "andl %%esp, %%eax"
-    :"=a"(position) /* output */
-    :"a"(PCB_MASK)  /* input */
-  );
-  return position;
-}
+
