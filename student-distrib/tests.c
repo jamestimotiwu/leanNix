@@ -402,20 +402,13 @@ int test_terminal_read() {
 int test_command_read() {
 	TEST_HEADER;
 
-	int8_t result[KB_BUF_SIZE];
-	int8_t result2[KB_BUF_SIZE];
-	int8_t string[KB_BUF_SIZE];
+	uint8_t result[KB_BUF_SIZE];
+	uint8_t result2[32];
 	int offset;
-	strcpy(string, "test    this");
+
 	offset = 0;
-	offset = command_read(string, result, offset);
-
-	//printf("%d", offset);
-	offset = command_read(string, result2, offset);
-
-	printf(result2);
-	printf(result);
-
+	offset = command_read((uint8_t*)"test thing ", result2, offset);
+	offset = command_read((uint8_t*)"test thing ", result, offset);
 	return PASS;
 }
 
