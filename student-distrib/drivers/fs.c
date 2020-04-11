@@ -6,6 +6,7 @@
 #include "rtc.h"
 #include "../types.h"
 #include "../lib.h"
+#include "../process.h"
 
 boot_block_t* fs;
 
@@ -302,12 +303,6 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length
 #define LOAD_BUF_SIZE 4096
 #define ELF_HEADER_LEN 4
 static uint8_t ELF_HEADER[ELF_HEADER_LEN] = {0x7F, 'E', 'L', 'F'};
-
-/* physical addresses: first program starts at 8MB, others start at 8MB+4MB*pid */
-#define PROGRAM_START_ADDR 0x800000
-#define MAX_PROGRAM_SIZE 0x400000
-/* virtual address used by program (128MB + 0x48000) */
-#define PROGRAM_VIRTUAL_START 0x08048000
 
 /* program_load
  *   DESCRIPTION: loads a program into the correct location

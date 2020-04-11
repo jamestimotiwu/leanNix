@@ -3,6 +3,7 @@
 #include "drivers/fs.h"
 #include "page.h"
 #include "interrupt_linkage.h"
+#include "process.h"
 
 
 /* execute
@@ -52,9 +53,8 @@ int32_t execute(const uint8_t* command){
     /* prepare for context switch */
 
     /* push IRET context onto stack and do IRET */
-    uint32_t esp = 0; /* TODO: set this to bottom 4MB of the page */
     /* set up iret stack and execute (esp=entry, ebp=) */
-    execute_iret(esp, entry);
+    execute_iret(PROGRAM_VIRTUAL_STACK, entry);
 
     /* return */
 

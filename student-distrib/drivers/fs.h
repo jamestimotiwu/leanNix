@@ -22,6 +22,8 @@
 #define FTYPE_DIR  1
 #define FTYPE_FILE 2
 
+
+
 /* Directory entry structure -- 64B */
 typedef struct dir_entry {
 	uint8_t filename[FILENAME_CHAR_LIMIT];
