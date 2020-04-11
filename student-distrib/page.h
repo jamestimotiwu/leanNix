@@ -2,6 +2,9 @@
  * and selectors
  * vim:ts=4 noexpandtab
  */
+#ifndef PAGE_H
+#define PAGE_H
+
 #include "types.h"
 
 #define NUM_PAGES       1024
@@ -121,3 +124,6 @@ page_table_entry_t page_table[NUM_PAGES] __attribute__((aligned(PAGE_SIZE)));
 
 void init_pages(void);
 void page_map_user(uint32_t proc_num);
+
+#endif
+

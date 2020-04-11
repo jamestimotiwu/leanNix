@@ -6,6 +6,7 @@
 .globl rtc_interrupt_assembly
 .globl keyboard_interrupt_assembly
 .globl syscall_assembly
+.globl execute_iret
 .global ret_to_user
 
 proc_bottom:
@@ -105,5 +106,24 @@ ret_to_user:
 syscall_table:
     .long 0x0, halt, execute, read, write, open, close
 
+
+# arguments: esp, eip
+execute_iret:
+    pushl %ebp
+    movl %esp, %ebp
+
+    # setup the stack so that iret returns to user mode
+    pushl $USER_DS # push user data segment
+    movl 8(%ebp), %eax # new esp argument
+    pushl %eax     # push esp
+    pushfl         # push eflags (TODO IF?)
+    pushl $USER_CS # push user cs
+    movl 12(%ebp), %eax # new eip argument
+    pushl %eax     # push eip
+
+    iret
+
+    leave
+    ret
 
 .end

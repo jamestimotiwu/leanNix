@@ -1,5 +1,9 @@
 #include "lib.h"
 #include "syscall.h"
+#include "drivers/fs.h"
+#include "page.h"
+#include "interrupt_linkage.h"
+#include "process.h"
 
 
 /* execute
@@ -17,6 +21,8 @@ int32_t halt (uint8_t status){
     return 0; 
 }
 
+static int pid = 0;
+
 /* execute
  *   DESCRIPTION: syscall that executes a command
  *   INPUTS: command - the file to execute
@@ -24,18 +30,32 @@ int32_t halt (uint8_t status){
  *   SIDE EFFECTS: starts executing a different program
  */
 int32_t execute(const uint8_t* command){
+    uint32_t entry;
 
-    /* parse args */
     if (command == NULL)
         return -1;
 
+    /* parse args */
+
     /* check file validity */
+    if (!program_valid(command))
+        return -1;
+
     /* set up paging */
+    page_map_user(pid);
+    // todo: flush to tlb?
+
     /* load file into memory */
+    entry = program_load(command, pid); /* also get the entry point */
+
     /* create PCB/open FDs */
+
     /* prepare for context switch */
-    /* push IRET context onto stack */
-    /* IRET */
+
+    /* push IRET context onto stack and do IRET */
+    /* set up iret stack and execute (esp=entry, ebp=) */
+    execute_iret(PROGRAM_VIRTUAL_STACK, entry);
+
     /* return */
 
     return 0;
@@ -60,6 +80,7 @@ int32_t write(int32_t fd, const void* buf, int32_t nbytes){
 
 }
 
+
 /* system call open */ 
 int32_t open(const uint8_t* filename){
 
@@ -76,5 +97,4 @@ printf("syscall close invoked\n");
 return 0;
 
 }
-
 

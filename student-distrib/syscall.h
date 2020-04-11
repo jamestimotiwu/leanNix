@@ -1,6 +1,6 @@
 #ifndef _SYSCALL_H
 #define _SYSCALL_H
-
+#include "types.h"
 #define SYS_HALT 1
 #define SYS_EXECUTE 2
 #define SYS_READ 3
@@ -14,7 +14,6 @@
 /* syscall handler asm code */
 void syscall_assembly();
 
-// TODO: remove these since they aren't used by C code ?
 /* system call halt */
 int32_t halt (uint8_t status);  // sys_call_table #1
 
@@ -32,6 +31,8 @@ int32_t open(const uint8_t* filename);  //sys_call_table #5
 
 /* system call close */ 
 int32_t close(int32_t fd);  //sys_call_table #6
+
+
 
 /* wrapper functions for the system calls (called by C code, implemented in assembly) */
 int32_t system_halt (uint8_t status);
