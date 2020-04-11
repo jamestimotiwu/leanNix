@@ -13,8 +13,10 @@
 
 /* Max number of open file descriptors per program */
 #define MAX_NUM_FD 8
+/* Max number of args */
 #define MAX_ARGS   128
-
+/* mask 8MB - 8KB*/
+#define PCB_MASK 0x7FE000
 /* Types defined here just like in <stdint.h> */
 typedef int int32_t;
 typedef unsigned int uint32_t;
@@ -37,7 +39,7 @@ typedef struct file_ops_ptr{
   write_op write_ptr;
   open_op open_ptr;
   close_op close_ptr;
-}file_ops_ptr_t
+}file_ops_ptr_t;
 
 /* struct for file descriptor */
 typedef struct file_desc{
@@ -45,7 +47,7 @@ typedef struct file_desc{
     int32_t inode;
     int32_t file_pos;
     int32_t flags;
-}file_desc_t
+}file_desc_t;
 
 /* struct for PCB */
 typedef struct PCB{
