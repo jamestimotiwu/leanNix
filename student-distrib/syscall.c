@@ -47,16 +47,15 @@ int32_t execute(const uint8_t* command){
 
     /* set up paging */
     page_map_user(current_pid);
-    // todo: flush to tlb?
 
-    /* load file into memory */
-    entry = program_load(command, current_pid); /* also get the entry point */
+    /* load file into memory and get entry point*/
+    entry = program_load(command, current_pid);
 
     /* create PCB/open FDs */
     pcb = create_pcb(current_pid);
     pcb->process_id = current_pid;
 
-    /* get the stack pointer, put it in esp and the pcb */
+    /* get the stack pointer, put it in esp and then the pcb */
     asm volatile("movl %%esp, %0"
             : "=rm"((esp)) /* outputs */
             :
@@ -66,55 +65,56 @@ int32_t execute(const uint8_t* command){
     pcb->parent_id = parent_pid;
     pcb->level = 0;
     //pcb->arguments = {};
-    pcb->fd_arr[fd] = ;
+    /* initailize stdin and stdout */
+    /* other entries (eg. inode) aren't used */
+    pcb->fd_arr[STDIN].file_ops = &stdin_file_ops;
+    pcb->fd_arr[STDOUT].file_ops = &stdout_file_ops;
 
 
     /* prepare for context switch */
 
     /* push IRET context onto stack and do IRET */
-    /* set up iret stack and execute (esp=entry, ebp=) */
     execute_iret(PROGRAM_VIRTUAL_STACK, entry);
-
-    /* return */
 
     return 0;
 }
 
 /* system call read */ 
 int32_t read(int32_t fd, void* buf, int32_t nbytes){
-    PCB_t *pcb;
+    PCB_t *pcb = create_pcb(current_pid);
     if (fd < 0 || fd >= MAX_NUM_FD)
         return -1;
 
-    create_pcb(current_pid);
 
-    return 0; 
-
+    return pcb->fd_arr[fd].file_ops->read_ptr(fd, buf, nbytes);
 }
 
 /* system call write */ 
 int32_t write(int32_t fd, const void* buf, int32_t nbytes){
     PCB_t *pcb = create_pcb(current_pid);
-
-    return 0;
-
+    if (fd < 0 || fd >= MAX_NUM_FD)
+        return -1;
+    
+    return pcb->fd_arr[fd].file_ops->write_ptr(fd, buf, nbytes);
 }
 
 
 /* system call open */ 
 int32_t open(const uint8_t* filename){
+    int32_t fd;
+    /* first find if there is an open file descriptor */
+    fd = 0;
 
-    printf("syscall open invoked\n");
-    return 0; 
-
-
+    return fd;
 }
 
 /* system call close */ 
 int32_t close(int32_t fd){
+    /* check that fd is valid */
+    if (fd < 0 || fd >= MAX_NUM_FD)
+        return -1;
 
-printf("syscall close invoked\n");
-return 0;
 
+    return 0;
 }
 

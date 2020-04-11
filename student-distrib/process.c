@@ -7,6 +7,7 @@
 #include "page.h"
 #include "lib.h"
 #include "process.h"
+#include "drivers/terminal.h"
 
 //static int32_t command_read(const uint8_t* command, uint8_t* arg);
 
@@ -36,6 +37,13 @@ PCB_t *create_pcb(int32_t pid) {
 	PCB_t *pcb = (PCB_t *) (PCB_OFFSET - MAX_PCB_SIZE*(pid+1));
 	return pcb;
 }
+
+int32_t bad_op() {
+	return -1;
+}
+
+file_ops_ptr_t stdin_file_ops = { terminal_read, bad_op, bad_op, bad_op };
+file_ops_ptr_t stdout_file_ops = { bad_op, terminal_write, bad_op, bad_op };
 
 
 int32_t process_execute(const uint8_t* command) {

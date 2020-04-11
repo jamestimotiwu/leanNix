@@ -29,6 +29,8 @@ typedef struct file_ops_ptr{
   close_op close_ptr;
 }file_ops_ptr_t;
 
+extern file_ops_ptr_t stdin_file_ops, stdout_file_ops;
+
 /* struct for file descriptor */
 typedef struct file_desc{
     file_ops_ptr_t *file_ops;
