@@ -14,8 +14,10 @@
  */
 int32_t halt (uint8_t status){
     PCB_t *pcb = create_pcb(current_pid);
+    PCB_t *parent;
     /* restore parent data */
     current_pid = pcb->parent_id;
+    parent = create_pcb(current_pid);
 
     /* restore parent paging */
     page_map_user(current_pid);
@@ -26,9 +28,9 @@ int32_t halt (uint8_t status){
 
     /* set the stack pointer to parent's stack pointer and jump*/
     asm volatile("movl %0, %%esp \n\
-                  jmp execute_return"
+                  jmp execute_iret_return"
             :
-            : "g" ((pcb->stack_ptr)) /* inputs */
+            : "g" ((parent->stack_ptr)) /* inputs */
             : "esp" /* clobbers */);
 
     return 0; 
@@ -47,23 +49,21 @@ int32_t execute(const uint8_t* command){
     PCB_t *pcb;
     int32_t esp;
     int32_t parent_pid = current_pid;
-    current_pid++;
     char program[FILENAME_CHAR_LIMIT];
 
     if (command == NULL)
         return -1;
 
-    /* copy string to kernel file */
-    strncpy(program, command, FILENAME_CHAR_LIMIT);
-
-
     /* parse args */
+    /* copy string to kernel file TODO */
+    strncpy(program, command, FILENAME_CHAR_LIMIT);
 
     /* check file validity */
     if (!program_valid(program))
         return -1;
 
     /* set up paging */
+    current_pid++;
     page_map_user(current_pid);
 
     /* load file into memory and get entry point*/
@@ -86,15 +86,13 @@ int32_t execute(const uint8_t* command){
     /* initailize stdin and stdout */
     /* other entries (eg. inode) aren't used */
     pcb->fd_arr[STDIN].file_ops = &stdin_file_ops;
-    pcb->fd_arr[STDOUT].file_ops = &stdout_file_ops;
+    pcb->fd_arr[STDOUT].file_ops = &stdout_file_ops; // TODO: set open
 
 
     /* prepare for context switch */
 
     /* push IRET context onto stack and do IRET */
     execute_iret(PROGRAM_VIRTUAL_STACK, entry);
-
-    asm volatile("execute_return:");
 
     return 0;
 }
@@ -103,6 +101,7 @@ int32_t execute(const uint8_t* command){
 int32_t read(int32_t fd, void* buf, int32_t nbytes){
     //printf("read wiating\n");
     PCB_t *pcb = create_pcb(current_pid);
+    // TODO: also check that the fd is open
     if (fd < 0 || fd >= MAX_NUM_FD)
         return -1;
 
@@ -113,6 +112,7 @@ int32_t read(int32_t fd, void* buf, int32_t nbytes){
 /* system call write */ 
 int32_t write(int32_t fd, const void* buf, int32_t nbytes){
     PCB_t *pcb = create_pcb(current_pid);
+    // TODO: also check that the fd is open
     if (fd < 0 || fd >= MAX_NUM_FD)
         return -1;
     
