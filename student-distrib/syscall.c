@@ -24,7 +24,13 @@ int32_t halt (uint8_t status){
     page_map_user(current_pid);
 
     /* close any relevant FDs */
-
+    int i;
+    for (i=0; i < FDA_SIZE; i++){
+      pcb->fd_arr[i].file_ops = NULL;
+      pcb->fd_arr[i].inode = -1;
+      pcb->fd_arr[i].file_pos = 0;
+      pcb->fd_arr[i].flags = 0;
+    }
     /* jump to execute return */
 
     /* set the stack pointer to parent's stack pointer and jump*/
@@ -147,7 +153,7 @@ int32_t open(const uint8_t* filename){
     pcb->fd_arr[i].inode = dentry.inode_num;
     pcb->fd_arr[i].flags = 1;
     pcb->fd_arr[i].file_pos = 0;
-    return pcb->fd_arr[i].file_ops->open_ptr(fd);
+    return pcb->fd_arr[i].file_ops->open_ptr(filename);
     //return fd;
 }
 
@@ -157,8 +163,9 @@ int32_t close(int32_t fd){
     if (fd < 0 || fd >= MAX_NUM_FD)
         return -1;
     PCB_t* pcb = create_pcb(current_pid);
+    pcb->fd_arr[fd].file_ops = &dir_file_ops;
+    pcb->fd_arr[fd].flags = 1;
 
-
-
-    return 0;
+    return pcb->fd_arr[fd].file_ops->close_ptr(fd);
+    //return 0;
 }
