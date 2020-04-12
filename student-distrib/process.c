@@ -8,7 +8,7 @@
 #include "lib.h"
 #include "process.h"
 #include "drivers/terminal.h"
-
+#include "drivers/rtc.h"
 //static int32_t command_read(const uint8_t* command, uint8_t* arg);
 
 /* start at -1 since shell will start with pid of 0 */
@@ -44,18 +44,20 @@ int32_t bad_call() {
 
 file_ops_ptr_t stdin_file_ops = { (read_op)terminal_read, (write_op)bad_call, (open_op)bad_call, (close_op)bad_call };
 file_ops_ptr_t stdout_file_ops = { (read_op)bad_call, (write_op)terminal_write, (open_op)bad_call, (close_op)bad_call };
-
+file_ops_ptr_t rtc_file_ops = {(read_op)rtc_read, (write_op)rtc_write, (open_op)rtc_open, (close_op)rtc_close };
+file_ops_ptr_t dir_file_ops = {(read_op)directory_read, (write_op)directory_write, (open_op)directory_open, (close_op)directory_close };
+file_ops_ptr_t fs_file_ops = {(read_op)fs_read, (write_op)fs_write, (open_op)fs_open, (close_op)fs_close };
 
 int32_t process_execute(const uint8_t* command) {
     /* Get filename from command */
     int8_t filename[32];
     int8_t args[128];
     int offset;
-    
+
     offset = 0;
-    
+
     /* Get filename, check if there is a file in command argument */
-    offset = command_read((int8_t*)command, filename, offset); 
+    offset = command_read((int8_t*)command, filename, offset);
     if (offset == 0)
         return -1;
 
@@ -104,6 +106,3 @@ int32_t command_read(int8_t* command, int8_t* arg, uint32_t offset) {
     /* return len of argument parsed*/
     return offset;
 }
-
-
-

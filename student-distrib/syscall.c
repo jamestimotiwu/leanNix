@@ -5,6 +5,7 @@
 #include "interrupt_linkage.h"
 #include "process.h"
 
+#define FDA_SIZE 8
 
 /* execute
  *   DESCRIPTION: syscall that halts and returns execution to parent process
@@ -33,7 +34,7 @@ int32_t halt (uint8_t status){
             : "g" ((parent->stack_ptr)) /* inputs */
             : "esp" /* clobbers */);
 
-    return 0; 
+    return 0;
 }
 
 //static int pid = 0;
@@ -97,7 +98,7 @@ int32_t execute(const uint8_t* command){
     return 0;
 }
 
-/* system call read */ 
+/* system call read */
 int32_t read(int32_t fd, void* buf, int32_t nbytes){
     //printf("read wiating\n");
     PCB_t *pcb = create_pcb(current_pid);
@@ -109,33 +110,55 @@ int32_t read(int32_t fd, void* buf, int32_t nbytes){
     return pcb->fd_arr[fd].file_ops->read_ptr(fd, buf, nbytes);
 }
 
-/* system call write */ 
+/* system call write */
 int32_t write(int32_t fd, const void* buf, int32_t nbytes){
     PCB_t *pcb = create_pcb(current_pid);
     // TODO: also check that the fd is open
     if (fd < 0 || fd >= MAX_NUM_FD)
         return -1;
-    
+
     return pcb->fd_arr[fd].file_ops->write_ptr(fd, buf, nbytes);
 }
 
 
-/* system call open */ 
+/* system call open */
 int32_t open(const uint8_t* filename){
-    int32_t fd;
+    //int32_t fd;
     /* first find if there is an open file descriptor */
-    fd = 0;
+    //fd = 0;
+    PCB_t* pcb = create_pcb(current_pid);
+    int i;
+    for(i = 0; i < FDA_SIZE; i++){
+      if(pcb->fd_arr[i].flags == 0)
+        break;
+    }
+    if(i == FDA_SIZE)
+      return -1;
+    dir_entry_t dentry;
+    read_dentry_by_name(filename, &dentry);
+    //check type to assign file_ops
+    if(dentry.type == 0)
+      pcb->fd_arr[i].file_ops = &rtc_file_ops;
+    else if(dentry.type == 1)
+      pcb->fd_arr[i].file_ops = &dir_file_ops;
+    else if(dentry.type == 2)
+      pcb->fd_arr[i].file_ops = &fs_file_ops;
 
-    return fd;
+    pcb->fd_arr[i].inode = dentry.inode_num;
+    pcb->fd_arr[i].flags = 1;
+    pcb->fd_arr[i].file_pos = 0;
+    return pcb->fd_arr[i].file_ops->open_ptr(fd);
+    //return fd;
 }
 
-/* system call close */ 
+/* system call close */
 int32_t close(int32_t fd){
     /* check that fd is valid */
     if (fd < 0 || fd >= MAX_NUM_FD)
         return -1;
+    PCB_t* pcb = create_pcb(current_pid);
+
 
 
     return 0;
 }
-
