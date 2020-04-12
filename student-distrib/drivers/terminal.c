@@ -167,7 +167,7 @@ void term_keyboardBackspace() {
  *   SIDE EFFECT: changes keyboard buffer and display; read() syscall returns
  */
 void term_keyboardEnter() {
-    cli(); // so that readWaiting doesn't change its value unexpectedly
+    //cli(); // so that readWaiting doesn't change its value unexpectedly
 
     kb_buf[cur_buf_length++] = '\n';
     term_putc('\n');
@@ -180,7 +180,7 @@ void term_keyboardEnter() {
         /* reset the buffer by setting its length to 0 */
         cur_buf_length = 0;
     }
-    sti();
+    //sti();
 
 }
 

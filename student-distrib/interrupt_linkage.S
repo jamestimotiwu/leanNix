@@ -6,7 +6,7 @@
 .globl rtc_interrupt_assembly
 .globl keyboard_interrupt_assembly
 .globl syscall_assembly
-.globl execute_iret
+.globl execute_iret, execute_iret_return
 
 # These are interrupt handlers used directly by IDT
 
@@ -38,7 +38,6 @@ syscall_assembly:
   pushl %edx
   pushl %ecx
   pushl %ebx 
-  pushfl 
 
 # check if the syscall # in in valid range (for cp3, 1~6)
   cmpl $1, %eax 
@@ -53,7 +52,6 @@ syscall_assembly:
   call *syscall_table(,%eax,4)  # call function from syscall_table with syscall # stored in eax register
   addl $12, %esp # tear down args on stack
 # restore all saved registers and return 
-  popfl 
   popl %ebx
   popl %ecx
   popl %edx
@@ -67,7 +65,6 @@ syscall_assembly:
 # For invalid_syscall, restore registers and return -1 (in eax) 
 invalid_syscall: 
   movl $-1, %eax
-  popfl
   popl %ebx
   popl %ecx
   popl %edx
@@ -100,7 +97,7 @@ execute_iret:
     pushl %eax     # push eip
 
     iret
-
+execute_iret_return:
     leave
     ret
 

@@ -13,12 +13,23 @@
  *   SIDE EFFECTS: ends execution of a program
  */
 int32_t halt (uint8_t status){
+    PCB_t *pcb = create_pcb(current_pid);
     /* restore parent data */
+    current_pid = pcb->parent_id;
+
     /* restore parent paging */
+    page_map_user(current_pid);
+
     /* close any relevant FDs */
+
     /* jump to execute return */
 
-    printf("halt sys call\n");
+    /* set the stack pointer to parent's stack pointer and jump*/
+    asm volatile("movl %0, %%esp \n\
+                  jmp execute_return"
+            :
+            : "g" ((pcb->stack_ptr)) /* inputs */
+            : "esp" /* clobbers */);
 
     return 0; 
 }
@@ -37,21 +48,26 @@ int32_t execute(const uint8_t* command){
     int32_t esp;
     int32_t parent_pid = current_pid;
     current_pid++;
+    char program[FILENAME_CHAR_LIMIT];
 
     if (command == NULL)
         return -1;
 
+    /* copy string to kernel file */
+    strncpy(program, command, FILENAME_CHAR_LIMIT);
+
+
     /* parse args */
 
     /* check file validity */
-    if (!program_valid(command))
+    if (!program_valid(program))
         return -1;
 
     /* set up paging */
     page_map_user(current_pid);
 
     /* load file into memory and get entry point*/
-    entry = program_load(command, current_pid);
+    entry = program_load(program, current_pid);
 
     /* create PCB/open FDs */
     pcb = create_pcb(current_pid);
@@ -77,6 +93,8 @@ int32_t execute(const uint8_t* command){
 
     /* push IRET context onto stack and do IRET */
     execute_iret(PROGRAM_VIRTUAL_STACK, entry);
+
+    asm volatile("execute_return:");
 
     return 0;
 }
