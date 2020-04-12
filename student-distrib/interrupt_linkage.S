@@ -84,8 +84,11 @@ syscall_table:
 
 # arguments: esp, eip
 execute_iret:
-    pushl %ebp
+    pushl %ebp # +4 bytes
     movl %esp, %ebp
+
+    pushal # +4 byte
+    pushfl # +32 bytes
 
     # setup the stack so that iret returns to user mode
     pushl $USER_DS # push user data segment
@@ -97,7 +100,10 @@ execute_iret:
     pushl %eax     # push eip
 
     iret
+
 execute_iret_return:
+    popfl
+    popal
     leave
     ret
 

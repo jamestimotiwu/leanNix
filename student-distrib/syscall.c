@@ -79,7 +79,7 @@ int32_t execute(const uint8_t* command){
             :
             : "memory");
 
-    pcb->stack_ptr = esp;
+    pcb->stack_ptr = esp+46;
     pcb->parent_id = parent_pid;
     pcb->level = 0;
     //pcb->arguments = {};
