@@ -4,6 +4,7 @@
 #include "page.h"
 #include "interrupt_linkage.h"
 #include "process.h"
+#include "x86_desc.h"
 
 
 /* execute
@@ -15,28 +16,33 @@
 int32_t halt (uint8_t status){
     PCB_t *pcb = create_pcb(current_pid);
     PCB_t *parent;
+    int32_t i, ebp;
+
+    /* don't halt the shell (pid 0) */
+    if (current_pid == 0)
+        return -1;
+
     /* restore parent data */
     current_pid = pcb->parent_id;
+    /* change kernel stack to parent's kernel stack */
     parent = create_pcb(current_pid);
+    tss.esp0 = parent->stack_ptr;
 
     /* restore parent paging */
     page_map_user(current_pid);
 
     /* close any relevant FDs */
+    for (i = 0; i < MAX_NUM_FD; i++) {
+        set_fd_close(i, pcb);
+    }
+
+    ebp = pcb->base_ptr;
 
     /* jump to execute return */
+    halt_ret(parent->stack_ptr, ebp);
 
-    /* set the stack pointer to parent's stack pointer and jump*/
-    asm volatile("movl %0, %%esp \n\
-                  jmp execute_iret_return"
-            :
-            : "g" ((parent->stack_ptr)) /* inputs */
-            : "esp" /* clobbers */);
-
-    return 0; 
+    return 0;
 }
-
-//static int pid = 0;
 
 /* execute
  *   DESCRIPTION: syscall that executes a command
@@ -47,16 +53,16 @@ int32_t halt (uint8_t status){
 int32_t execute(const uint8_t* command){
     uint32_t entry;
     PCB_t *pcb;
-    int32_t esp;
+    int32_t ebp;
     int32_t parent_pid = current_pid;
-    char program[FILENAME_CHAR_LIMIT];
+    uint8_t program[FILENAME_CHAR_LIMIT];
 
     if (command == NULL)
         return -1;
 
     /* parse args */
-    /* copy string to kernel file TODO */
-    strncpy(program, command, FILENAME_CHAR_LIMIT);
+    /* copy string to kernel memory */
+    strncpy((int8_t *) program, (int8_t *) command, FILENAME_CHAR_LIMIT);
 
     /* check file validity */
     if (!program_valid(program))
@@ -73,50 +79,60 @@ int32_t execute(const uint8_t* command){
     pcb = create_pcb(current_pid);
     pcb->process_id = current_pid;
 
-    /* get the stack pointer, put it in esp and then the pcb */
-    asm volatile("movl %%esp, %0"
-            : "=rm"((esp)) /* outputs */
+    /* get the stack pointer and base pointer */
+    asm volatile("movl %%ebp, %0"
+            : "=rm"((ebp)) /* outputs */
             :
             : "memory");
 
-    pcb->stack_ptr = esp+46;
     pcb->parent_id = parent_pid;
-    pcb->level = 0;
+
+    pcb->base_ptr = ebp;
+    pcb->stack_ptr = get_kernel_stack(current_pid);
+    tss.esp0 = pcb->stack_ptr; /* set the kernel's stack pointer */
+    
     //pcb->arguments = {};
+
     /* initailize stdin and stdout */
     /* other entries (eg. inode) aren't used */
     pcb->fd_arr[STDIN].file_ops = &stdin_file_ops;
-    pcb->fd_arr[STDOUT].file_ops = &stdout_file_ops; // TODO: set open
+    set_fd_open(STDIN, pcb);
+    pcb->fd_arr[STDOUT].file_ops = &stdout_file_ops;
+    set_fd_open(STDOUT, pcb);
 
 
     /* prepare for context switch */
 
     /* push IRET context onto stack and do IRET */
-    execute_iret(PROGRAM_VIRTUAL_STACK, entry);
+    ret_to_user(entry);
 
     return 0;
 }
 
 /* system call read */ 
 int32_t read(int32_t fd, void* buf, int32_t nbytes){
-    //printf("read wiating\n");
     PCB_t *pcb = create_pcb(current_pid);
-    // TODO: also check that the fd is open
+
     if (fd < 0 || fd >= MAX_NUM_FD)
         return -1;
 
+    if (fd_is_open(fd, pcb))
+        return pcb->fd_arr[fd].file_ops->read_ptr(fd, buf, nbytes);
 
-    return pcb->fd_arr[fd].file_ops->read_ptr(fd, buf, nbytes);
+    return -1; /* file was not opened */
 }
 
 /* system call write */ 
 int32_t write(int32_t fd, const void* buf, int32_t nbytes){
     PCB_t *pcb = create_pcb(current_pid);
-    // TODO: also check that the fd is open
+
     if (fd < 0 || fd >= MAX_NUM_FD)
         return -1;
     
-    return pcb->fd_arr[fd].file_ops->write_ptr(fd, buf, nbytes);
+    if (fd_is_open(fd, pcb))
+        return pcb->fd_arr[fd].file_ops->write_ptr(fd, buf, nbytes);
+
+    return -1; /* file was not opened */
 }
 
 

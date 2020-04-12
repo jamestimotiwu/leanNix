@@ -1,12 +1,14 @@
 #define ASM 1
 #include "syscall.h"
 #include "x86_desc.h"
+#include "process.h"
 
 .text
 .globl rtc_interrupt_assembly
 .globl keyboard_interrupt_assembly
 .globl syscall_assembly
 .globl execute_iret, execute_iret_return
+.globl ret_to_user, halt_ret
 
 # These are interrupt handlers used directly by IDT
 
@@ -81,30 +83,42 @@ invalid_syscall:
 syscall_table:
     .long 0x0, halt, execute, read, write, open, close
 
-
-# arguments: esp, eip
-execute_iret:
-    pushl %ebp # +4 bytes
+# Return to user from execute, push user DS, esp, eflags, cs, eip
+ret_to_user:
+    pushl %ebp
     movl %esp, %ebp
 
-    pushal # +4 byte
-    pushfl # +32 bytes
+    # iret stack frame: USER_DS, esp, elfags, USER_CS, eip
 
-    # setup the stack so that iret returns to user mode
-    pushl $USER_DS # push user data segment
-    movl 8(%ebp), %eax # new esp argument
-    pushl %eax     # push esp
-    pushfl         # push eflags (TODO IF?)
-    pushl $USER_CS # push user cs
-    movl 12(%ebp), %eax # new eip argument
-    pushl %eax     # push eip
+    # Set ds register to load to gdt entry
+    movl $USER_DS, %eax
+    movw %ax, %ds
+    pushl %eax
+    # esp of user program
+    pushl $PROGRAM_VIRTUAL_STACK
+    # eflags
+    pushfl
+    # user cs
+    movl $USER_CS, %eax
+    #movw %ax, %cs
+    pushl %eax
+    # eip (0x08000000 + 24 bytes)
+    movl 8(%ebp), %eax
+    pushl %eax
 
     iret
 
-execute_iret_return:
-    popfl
-    popal
+halt_ret:
+    pushl %ebp
+    movl %esp, %ebp
+
+    movl 8(%ebp), %eax # put the esp in eax
+    movl 12(%ebp), %ecx # put the ebp in ecx
+    movl %eax, %esp
+    movl %ecx, %ebp
+    movl $0, %eax
     leave
     ret
 
 .end
+
