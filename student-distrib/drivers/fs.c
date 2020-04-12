@@ -328,7 +328,7 @@ uint32_t program_load(const uint8_t *cmd, uint32_t pid) {
     read_data(dentry.inode_num, 24, (uint8_t *) &entry, 4);
     
     int count;
-    while ((count = read_data(dentry.inode_num, offset, addr, LOAD_BUF_SIZE)) != LOAD_BUF_SIZE) {
+    while ((count = read_data(dentry.inode_num, offset, addr, LOAD_BUF_SIZE)) == LOAD_BUF_SIZE) {
         addr += count;
         offset += count;
     }
