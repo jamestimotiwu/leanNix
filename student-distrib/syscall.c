@@ -40,6 +40,7 @@ int32_t halt (uint8_t status){
 
     /* jump to execute return */
     halt_ret(parent->stack_ptr, ebp);
+    // TODO remove parent stack ptr
 
     return 0;
 }
