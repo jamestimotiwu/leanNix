@@ -38,12 +38,12 @@ PCB_t *create_pcb(int32_t pid) {
 	return pcb;
 }
 
-int32_t bad_op() {
+int32_t bad_call() {
 	return -1;
 }
 
-file_ops_ptr_t stdin_file_ops = { terminal_read, bad_op, bad_op, bad_op };
-file_ops_ptr_t stdout_file_ops = { bad_op, terminal_write, bad_op, bad_op };
+file_ops_ptr_t stdin_file_ops = { (read_op)terminal_read, (write_op)bad_call, (open_op)bad_call, (close_op)bad_call };
+file_ops_ptr_t stdout_file_ops = { (read_op)bad_call, (write_op)terminal_write, (open_op)bad_call, (close_op)bad_call };
 
 
 int32_t process_execute(const uint8_t* command) {

@@ -302,6 +302,7 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length
 
 #define LOAD_BUF_SIZE 4096
 #define ELF_HEADER_LEN 4
+#define ENTRY_OFFSET 24
 static uint8_t ELF_HEADER[ELF_HEADER_LEN] = {0x7F, 'E', 'L', 'F'};
 
 /* program_load
@@ -325,10 +326,10 @@ uint32_t program_load(const uint8_t *cmd, uint32_t pid) {
 
     
     /* bytes 24-27 contain the offset */
-    read_data(dentry.inode_num, 24, (uint8_t *) &entry, 4);
+    read_data(dentry.inode_num, ENTRY_OFFSET, (uint8_t *) &entry, 4);
     
     int count;
-    while ((count = read_data(dentry.inode_num, offset, addr, LOAD_BUF_SIZE)) != LOAD_BUF_SIZE) {
+    while ((count = read_data(dentry.inode_num, offset, addr, LOAD_BUF_SIZE)) == LOAD_BUF_SIZE) {
         addr += count;
         offset += count;
     }

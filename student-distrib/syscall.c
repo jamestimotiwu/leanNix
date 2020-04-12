@@ -18,6 +18,8 @@ int32_t halt (uint8_t status){
     /* close any relevant FDs */
     /* jump to execute return */
 
+    printf("halt sys call\n");
+
     return 0; 
 }
 
@@ -81,6 +83,7 @@ int32_t execute(const uint8_t* command){
 
 /* system call read */ 
 int32_t read(int32_t fd, void* buf, int32_t nbytes){
+    //printf("read wiating\n");
     PCB_t *pcb = create_pcb(current_pid);
     if (fd < 0 || fd >= MAX_NUM_FD)
         return -1;
