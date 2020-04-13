@@ -89,6 +89,7 @@ Solution: Still working on it.
 #####
 Buglog (Michael)
 
+CP1
 Bug: The interrupt handlers were executing correctly, but sometimes for
 the ones that don't pause afterwards they were causing weird crashes. This
 was fixed by adding a an assembly wrapper around the c functions which
@@ -98,12 +99,10 @@ Bug: After implementing some PIC stuff, the qemu window would close during
 the hlt-jmp loop. This was fixed by resetting some masks on the PIC so that
 interrupts could go through, which prevented qemu from closing.
 
-Problem: When reading and printing the binary files, the ELF string at the
-beginning wasn't showing up. However, reading the text files was working just
-fine. The reason was that the terminal driver still wasn't working yet, and
-when printing characters it wrote over the ELF string. This wasn't an issue
-with text files because each line ends with a newline character. The solution
-was just to merge with the terminal driver code.
+CP2:
+Problem: Typing in ctrl-l (clearing screen) and then backspace causes an error
+Solution: Previously the only check on backspace was that the buffer wasn't empty. Now, also
+check that the cursor can go backwards (ie. that it isn't in the top left).
 
 Problem: After making some changes to the keyboard driver, the text was working
 when typing in lower case letters, but when the shift/capslock/alt key was pressed
@@ -113,6 +112,18 @@ PIC and EOI signal at the end. However, certain keys caused the function to retu
 earlier and I forgot to reenable interrupts and send the EOI in this case. The fix
 was to add these lines wherever the function returned.
 
+CP3:
+Problem: shell would page fault when an invalid command is entered
+Solution: the pid was being changed even if the execute failed. Changed this so the pid
+changes after all the checks.
+
+Problem: shell fails when it trys to execute a command
+Solution: The filename was stored as a user mode pointer, but this becomes invalid when the page table is
+updated. The solution was to create a local kernel buffer and copy the program name into it.
+
+Problem: halt not working properly
+Solution: Forgot to set TSS esp0 so the kernel stacks would overwrite each other for each process.
+It is fixed by setting esp0 whenever the task switches.
 
 ######
 
@@ -149,6 +160,7 @@ Problem: "Ignoring packet error " when using target remote to test_debug with gd
 Solution: It was normal error and piazza post explained that closing and reopening test_debug 
 while still in gdb command line on devel. Reopend test_debug and redid target remote to boot the OS. 
 
+
 cp3
 problem: the implemented test case for system call did not invoke any systemcalls
 Solution: First, I thought it was a problem of my assembly linkage code but later found out that
@@ -158,7 +170,6 @@ to get the return value from eax register after the system call in kernel.
 Problem: the wrapper for the system call assembly linkage doesn't invoke syscall functions in kernel space. 
 Solution: the sequence of how registers are stored was wrong. Fixed it by pushing registers in the right sequence in the
 assembly linkage.
-
 
 
 

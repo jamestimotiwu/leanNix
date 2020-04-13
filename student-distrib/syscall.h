@@ -33,6 +33,8 @@ int32_t open(const uint8_t* filename);  //sys_call_table #5
 int32_t close(int32_t fd);  //sys_call_table #6
 
 
+int32_t halt32(uint32_t status); // not a syscall
+
 
 /* wrapper functions for the system calls (called by C code, implemented in assembly) */
 int32_t system_halt (uint8_t status);

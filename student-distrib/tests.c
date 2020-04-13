@@ -402,21 +402,6 @@ int test_syscall(){
     return FAIL;  //syscall number out of range (1~6) should return -1 in eax 
 }
 
-int test_syscall_wrapper(){
-    TEST_HEADER; 
-
-    int result;
-    result = system_execute((uint8_t *) "shell");
-    
-    if(result==0)  // if result in eax after syscall is 0, passed the test
-        return PASS; 
- 
-    return FAIL;  //syscall number out of range (1~6) should return -1 in eax 
-
-
-}
-
-
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
 
@@ -453,7 +438,7 @@ void launch_tests() {
 
     /* CP3 Tests */
     //TEST_OUTPUT("test_syscall", test_syscall());
-    TEST_OUTPUT("test_syscall_wrapper", test_syscall_wrapper());
+    //TEST_OUTPUT("test_syscall", test_syscall());
 	TEST_OUTPUT("test_command_read", test_command_read());
 
 }

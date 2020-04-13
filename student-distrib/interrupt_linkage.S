@@ -1,12 +1,13 @@
 #define ASM 1
 #include "syscall.h"
 #include "x86_desc.h"
+#include "process.h"
 
 .text
 .globl rtc_interrupt_assembly
 .globl keyboard_interrupt_assembly
 .globl syscall_assembly
-.globl execute_iret
+.globl ret_to_user, halt_ret
 
 # These are interrupt handlers used directly by IDT
 
@@ -38,7 +39,6 @@ syscall_assembly:
   pushl %edx
   pushl %ecx
   pushl %ebx 
-  pushfl 
 
 # check if the syscall # in in valid range (for cp3, 1~6)
   cmpl $1, %eax 
@@ -53,7 +53,6 @@ syscall_assembly:
   call *syscall_table(,%eax,4)  # call function from syscall_table with syscall # stored in eax register
   addl $12, %esp # tear down args on stack
 # restore all saved registers and return 
-  popfl 
   popl %ebx
   popl %ecx
   popl %edx
@@ -67,7 +66,6 @@ syscall_assembly:
 # For invalid_syscall, restore registers and return -1 (in eax) 
 invalid_syscall: 
   movl $-1, %eax
-  popfl
   popl %ebx
   popl %ecx
   popl %edx
@@ -84,24 +82,40 @@ invalid_syscall:
 syscall_table:
     .long 0x0, halt, execute, read, write, open, close
 
-
-# arguments: esp, eip
-execute_iret:
+# Return to user from execute, push user DS, esp, eflags, cs, eip
+ret_to_user:
     pushl %ebp
     movl %esp, %ebp
 
-    # setup the stack so that iret returns to user mode
-    pushl $USER_DS # push user data segment
-    movl 8(%ebp), %eax # new esp argument
-    pushl %eax     # push esp
-    pushfl         # push eflags (TODO IF?)
-    pushl $USER_CS # push user cs
-    movl 12(%ebp), %eax # new eip argument
-    pushl %eax     # push eip
+    # iret stack frame: USER_DS, esp, elfags, USER_CS, eip
+
+    # Set ds register to load to gdt entry
+    movl $USER_DS, %eax
+    movw %ax, %ds
+    pushl %eax          # user_ds
+    # esp of user program
+    pushl $PROGRAM_VIRTUAL_STACK # program's stack
+    # eflags
+    pushfl               # flags
+    # user cs
+    movl $USER_CS, %eax
+    #movw %ax, %cs
+    pushl %eax           # user_cs
+    movl 8(%ebp), %eax
+    pushl %eax           # new eip (userspace)
 
     iret
 
+halt_ret:
+    pushl %ebp
+    movl %esp, %ebp
+
+    movl 8(%ebp), %ecx # put the ebp in ecx
+    movl 12(%ebp), %eax # execute's return value
+    movl %ecx, %esp
+    movl %ecx, %ebp
     leave
     ret
 
 .end
+

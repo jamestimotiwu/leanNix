@@ -22,30 +22,14 @@ void init_fs(uint32_t boot_block_addr) {
 	printf("Filesystem loaded with Block count: %d, Directory entries: %d \n", fs->blocks_count, fs->dentry_count);
 }
 
-/* temporary global var - remove it once file descriptors are implemented */
-static int32_t inode_to_read = -1;
-static int type_to_read = -1;
-
-/* offset into the file being read */
-static uint32_t read_offset = 0;
-
 /* fs_open
  *   DESCRIPTION: Open file
  *   INPUTS: fname -- file name
  *   OUTPUTS: none
- *   SIDE EFFECTS: changes global var
+ *   SIDE EFFECTS:
  */
 int32_t fs_open(const uint8_t* file_name) {
-	dir_entry_t dentry;
-
-	/* set dentry and make sure it is valid */
-	if (read_dentry_by_name((uint8_t*)file_name, &dentry) != 0)
-		return -1;
-
-	inode_to_read = dentry.inode_num;
-	read_offset = 0;
-	type_to_read = dentry.type;
-
+	/* opening handled by open() */
 	return 0;
 }
 
@@ -57,14 +41,6 @@ int32_t fs_open(const uint8_t* file_name) {
  */
 int32_t fs_close(uint32_t fd) {
 	/* Close file given file descriptor */
-	if (inode_to_read == -1) {
-		/* fail because there is nothing to close */
-		return -1;
-	}
-
-	inode_to_read = -1;
-	type_to_read = -1;
-	read_offset = 0;
 	return 0;
 }
 
@@ -79,21 +55,23 @@ int32_t fs_close(uint32_t fd) {
  */
 int32_t fs_read(uint32_t fd, uint8_t* buf, uint32_t count) {
 	int cnt;
+	PCB_t *pcb = create_pcb(current_pid);
+	file_desc_t *fdesc = &pcb->fd_arr[fd];
 
-	if (inode_to_read == -1 || buf == NULL) {
-		/* inode must be initialized with open & buf can't be null*/
+	if (buf == NULL) {
+		/* buf can't be null*/
 		return -1;
 	}
 
 
-	cnt = read_data(inode_to_read, read_offset, buf, count);
+	cnt = read_data(fdesc->inode, fdesc->file_pos, buf, count);
 
 	/* Check if read caused error, eg. maybe a bad inode number */
 	if (cnt == -1)
 		return -1;
 
 	/* Next time file is read, start at the next position to be copied */
-	read_offset += cnt;
+	fdesc->file_pos += cnt;
 
 	return cnt;
 }
@@ -148,14 +126,16 @@ int32_t read_dir_file(uint32_t offset, uint8_t* buf, uint32_t count) {
  */
 int32_t directory_read(uint32_t fd, uint8_t* buf, uint32_t count) {
 	int cnt;
+	PCB_t *pcb = create_pcb(current_pid);
+	file_desc_t *fdesc = &pcb->fd_arr[fd];
 
-	if (inode_to_read == -1 || buf == NULL || type_to_read != FTYPE_DIR) {
+	if (buf == NULL) {
 		/* inode must be initialized with open & buf can't be null */
 		return -1;
 	}
 
-	cnt = read_dir_file(read_offset, buf, count);
-	read_offset += cnt;
+	cnt = read_dir_file(fdesc->file_pos, buf, count);
+	fdesc->file_pos += cnt;
 	return cnt;
 }
 
@@ -175,19 +155,10 @@ int32_t directory_write(uint32_t fd, uint8_t* buf, uint32_t count) {
  *   DESCRIPTION: Open file
  *   INPUTS: fname -- file name
  *   OUTPUTS: none
- *   SIDE EFFECTS: changes global var
+ *   SIDE EFFECTS:
  */
 int32_t directory_open(const uint8_t* file_name) {
-	dir_entry_t dentry;
-
-	/* set dentry and make sure it is valid */
-	if (read_dentry_by_name((uint8_t*)file_name, &dentry) != 0)
-		return -1;
-
-	inode_to_read = dentry.inode_num;
-	read_offset = 0;
-	type_to_read = dentry.type;
-
+	/* handled by open() */
 	return 0;
 }
 
@@ -198,9 +169,6 @@ int32_t directory_open(const uint8_t* file_name) {
  *   SIDE EFFECTS: none
  */
 int32_t directory_close(uint32_t fd) {
-	inode_to_read = -1;
-	read_offset = 0;
-	type_to_read = -1;
 	return 0;
 }
 
@@ -217,8 +185,11 @@ int32_t read_dentry_by_name(const uint8_t* fname, dir_entry_t* dentry) {
 
 	/* loop through all the directory entries in boot block, searching for match */
 	for (i = 0; i < fs->dentry_count; i++) {
-		/* A match; fill out dentry */
-		if (strncmp((int8_t*)fs->dir_entries[i].filename, (int8_t*)fname, FILENAME_CHAR_LIMIT) == 0) {
+		/* check that the filename matches (also, it can't be too long */
+		if (strlen((int8_t*) fname) <= FILENAME_CHAR_LIMIT
+			&& strncmp((int8_t*)fs->dir_entries[i].filename, (int8_t*)fname, FILENAME_CHAR_LIMIT) == 0)
+		{
+			/* A match; fill out dentry */
 			strncpy((int8_t*)dentry->filename, (int8_t*)fname, FILENAME_CHAR_LIMIT);
 			dentry->type = fs->dir_entries[i].type;
 			dentry->inode_num = fs->dir_entries[i].inode_num;
@@ -302,6 +273,7 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length
 
 #define LOAD_BUF_SIZE 4096
 #define ELF_HEADER_LEN 4
+#define ENTRY_OFFSET 24
 static uint8_t ELF_HEADER[ELF_HEADER_LEN] = {0x7F, 'E', 'L', 'F'};
 
 /* program_load
@@ -325,7 +297,7 @@ uint32_t program_load(const uint8_t *cmd, uint32_t pid) {
 
     
     /* bytes 24-27 contain the offset */
-    read_data(dentry.inode_num, 24, (uint8_t *) &entry, 4);
+    read_data(dentry.inode_num, ENTRY_OFFSET, (uint8_t *) &entry, 4);
     
     int count;
     while ((count = read_data(dentry.inode_num, offset, addr, LOAD_BUF_SIZE)) == LOAD_BUF_SIZE) {

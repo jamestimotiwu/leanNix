@@ -7,8 +7,12 @@
 #include "page.h"
 #include "lib.h"
 #include "process.h"
-
+#include "drivers/terminal.h"
+#include "drivers/rtc.h"
 //static int32_t command_read(const uint8_t* command, uint8_t* arg);
+
+/* start at -1 since shell will start with pid of 0 */
+int32_t current_pid = -1;
 
 /* get the PCB */
 PCB_t* get_PCB(){
@@ -22,16 +26,92 @@ PCB_t* get_PCB(){
   return position;
 }
 
+/* 8KB */
+#define PROCESS_DATA_SIZE (8<<10)
+/* 8MB */
+#define PCB_OFFSET (8<<20)
+
+/* get_kernel_stack
+ *   DESCRIPTION: gets the top of the kernel stack for a given pid
+ *   INPUTS: pid -- the pid of the process
+ *   OUTPUTS: address of the stack
+ *   SIDE EFFECTS: none
+ */
+uint32_t get_kernel_stack(int32_t pid) {
+	/* get the bottom of the kernel stack */
+	return PCB_OFFSET - PROCESS_DATA_SIZE*(pid);
+}
+
+PCB_t *create_pcb(int32_t pid) {
+	/* PCB address: 8MB - 8KB*(pid+1) */
+	PCB_t *pcb = (PCB_t *) (PCB_OFFSET - PROCESS_DATA_SIZE*(pid+1));
+	return pcb;
+}
+
+/* bad_call
+ *   DESCRIPTION: used instead of terminal open/close
+ *   INPUTS: none
+ *   OUTPUTS: -1 (failure)
+ */
+int32_t bad_call() {
+	return -1;
+}
+
+
+file_ops_ptr_t stdin_file_ops = { (read_op)terminal_read, (write_op)bad_call,
+	                              (open_op)bad_call, (close_op)bad_call };
+
+file_ops_ptr_t stdout_file_ops = { (read_op)bad_call, (write_op)terminal_write,
+	                               (open_op)bad_call, (close_op)bad_call };
+
+file_ops_ptr_t rtc_file_ops = {(read_op)rtc_read, (write_op)rtc_write,
+							   (open_op)rtc_open, (close_op)rtc_close };
+
+file_ops_ptr_t dir_file_ops = {(read_op)directory_read, (write_op)directory_write,
+							   (open_op)directory_open, (close_op)directory_close };
+
+file_ops_ptr_t fs_file_ops = {(read_op)fs_read, (write_op)fs_write,
+							  (open_op)fs_open, (close_op)fs_close };
+
+/* set_fd_open
+ *   DESCRIPTION: sets the flag of a file descriptor to open
+ *   INPUTS: fd -- the file descriptor
+ *           pcb -- program control block
+ *   OUTPUTS: none
+ *   SIDE EFFECTS: changes fd_arr in pcb
+ */
+void set_fd_open(int32_t fd, PCB_t *pcb) {
+	/* set the fd's open flag to 1 */
+	pcb->fd_arr[fd].flags |= FDFLAG_OPEN;
+}
+
+/* set_fd_close
+ *   DESCRIPTION: sets the flag of a file descriptor to closed
+ *   INPUTS: fd -- the file descriptor
+ *           pcb -- program control block
+ *   OUTPUTS: none
+ *   SIDE EFFECTS: changes fd_arr in pcb
+ */
+void set_fd_close(int32_t fd, PCB_t *pcb) {
+	/* set the fd's open flag to 0 */
+	pcb->fd_arr[fd].flags &= ~FDFLAG_OPEN;
+}
+
+int32_t fd_is_open(int32_t fd, PCB_t *pcb) {
+	return pcb->fd_arr[fd].flags & FDFLAG_OPEN;
+}
+
+
 int32_t process_execute(const uint8_t* command) {
     /* Get filename from command */
     int8_t filename[32];
     int8_t args[128];
     int offset;
-    
+
     offset = 0;
-    
+
     /* Get filename, check if there is a file in command argument */
-    offset = command_read((int8_t*)command, filename, offset); 
+    offset = command_read((int8_t*)command, filename, offset);
     if (offset == 0)
         return -1;
 
@@ -48,10 +128,6 @@ int32_t process_execute(const uint8_t* command) {
     /* Set up pages and flush tlb */
     page_map_user(proc_num);
 
-    return 0;
-}
-
-int32_t process_halt(uint8_t status) {
     return 0;
 }
 
@@ -76,10 +152,8 @@ int32_t command_read(int8_t* command, int8_t* arg, uint32_t offset) {
         offset++;
         i++;
     }
+	arg[i] = '\0';
 
     /* return len of argument parsed*/
     return offset;
 }
-
-
-
