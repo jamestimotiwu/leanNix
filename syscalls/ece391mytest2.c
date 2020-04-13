@@ -6,5 +6,5 @@
 int main ()
 {
 
-    return 14;
+    return -1;
 }

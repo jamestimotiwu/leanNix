@@ -2,6 +2,10 @@
 #include "process.h"
 #include "syscall.h"
 
+#define EXCEPTION_STATUS 256
+
+// TODO: check if exceptions are in user code or kernel code
+
 /* Exception Handlers
  *   DESCRIPTION: prints error msg and halts execution when exception is raised
  *   INPUTS: none
@@ -9,7 +13,7 @@
  *   SIDE EFFECTS: prints characters, execution stops
  */
 void divide_error_exception(){
-    halt32(256);
+    halt32(EXCEPTION_STATUS);
     //print_exception("EXCEPTION: DIVIDE_ERROR_EXCEPTION! \n");
 }
 void debug_exception(){
@@ -28,7 +32,8 @@ void bound_range_exceeded_exception(){
   print_exception("EXCEPTION: BOUND_RANGE_EXCEEDED_EXCEPTION! \n");
 }
 void invalid_opcode_exception(){
-  print_exception("EXCEPTION: INVALID_OPCODE_EXCEPTION! \n");
+    halt32(EXCEPTION_STATUS);
+    print_exception("EXCEPTION: INVALID_OPCODE_EXCEPTION! \n");
 }
 void device_not_available_exception(){
   print_exception("EXCEPTION: DEVICE_NOT_AVAILABLE_EXCEPTION! \n");
@@ -49,10 +54,12 @@ void stack_fault_exception(){
   print_exception("EXCEPTION: STACK_FAULT_EXCEPTION! \n");
 }
 void general_protection_exception(){
-  print_exception("EXCEPTION: GENERAL_PROTECTION_EXCEPTION! \n");
+    halt32(EXCEPTION_STATUS);
+    print_exception("EXCEPTION: GENERAL_PROTECTION_EXCEPTION! \n");
 }
 void page_fault_exception(){
-  print_exception("EXCEPTION: PAGE_FAULT_EXCEPTION! \n");
+    halt32(EXCEPTION_STATUS);
+    print_exception("EXCEPTION: PAGE_FAULT_EXCEPTION! \n");
 }
 void fpu_floating_point_error(){
   print_exception("EXCEPTION: FPU_FLOATING_POINT_EXCEPTION! \n");
