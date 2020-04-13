@@ -56,6 +56,10 @@ int32_t halt32(uint32_t status) {
  *   SIDE EFFECTS: ends execution of a program
  */
 int32_t halt (uint8_t status){
+    int a = 3;
+    int b = 0;
+    printf("%d\n",  a/b);
+
     return halt32((uint32_t) status);
 }
 

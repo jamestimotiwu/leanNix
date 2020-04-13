@@ -177,11 +177,6 @@ void entry(unsigned long magic, unsigned long addr) {
 	//launch_tests();
 #endif
 
-	/*
-	int a = 0;
-	int b = 3;
-	printf("%d\n", b/a);
-	*/
 
 	/* Execute the first program ("shell") ... */
 	execute((uint8_t *) "shell");

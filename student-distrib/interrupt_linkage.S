@@ -40,6 +40,12 @@ syscall_assembly:
   pushl %ecx
   pushl %ebx 
 
+  # set data segment DS to kernel's data segment
+  pushl %ecx
+  movl $KERNEL_DS, %ecx
+  movw %cx, %ds
+  popl %ecx
+
 # check if the syscall # in in valid range (for cp3, 1~6)
   cmpl $1, %eax 
   jl invalid_syscall
