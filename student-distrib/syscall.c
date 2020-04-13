@@ -160,21 +160,25 @@ int32_t open(const uint8_t* filename){
     }
     if(i == FDA_SIZE)
       return -1;
+
     dir_entry_t dentry;
-    read_dentry_by_name(filename, &dentry);
+    if (-1 == read_dentry_by_name(filename, &dentry))
+        return -1;
+
     //check type to assign file_ops
-    if(dentry.type == 0)
+    if(dentry.type == FTYPE_RTC)
       pcb->fd_arr[i].file_ops = &rtc_file_ops;
-    else if(dentry.type == 1)
+    else if(dentry.type == FTYPE_DIR)
       pcb->fd_arr[i].file_ops = &dir_file_ops;
-    else if(dentry.type == 2)
+    else if(dentry.type == FTYPE_RTC)
       pcb->fd_arr[i].file_ops = &fs_file_ops;
 
     pcb->fd_arr[i].inode = dentry.inode_num;
-    pcb->fd_arr[i].flags = 1;
+    pcb->fd_arr[i].flags = FDFLAG_OPEN;
     pcb->fd_arr[i].file_pos = 0;
-    return pcb->fd_arr[i].file_ops->open_ptr(filename);
-    //return fd;
+    pcb->fd_arr[i].file_ops->open_ptr(filename); // return this?
+
+    return i;
 }
 
 /* system call close */
@@ -182,10 +186,11 @@ int32_t close(int32_t fd){
     /* check that fd is valid */
     if (fd < 0 || fd >= MAX_NUM_FD)
         return -1;
+
     PCB_t* pcb = create_pcb(current_pid);
     pcb->fd_arr[fd].file_ops = &dir_file_ops;
-    pcb->fd_arr[fd].flags = 1;
+    pcb->fd_arr[fd].flags = 0;
 
-    return pcb->fd_arr[fd].file_ops->close_ptr(fd);
-    //return 0;
+    pcb->fd_arr[fd].file_ops->close_ptr(fd);
+    return 0;
 }

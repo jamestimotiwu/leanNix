@@ -87,6 +87,7 @@ int32_t command_read(int8_t* command, int8_t* arg, uint32_t offset);
 
 uint32_t get_kernel_stack(int32_t pid);
 PCB_t *create_pcb(int32_t pid);
+#endif
 
 #endif
 

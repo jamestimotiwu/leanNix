@@ -63,9 +63,16 @@ file_ops_ptr_t stdin_file_ops = { (read_op)terminal_read, (write_op)bad_call,
 
 file_ops_ptr_t stdout_file_ops = { (read_op)bad_call, (write_op)terminal_write,
 	                               (open_op)bad_call, (close_op)bad_call };
-file_ops_ptr_t rtc_file_ops = {(read_op)rtc_read, (write_op)rtc_write, (open_op)rtc_open, (close_op)rtc_close };
-file_ops_ptr_t dir_file_ops = {(read_op)directory_read, (write_op)directory_write, (open_op)directory_open, (close_op)directory_close };
-file_ops_ptr_t fs_file_ops = {(read_op)fs_read, (write_op)fs_write, (open_op)fs_open, (close_op)fs_close };
+
+file_ops_ptr_t rtc_file_ops = {(read_op)rtc_read, (write_op)rtc_write,
+							   (open_op)rtc_open, (close_op)rtc_close };
+
+file_ops_ptr_t dir_file_ops = {(read_op)directory_read, (write_op)directory_write,
+							   (open_op)directory_open, (close_op)directory_close };
+
+file_ops_ptr_t fs_file_ops = {(read_op)fs_read, (write_op)fs_write,
+							  (open_op)fs_open, (close_op)fs_close };
+
 /* set_fd_open
  *   DESCRIPTION: sets the flag of a file descriptor to open
  *   INPUTS: fd -- the file descriptor
