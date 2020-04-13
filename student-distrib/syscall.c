@@ -7,17 +7,18 @@
 #include "x86_desc.h"
 #include "drivers/keyboard.h"
 
-/* execute
- *   DESCRIPTION: syscall that halts and returns execution to parent process
- *   INPUTS: status -- status of the halt
- *   OUTPUTS: none, because it doesn't return
- *   SIDE EFFECTS: ends execution of a program
+/* halt32
+ *   DESCRIPTION: same as halt, but argument is 32 bits so
+ *                that this can be called during an exception
+ *                (status = 256)
+ *   INPUTS: status -- 32 bit status of halt
+ *   OUTPUT: 0
+ *   SIDE EFFECTS: halts execution of program
  */
-int32_t halt (uint8_t status){
+int32_t halt32(uint32_t status) {
     PCB_t *pcb = create_pcb(current_pid);
     PCB_t *parent;
     int32_t i, ebp;
-    uint32_t status32 = (uint32_t) status;
 
     if (current_pid == 0) {
         /* restart shell when it tries to halt */
@@ -43,9 +44,19 @@ int32_t halt (uint8_t status){
     ebp = pcb->base_ptr;
 
     /* jump to execute return */
-    halt_ret(ebp, status32);
+    halt_ret(ebp, status);
 
     return 0;
+}
+
+/* halt
+ *   DESCRIPTION: syscall that halts and returns execution to parent process
+ *   INPUTS: status -- status of the halt
+ *   OUTPUTS: none, because it doesn't return
+ *   SIDE EFFECTS: ends execution of a program
+ */
+int32_t halt (uint8_t status){
+    return halt32((uint32_t) status);
 }
 
 /* execute
@@ -67,7 +78,7 @@ int32_t execute(const uint8_t* command){
 
     /* parse args */
     /* copies program name into kernel memory */
-    offset = command_read((uint8_t*) command, (int8_t *) program, offset);
+    offset = command_read((int8_t*) command, (int8_t *) program, offset);
     // TODO: parse the arguments (cp4)
 
     /* check file validity */
@@ -135,7 +146,7 @@ int32_t read(int32_t fd, void* buf, int32_t nbytes){
     return -1; /* file was not opened */
 }
 
-/* read
+/* write
  *   DESCRIPTION: write bytes into file
  *   INPUTS: fd -- the file descriptor
  *           buf -- the source buffer
@@ -193,7 +204,12 @@ int32_t open(const uint8_t* filename){
     return i;
 }
 
-/* system call close */
+/* close
+ *   DESCRIPTION: close a file descriptor
+ *   INPUTS: filename -- the name of the file to close
+ *   OUTPUTS: the file descriptor
+ *   SIDE EFFECTS: changes pcb fd_arr
+ */
 int32_t close(int32_t fd){
     /* check that fd is valid (can't close stdout or stdin) */
     if (fd < 0 || fd >= MAX_NUM_FD || fd == STDOUT || fd == STDIN)
@@ -208,6 +224,6 @@ int32_t close(int32_t fd){
     pcb->fd_arr[fd].file_ops = &dir_file_ops;
     pcb->fd_arr[fd].flags = 0;
 
-    pcb->fd_arr[fd].file_ops->close_ptr(fd);
-    return 0;
+    return pcb->fd_arr[fd].file_ops->close_ptr(fd);
 }
+

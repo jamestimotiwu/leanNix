@@ -1,4 +1,6 @@
 #include "exceptions.h"
+#include "process.h"
+#include "syscall.h"
 
 /* Exception Handlers
  *   DESCRIPTION: prints error msg and halts execution when exception is raised
@@ -7,7 +9,8 @@
  *   SIDE EFFECTS: prints characters, execution stops
  */
 void divide_error_exception(){
-  print_exception("EXCEPTION: DIVIDE_ERROR_EXCEPTION! \n");
+    halt32(256);
+    //print_exception("EXCEPTION: DIVIDE_ERROR_EXCEPTION! \n");
 }
 void debug_exception(){
   print_exception("EXCEPTION: DEBUG_EXCEPTION! \n");
