@@ -60,6 +60,7 @@ typedef struct PCB{
   int32_t process_id;
   /* ESP */
   int32_t stack_ptr;
+  /* EBP */
   int32_t base_ptr;
   /* when child program halts, can return control to parent */
   int32_t parent_id;
