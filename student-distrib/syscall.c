@@ -6,6 +6,7 @@
 #include "process.h"
 #include "x86_desc.h"
 
+#define FDA_SIZE 8
 
 /* execute
  *   DESCRIPTION: syscall that halts and returns execution to parent process
@@ -37,6 +38,16 @@ int32_t halt (uint8_t status){
     }
 
     ebp = pcb->base_ptr;
+
+    // int i;
+    // for (i=0; i < FDA_SIZE; i++){
+    //   pcb->fd_arr[i].file_ops = NULL;
+    //   pcb->fd_arr[i].inode = -1;
+    //   pcb->fd_arr[i].file_pos = 0;
+    //   pcb->fd_arr[i].flags = 0;
+    // }
+    /* jump to execute return */
+
 
     /* jump to execute return */
     halt_ret(parent->stack_ptr, ebp);
@@ -110,7 +121,7 @@ int32_t execute(const uint8_t* command){
     return 0;
 }
 
-/* system call read */ 
+/* system call read */
 int32_t read(int32_t fd, void* buf, int32_t nbytes){
     PCB_t *pcb = create_pcb(current_pid);
 
@@ -123,13 +134,12 @@ int32_t read(int32_t fd, void* buf, int32_t nbytes){
     return -1; /* file was not opened */
 }
 
-/* system call write */ 
+/* system call write */
 int32_t write(int32_t fd, const void* buf, int32_t nbytes){
     PCB_t *pcb = create_pcb(current_pid);
 
     if (fd < 0 || fd >= MAX_NUM_FD)
         return -1;
-    
     if (fd_is_open(fd, pcb))
         return pcb->fd_arr[fd].file_ops->write_ptr(fd, buf, nbytes);
 
@@ -137,22 +147,45 @@ int32_t write(int32_t fd, const void* buf, int32_t nbytes){
 }
 
 
-/* system call open */ 
+/* system call open */
 int32_t open(const uint8_t* filename){
-    int32_t fd;
+    //int32_t fd;
     /* first find if there is an open file descriptor */
-    fd = 0;
+    //fd = 0;
+    PCB_t* pcb = create_pcb(current_pid);
+    int i;
+    for(i = 0; i < FDA_SIZE; i++){
+      if(pcb->fd_arr[i].flags == 0)
+        break;
+    }
+    if(i == FDA_SIZE)
+      return -1;
+    dir_entry_t dentry;
+    read_dentry_by_name(filename, &dentry);
+    //check type to assign file_ops
+    if(dentry.type == 0)
+      pcb->fd_arr[i].file_ops = &rtc_file_ops;
+    else if(dentry.type == 1)
+      pcb->fd_arr[i].file_ops = &dir_file_ops;
+    else if(dentry.type == 2)
+      pcb->fd_arr[i].file_ops = &fs_file_ops;
 
-    return fd;
+    pcb->fd_arr[i].inode = dentry.inode_num;
+    pcb->fd_arr[i].flags = 1;
+    pcb->fd_arr[i].file_pos = 0;
+    return pcb->fd_arr[i].file_ops->open_ptr(filename);
+    //return fd;
 }
 
-/* system call close */ 
+/* system call close */
 int32_t close(int32_t fd){
     /* check that fd is valid */
     if (fd < 0 || fd >= MAX_NUM_FD)
         return -1;
+    PCB_t* pcb = create_pcb(current_pid);
+    pcb->fd_arr[fd].file_ops = &dir_file_ops;
+    pcb->fd_arr[fd].flags = 1;
 
-
-    return 0;
+    return pcb->fd_arr[fd].file_ops->close_ptr(fd);
+    //return 0;
 }
-

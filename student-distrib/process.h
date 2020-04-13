@@ -42,7 +42,7 @@ typedef struct file_ops_ptr{
   close_op close_ptr;
 }file_ops_ptr_t;
 
-extern file_ops_ptr_t stdin_file_ops, stdout_file_ops;
+extern file_ops_ptr_t stdin_file_ops, stdout_file_ops, rtc_file_ops, dir_file_ops, fs_file_ops;
 
 /* struct for file descriptor */
 typedef struct file_desc{
@@ -87,8 +87,6 @@ int32_t command_read(int8_t* command, int8_t* arg, uint32_t offset);
 
 uint32_t get_kernel_stack(int32_t pid);
 PCB_t *create_pcb(int32_t pid);
-
-#endif
 
 #endif
 
