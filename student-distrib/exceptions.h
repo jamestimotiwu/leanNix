@@ -1,6 +1,9 @@
 #ifndef EXCEPTIONS_H
 #define EXCEPTIONS_H
 
+#define EXCEPTION_STATUS 256
+
+#ifndef ASM
 #include "x86_desc.h"
 #include "lib.h"
 
@@ -28,4 +31,6 @@ void system_call();
 
 /* Prints the exception*/
 void print_exception(char * str);
+#endif
+
 #endif

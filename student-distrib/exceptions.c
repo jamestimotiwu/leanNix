@@ -2,7 +2,6 @@
 #include "process.h"
 #include "syscall.h"
 
-#define EXCEPTION_STATUS 256
 
 // TODO: check if exceptions are in user code or kernel code
 
@@ -13,8 +12,7 @@
  *   SIDE EFFECTS: prints characters, execution stops
  */
 void divide_error_exception(){
-    halt32(EXCEPTION_STATUS);
-    //print_exception("EXCEPTION: DIVIDE_ERROR_EXCEPTION! \n");
+    print_exception("EXCEPTION: DIVIDE_ERROR_EXCEPTION! \n");
 }
 void debug_exception(){
   print_exception("EXCEPTION: DEBUG_EXCEPTION! \n");
@@ -32,7 +30,6 @@ void bound_range_exceeded_exception(){
   print_exception("EXCEPTION: BOUND_RANGE_EXCEEDED_EXCEPTION! \n");
 }
 void invalid_opcode_exception(){
-    halt32(EXCEPTION_STATUS);
     print_exception("EXCEPTION: INVALID_OPCODE_EXCEPTION! \n");
 }
 void device_not_available_exception(){
@@ -54,11 +51,9 @@ void stack_fault_exception(){
   print_exception("EXCEPTION: STACK_FAULT_EXCEPTION! \n");
 }
 void general_protection_exception(){
-    halt32(EXCEPTION_STATUS);
     print_exception("EXCEPTION: GENERAL_PROTECTION_EXCEPTION! \n");
 }
 void page_fault_exception(){
-    halt32(EXCEPTION_STATUS);
     print_exception("EXCEPTION: PAGE_FAULT_EXCEPTION! \n");
 }
 void fpu_floating_point_error(){
@@ -76,13 +71,21 @@ void simd_floating_point_exception(){
 void reserved(){
   print_exception("EXCEPTION: RESERVED! \n");
 }
-void system_call(){
-  print_exception("EXCEPTION: SYSTEM CALL! \n");
-}
 
 /* helper function used by the above functions */
 void print_exception(char * str){
-  clear();
-  printf(str);
-  while(1);
+    int16_t ds_reg;
+    asm volatile ("movw %%ds, %0"
+            : "=g"((ds_reg))
+            :
+            : "memory");
+
+    if (ds_reg == KERNEL_DS) {
+        clear();
+        printf(str);
+        while(1);
+
+    } else if (ds_reg == USER_DS) {
+        halt32(EXCEPTION_STATUS);
+    }
 }
