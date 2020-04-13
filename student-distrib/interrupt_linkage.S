@@ -92,18 +92,17 @@ ret_to_user:
     # Set ds register to load to gdt entry
     movl $USER_DS, %eax
     movw %ax, %ds
-    pushl %eax
+    pushl %eax          # user_ds
     # esp of user program
-    pushl $PROGRAM_VIRTUAL_STACK
+    pushl $PROGRAM_VIRTUAL_STACK # program's stack
     # eflags
-    pushfl
+    pushfl               # flags
     # user cs
     movl $USER_CS, %eax
     #movw %ax, %cs
-    pushl %eax
-    # eip (0x08000000 + 24 bytes)
+    pushl %eax           # user_cs
     movl 8(%ebp), %eax
-    pushl %eax
+    pushl %eax           # new eip (userspace)
 
     iret
 

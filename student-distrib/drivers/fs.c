@@ -26,21 +26,10 @@ void init_fs(uint32_t boot_block_addr) {
  *   DESCRIPTION: Open file
  *   INPUTS: fname -- file name
  *   OUTPUTS: none
- *   SIDE EFFECTS: changes global var
+ *   SIDE EFFECTS:
  */
 int32_t fs_open(const uint8_t* file_name) {
-	dir_entry_t dentry;
-
-	/* set dentry and make sure it is valid */
-	if (read_dentry_by_name((uint8_t*)file_name, &dentry) != 0)
-		return -1;
-
-	/*
-	inode_to_read = dentry.inode_num;
-	read_offset = 0;
-	type_to_read = dentry.type;
-	*/
-
+	/* opening handled by open() */
 	return 0;
 }
 
@@ -166,9 +155,10 @@ int32_t directory_write(uint32_t fd, uint8_t* buf, uint32_t count) {
  *   DESCRIPTION: Open file
  *   INPUTS: fname -- file name
  *   OUTPUTS: none
- *   SIDE EFFECTS: changes global var
+ *   SIDE EFFECTS:
  */
 int32_t directory_open(const uint8_t* file_name) {
+	/* handled by open() */
 	return 0;
 }
 

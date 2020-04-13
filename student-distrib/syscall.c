@@ -115,7 +115,14 @@ int32_t execute(const uint8_t* command){
     return 0;
 }
 
-/* system call read */
+/* read
+ *   DESCRIPTION: read bytes of a file
+ *   INPUTS: fd -- the file descriptor
+ *           buf -- the destination buffer
+ *           nbytes -- number of bytes to read
+ *   OUTPUTS: number of bytes copied
+ *   SIDE EFFECTS: changes buf
+ */
 int32_t read(int32_t fd, void* buf, int32_t nbytes){
     PCB_t *pcb = create_pcb(current_pid);
 
@@ -128,7 +135,14 @@ int32_t read(int32_t fd, void* buf, int32_t nbytes){
     return -1; /* file was not opened */
 }
 
-/* system call write */
+/* read
+ *   DESCRIPTION: write bytes into file
+ *   INPUTS: fd -- the file descriptor
+ *           buf -- the source buffer
+ *           nbytes -- number of bytes to write
+ *   OUTPUTS: number of bytes copied
+ *   SIDE EFFECTS: writes to a file
+ */
 int32_t write(int32_t fd, const void* buf, int32_t nbytes){
     PCB_t *pcb = create_pcb(current_pid);
 
@@ -140,8 +154,12 @@ int32_t write(int32_t fd, const void* buf, int32_t nbytes){
     return -1; /* file was not opened */
 }
 
-
-/* system call open */
+/* open
+ *   DESCRIPTION: open a file descriptor
+ *   INPUTS: filename -- the name of the file to open
+ *   OUTPUTS: the file descriptor
+ *   SIDE EFFECTS: changes pcb open files
+ */
 int32_t open(const uint8_t* filename){
     //int32_t fd;
     /* first find if there is an open file descriptor */
