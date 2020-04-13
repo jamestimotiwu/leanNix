@@ -6,8 +6,6 @@
 #include "process.h"
 #include "x86_desc.h"
 
-#define FDA_SIZE 8
-
 /* execute
  *   DESCRIPTION: syscall that halts and returns execution to parent process
  *   INPUTS: status -- status of the halt
@@ -18,8 +16,10 @@ int32_t halt (uint8_t status){
     PCB_t *pcb = create_pcb(current_pid);
     PCB_t *parent;
     int32_t i, ebp;
+    uint32_t status32 = (uint32_t) status;
 
     /* don't halt the shell (pid 0) */
+    // TODO : this causes page fault
     if (current_pid == 0)
         return -1;
 
@@ -39,19 +39,8 @@ int32_t halt (uint8_t status){
 
     ebp = pcb->base_ptr;
 
-    // int i;
-    // for (i=0; i < FDA_SIZE; i++){
-    //   pcb->fd_arr[i].file_ops = NULL;
-    //   pcb->fd_arr[i].inode = -1;
-    //   pcb->fd_arr[i].file_pos = 0;
-    //   pcb->fd_arr[i].flags = 0;
-    // }
     /* jump to execute return */
-
-
-    /* jump to execute return */
-    halt_ret(parent->stack_ptr, ebp);
-    // TODO remove parent stack ptr
+    halt_ret(ebp, status32);
 
     return 0;
 }
@@ -154,11 +143,11 @@ int32_t open(const uint8_t* filename){
     //fd = 0;
     PCB_t* pcb = create_pcb(current_pid);
     int i;
-    for(i = 0; i < FDA_SIZE; i++){
+    for(i = 0; i < MAX_NUM_FD; i++){
       if(pcb->fd_arr[i].flags == 0)
         break;
     }
-    if(i == FDA_SIZE)
+    if(i == MAX_NUM_FD)
       return -1;
 
     dir_entry_t dentry;
@@ -183,11 +172,16 @@ int32_t open(const uint8_t* filename){
 
 /* system call close */
 int32_t close(int32_t fd){
-    /* check that fd is valid */
-    if (fd < 0 || fd >= MAX_NUM_FD)
+    /* check that fd is valid (can't close stdout or stdin) */
+    if (fd < 0 || fd >= MAX_NUM_FD || fd == STDOUT || fd == STDIN)
         return -1;
 
     PCB_t* pcb = create_pcb(current_pid);
+    if (!fd_is_open(fd, pcb)) {
+        /* trying to open an already closed fd */
+        return -1;
+    }
+
     pcb->fd_arr[fd].file_ops = &dir_file_ops;
     pcb->fd_arr[fd].flags = 0;
 

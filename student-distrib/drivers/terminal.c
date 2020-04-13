@@ -167,7 +167,7 @@ void term_keyboardBackspace() {
  *   SIDE EFFECT: changes keyboard buffer and display; read() syscall returns
  */
 void term_keyboardEnter() {
-    //cli(); // so that readWaiting doesn't change its value unexpectedly
+    cli(); // so that readWaiting doesn't change its value unexpectedly
 
     kb_buf[cur_buf_length++] = '\n';
     term_putc('\n');
@@ -180,7 +180,7 @@ void term_keyboardEnter() {
         /* reset the buffer by setting its length to 0 */
         cur_buf_length = 0;
     }
-    //sti();
+    sti();
 
 }
 
@@ -247,6 +247,7 @@ int32_t terminal_read(int32_t fd, void *buf, uint32_t count) {
 
     while (readWaiting) {
         // Do nothing; wait for this to exit (like spinlock)
+        asm volatile("hlt"); // spin nicely
     }
 
     for (i = 0; i < count; i++) {

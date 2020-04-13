@@ -7,7 +7,6 @@
 .globl rtc_interrupt_assembly
 .globl keyboard_interrupt_assembly
 .globl syscall_assembly
-.globl execute_iret, execute_iret_return
 .globl ret_to_user, halt_ret
 
 # These are interrupt handlers used directly by IDT
@@ -112,11 +111,10 @@ halt_ret:
     pushl %ebp
     movl %esp, %ebp
 
-    movl 8(%ebp), %eax # put the esp in eax
-    movl 12(%ebp), %ecx # put the ebp in ecx
-    movl %eax, %esp
+    movl 8(%ebp), %ecx # put the ebp in ecx
+    movl 12(%ebp), %eax # execute's return value
+    movl %ecx, %esp
     movl %ecx, %ebp
-    movl $0, %eax
     leave
     ret
 
