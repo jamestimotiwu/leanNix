@@ -74,6 +74,8 @@ void reserved(){
 
 /* helper function used by the above functions */
 void print_exception(char * str){
+    /* Data segment register is used to determine if exception was caused in
+     * user space or kernel space. */
     int16_t ds_reg;
     asm volatile ("movw %%ds, %0"
             : "=g"((ds_reg))
@@ -81,11 +83,14 @@ void print_exception(char * str){
             : "memory");
 
     if (ds_reg == KERNEL_DS) {
+        /* Exception caused in kernel space -- print error and loop */
         clear();
         printf(str);
         while(1);
 
     } else if (ds_reg == USER_DS) {
+        /* Exception caused in user space -- print message and halt */
+        printf(str);
         halt32(EXCEPTION_STATUS);
     }
 }
