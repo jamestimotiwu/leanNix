@@ -169,12 +169,6 @@ int32_t directory_write(uint32_t fd, uint8_t* buf, uint32_t count) {
  *   SIDE EFFECTS: changes global var
  */
 int32_t directory_open(const uint8_t* file_name) {
-	dir_entry_t dentry;
-
-	/* set dentry and make sure it is valid */
-	if (read_dentry_by_name((uint8_t*)file_name, &dentry) != 0)
-		return -1;
-
 	return 0;
 }
 
@@ -201,8 +195,11 @@ int32_t read_dentry_by_name(const uint8_t* fname, dir_entry_t* dentry) {
 
 	/* loop through all the directory entries in boot block, searching for match */
 	for (i = 0; i < fs->dentry_count; i++) {
-		/* A match; fill out dentry */
-		if (strncmp((int8_t*)fs->dir_entries[i].filename, (int8_t*)fname, FILENAME_CHAR_LIMIT) == 0) {
+		/* check that the filename matches (also, it can't be too long */
+		if (strlen((int8_t*) fname) <= FILENAME_CHAR_LIMIT
+			&& strncmp((int8_t*)fs->dir_entries[i].filename, (int8_t*)fname, FILENAME_CHAR_LIMIT) == 0)
+		{
+			/* A match; fill out dentry */
 			strncpy((int8_t*)dentry->filename, (int8_t*)fname, FILENAME_CHAR_LIMIT);
 			dentry->type = fs->dir_entries[i].type;
 			dentry->inode_num = fs->dir_entries[i].inode_num;

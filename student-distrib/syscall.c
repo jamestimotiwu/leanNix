@@ -5,6 +5,7 @@
 #include "interrupt_linkage.h"
 #include "process.h"
 #include "x86_desc.h"
+#include "drivers/keyboard.h"
 
 /* execute
  *   DESCRIPTION: syscall that halts and returns execution to parent process
@@ -18,10 +19,12 @@ int32_t halt (uint8_t status){
     int32_t i, ebp;
     uint32_t status32 = (uint32_t) status;
 
-    /* don't halt the shell (pid 0) */
-    // TODO : this causes page fault
-    if (current_pid == 0)
+    if (current_pid == 0) {
+        /* restart shell when it tries to halt */
+        current_pid = -1;
+        execute((uint8_t *)"shell");
         return -1;
+    }
 
     /* restore parent data */
     current_pid = pcb->parent_id;
@@ -56,14 +59,16 @@ int32_t execute(const uint8_t* command){
     PCB_t *pcb;
     int32_t ebp;
     int32_t parent_pid = current_pid;
-    uint8_t program[FILENAME_CHAR_LIMIT];
+    uint8_t program[KB_BUF_SIZE+1];
+	int offset = 0; // for command parsing
 
     if (command == NULL)
         return -1;
 
     /* parse args */
-    /* copy string to kernel memory */
-    strncpy((int8_t *) program, (int8_t *) command, FILENAME_CHAR_LIMIT);
+    /* copies program name into kernel memory */
+    offset = command_read((uint8_t*) command, (int8_t *) program, offset);
+    // TODO: parse the arguments (cp4)
 
     /* check file validity */
     if (!program_valid(program))
@@ -163,9 +168,9 @@ int32_t open(const uint8_t* filename){
       pcb->fd_arr[i].file_ops = &fs_file_ops;
 
     pcb->fd_arr[i].inode = dentry.inode_num;
-    pcb->fd_arr[i].flags = FDFLAG_OPEN;
     pcb->fd_arr[i].file_pos = 0;
     pcb->fd_arr[i].file_ops->open_ptr(filename); // return this?
+    pcb->fd_arr[i].flags = FDFLAG_OPEN;
 
     return i;
 }

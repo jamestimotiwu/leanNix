@@ -131,10 +131,6 @@ int32_t process_execute(const uint8_t* command) {
     return 0;
 }
 
-int32_t process_halt(uint8_t status) {
-    return 0;
-}
-
 /* command_read
  * Inputs: command -- number to convert
  *         arg -- buffer of argument to get
@@ -156,6 +152,7 @@ int32_t command_read(int8_t* command, int8_t* arg, uint32_t offset) {
         offset++;
         i++;
     }
+	arg[i] = '\0';
 
     /* return len of argument parsed*/
     return offset;

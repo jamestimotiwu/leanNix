@@ -136,8 +136,8 @@ void term_keyboardTab() {
  *   SIDE EFFECT: changes keyboard buffer and display
  */
 void term_keyboardBackspace() {
-    // pass if buffer is empty
-    if (cur_buf_length == 0)
+    // pass if buffer is empty or if cursor is in the top left
+    if (cur_buf_length == 0 || (screen_x == 0 && screen_y == 0))
         return;
 
 
@@ -183,6 +183,20 @@ void term_keyboardEnter() {
     sti();
 
 }
+
+/* term_showbuf
+ *   DESCRIPTION: Prints out contents of keyboard buffer to screen
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   SIDE EFFECTS: changes video mem
+ */
+void term_showbuf() {
+    int i;
+    for (i = 0; i < cur_buf_length; i++) {
+        term_putc(kb_buf[i]);
+    }
+}
+
 
 /* term_putc
  *   DESCRIPTION: prints a single character onto the terminal (not buffered)

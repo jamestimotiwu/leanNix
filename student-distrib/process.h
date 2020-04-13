@@ -81,7 +81,6 @@ extern int32_t current_pid;
 
 
 int32_t process_execute(const uint8_t* command);
-int32_t process_halt(uint8_t status);
 
 int32_t command_read(int8_t* command, int8_t* arg, uint32_t offset);
 
