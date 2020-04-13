@@ -2,9 +2,6 @@
 #include "process.h"
 #include "syscall.h"
 
-
-// TODO: check if exceptions are in user code or kernel code
-
 /* Exception Handlers
  *   DESCRIPTION: prints error msg and halts execution when exception is raised
  *   INPUTS: none
@@ -82,15 +79,16 @@ void print_exception(char * str){
             :
             : "memory");
 
-    if (ds_reg == KERNEL_DS) {
-        /* Exception caused in kernel space -- print error and loop */
-        clear();
-        printf(str);
-        while(1);
-
-    } else if (ds_reg == USER_DS) {
+    if (ds_reg == USER_DS) {
         /* Exception caused in user space -- print message and halt */
         printf(str);
         halt32(EXCEPTION_STATUS);
+
+    } else {
+        /* Exception caused in kernel space -- print error and loop */
+        /* ds == KERNEL_DS */
+        clear();
+        printf(str);
+        while(1);
     }
 }
