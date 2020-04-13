@@ -129,6 +129,7 @@ It is fixed by setting esp0 whenever the task switches.
 
 Buglog (Ben):
 
+CP1:
 Problem: sudo: unable to execute ./debug.sh: No such file or directory
 Solution: Piazza -> dos2unix debug.sh; chmod +x debug.sh; make clean; make;
 
@@ -138,12 +139,22 @@ Solution: Added James' RTC files and called test_interrupt in tests.c
 Problem RTC handler not being called
 Solution: problem with send_eoi in i8259.c worked after fixing
 
+CP2:
 Problem: rtc_write, dereferencing void* pointer, void value not ignored compiler message
 Solution: *((int*)buf) needed to cast the void pointer to a pointer type then dereference
 
 Problem: Keyboard prints a random character after the pressed character
 Solution: Make sure keyboard doesn't read the scancode of the release
 
+Problem: Page-fault exception when backspacing after ctrl + l sometimes
+Solution: Program had problem with video memory, check if cursor is on top left
+
+CP3:
+Problem: Halt not able to return to parent process
+Solution: Fix PCB_t struct to include base pointer as an attribute so we can return from halt
+
+Problem: Not sure how to check whether an exception occured in user or kernel
+Solution: Piazza advice, checking DS register can differentiate whether using KERNEL_DS or USER_DS
 
 ######
 
