@@ -59,6 +59,33 @@ int32_t halt (uint8_t status){
     return halt32((uint32_t) status);
 }
 
+
+int parseCommand(const uint8_t *command, uint8_t *buf, int offset) {
+    int i = offset, j = 0;
+
+    /* Skip the leading white space */
+    while (command[i] == ' ')
+        i++;
+
+    while (command[i] != ' ' && command[i] != '\0') {
+        buf[j] = command[i];
+        i++;
+        j++;
+    }
+
+    buf[j] = '\0';
+    return i;
+
+    /*
+    if (command[i] == '\0')
+        buf[i] = '\0';
+        return i;
+    }*/
+
+
+}
+
+
 /* execute
  *   DESCRIPTION: syscall that executes a command
  *   INPUTS: command - the file to execute
@@ -67,19 +94,23 @@ int32_t halt (uint8_t status){
  */
 int32_t execute(const uint8_t* command){
     uint32_t entry;
-    PCB_t *pcb;
+    PCB_t *pcb = create_pcb(current_pid + 1);
     int32_t ebp;
     int32_t parent_pid = current_pid;
     uint8_t program[KB_BUF_SIZE+1];
-	int offset = 0; // for command parsing
+    int offset = 0;
 
     if (command == NULL)
         return -1;
 
     /* parse args */
-    /* copies program name into kernel memory */
-    offset = command_read((int8_t*) command, (int8_t *) program, offset);
-    // TODO: parse the arguments (cp4)
+    /* First, copy program name into program buffer (kernel memory) */
+    //offset = command_read((int8_t*) command, (int8_t *) program, offset);
+    /* Next, copy argument into pcb argument field */
+    //offset = command_read((int8_t*) command, (int8_t *) pcb->argument, offset);
+
+    offset = parseCommand(command, program, 0);
+    parseCommand(command, (uint8_t *)pcb->argument, offset);
 
     /* check file validity */
     if (!program_valid(program))
@@ -93,7 +124,7 @@ int32_t execute(const uint8_t* command){
     entry = program_load(program, current_pid);
 
     /* create PCB/open FDs */
-    pcb = create_pcb(current_pid);
+    //pcb = create_pcb(current_pid);
     pcb->process_id = current_pid;
 
     /* get the stack pointer and base pointer */
@@ -108,15 +139,12 @@ int32_t execute(const uint8_t* command){
     pcb->stack_ptr = get_kernel_stack(current_pid);
     tss.esp0 = pcb->stack_ptr; /* set the kernel's stack pointer */
     
-    //pcb->arguments = {};
-
     /* initailize stdin and stdout */
     /* other entries (eg. inode) aren't used */
     pcb->fd_arr[STDIN].file_ops = &stdin_file_ops;
     set_fd_open(STDIN, pcb);
     pcb->fd_arr[STDOUT].file_ops = &stdout_file_ops;
     set_fd_open(STDOUT, pcb);
-
 
     /* prepare for context switch */
 
@@ -193,8 +221,10 @@ int32_t open(const uint8_t* filename){
       pcb->fd_arr[i].file_ops = &rtc_file_ops;
     else if(dentry.type == FTYPE_DIR)
       pcb->fd_arr[i].file_ops = &dir_file_ops;
-    else if(dentry.type == FTYPE_RTC)
+    else if(dentry.type == FTYPE_FILE)
       pcb->fd_arr[i].file_ops = &fs_file_ops;
+    else
+        return -1;
 
     pcb->fd_arr[i].inode = dentry.inode_num;
     pcb->fd_arr[i].file_pos = 0;
@@ -225,5 +255,32 @@ int32_t close(int32_t fd){
     pcb->fd_arr[fd].flags = 0;
 
     return pcb->fd_arr[fd].file_ops->close_ptr(fd);
+}
+
+/* getargs
+ *   DESCRIPTION: get the arguments of the command
+ *   INPUTS: buf -- location to copy the argument into
+ *           nbytes -- number of bytes to copy
+ *   OUTPUTS: 0 on success, else -1
+ *   SIDE EFFECTS: changes user-level buf
+ */
+int32_t getargs(uint8_t *buf, int32_t nbytes) {
+    PCB_t* pcb = create_pcb(current_pid);
+    int i;
+
+    if (buf == NULL)
+        return -1;
+
+    for (i = 0; i < nbytes && pcb->argument[i] != '\0'; i++) {
+        buf[i] = pcb->argument[i];
+    }
+    buf[i] = '\0';
+
+    if (i == nbytes)
+        /* There are still more bytes to copy */
+        return -1;
+
+    return 0;
+
 }
 
