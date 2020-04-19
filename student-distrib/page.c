@@ -62,3 +62,27 @@ void page_map_user(uint32_t proc_num) {
     /* Phyiscal address is located at 8MB+(pid*4MB) */
 }
 
+void page_map_4kb(uint32_t user, page_table_entry_t* dest_pte, uint32_t v_addr_offset, uint32_t base_addr) {
+	dest_page_table[v_addr_offset].present = 1;
+	dest_page_table[v_addr_offset].rw = 1;
+	dest_page_table[v_addr_offset].user = user;
+	dest_page_table[v_addr_offset].base_32_12 = base_addr;
+}
+
+uint32_t page_map_vmem() {
+	/* Create new page dir entry if not present */
+	if (page_dir[2].kb.present != 0) {
+		return -1;
+	}
+
+	/* Create new page table at USER_VMEM_VIRT */
+	page_dir[2].kb.present = 1;
+	page_dir[2].kb.rw = 1;
+	page_dir[2].kb.user = 1;
+	page_dir[2].kb.base_32_12 = (uint32_t)vmem_page_table >> KB_BASE_OFFSET;
+	page_map_4kb(1, vmem_page_table, VMEM_MAP, VMEM_MAP);
+
+	return 0;
+}
+
+

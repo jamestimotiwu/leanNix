@@ -20,6 +20,7 @@
 #define PROC_PAGE_OFFSET    0x48000
 #define PROC_PAGE_PADDR     (MB_PAGE_SIZE << 1) // Starting at 8MB
 
+#define USER_VMEM_VIRT		(MB_PAGE_SIZE << 1) + VMEM_MAP // Vmem mapped to virtual address at 8MB
  /*
  Base address - 31:12 physical addr of 4k-aligned tabled
  Avail - 11:9
@@ -122,8 +123,14 @@ page_dir_entry_t page_dir[NUM_PAGES] __attribute__((aligned(PAGE_SIZE)));
 
 page_table_entry_t page_table[NUM_PAGES] __attribute__((aligned(PAGE_SIZE)));
 
+page_table_entry_t vmem_page_table[NUM_PAGES] __attribute__((aligned(PAGE_SIZE)));
+
 void init_pages(void);
 void page_map_user(uint32_t proc_num);
 
+void page_map_4kb(uint32_t user, page_table_entry_t* dest_pte, uint32_t v_addr_offset, uint32_t base_addr); 
+uint32_t page_map_vmem();
+
 #endif
+
 

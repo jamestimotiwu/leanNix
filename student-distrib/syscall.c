@@ -227,3 +227,21 @@ int32_t close(int32_t fd){
     return pcb->fd_arr[fd].file_ops->close_ptr(fd);
 }
 
+
+/* vidmap
+ *   DESCRIPTION: Sets screen address pointer to user video memory page
+ *   INPUTS: screen_start - screen address pointer 
+ *   OUTPUTS: screen_address to user video memory page
+ *   SIDE EFFECTS: modify given screen_start pointer
+ */
+int32_t vidmap(uint8_t** screen_start) {
+	/* Validate screen_start double ptr */
+	if (screen_start < USER_VMEM_VIRT && screen_start >= (USER_VMEM_VIRT + PAGE_SIZE - 4)) {
+		return -1;
+	}
+
+	page_map_vmem();
+	*screen_start = USER_VMEM_VIRT;
+	return 0;
+}
+
