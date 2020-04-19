@@ -37,6 +37,7 @@ int32_t halt32(uint32_t status) {
     page_map_user(current_pid);
 
     /* close any relevant FDs */
+    // TODO: call the correct close() function on these?
     for (i = 0; i < MAX_NUM_FD; i++) {
         set_fd_close(i, pcb);
     }
@@ -75,13 +76,6 @@ int parseCommand(const uint8_t *command, uint8_t *buf, int offset) {
 
     buf[j] = '\0';
     return i;
-
-    /*
-    if (command[i] == '\0')
-        buf[i] = '\0';
-        return i;
-    }*/
-
 
 }
 
@@ -165,7 +159,7 @@ int32_t execute(const uint8_t* command){
 int32_t read(int32_t fd, void* buf, int32_t nbytes){
     PCB_t *pcb = create_pcb(current_pid);
 
-    if (fd < 0 || fd >= MAX_NUM_FD)
+    if (buf == NULL || fd < 0 || fd >= MAX_NUM_FD)
         return -1;
 
     if (fd_is_open(fd, pcb))
@@ -185,7 +179,7 @@ int32_t read(int32_t fd, void* buf, int32_t nbytes){
 int32_t write(int32_t fd, const void* buf, int32_t nbytes){
     PCB_t *pcb = create_pcb(current_pid);
 
-    if (fd < 0 || fd >= MAX_NUM_FD)
+    if (buf == NULL || fd < 0 || fd >= MAX_NUM_FD)
         return -1;
     if (fd_is_open(fd, pcb))
         return pcb->fd_arr[fd].file_ops->write_ptr(fd, buf, nbytes);
@@ -196,7 +190,7 @@ int32_t write(int32_t fd, const void* buf, int32_t nbytes){
 /* open
  *   DESCRIPTION: open a file descriptor
  *   INPUTS: filename -- the name of the file to open
- *   OUTPUTS: the file descriptor
+ *   OUTPUTS: the file descriptor, or -1 if failure
  *   SIDE EFFECTS: changes pcb open files
  */
 int32_t open(const uint8_t* filename){
@@ -205,6 +199,10 @@ int32_t open(const uint8_t* filename){
     //fd = 0;
     PCB_t* pcb = create_pcb(current_pid);
     int i;
+
+    if (filename == NULL)
+        return -1;
+
     for(i = 0; i < MAX_NUM_FD; i++){
       if(pcb->fd_arr[i].flags == 0)
         break;

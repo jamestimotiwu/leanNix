@@ -206,10 +206,10 @@ void term_showbuf() {
  */
 void term_putc(uint8_t c) {
     /* If c is null or other unprintable character, don't print it */
-    if (c == NOT_PRINT || c == NULL_BYTE)
+    if (c == NOT_PRINT || c == NULL_BYTE || c == '\r')
         return;
 
-    if(c == '\n' || c == '\r') {
+    if(c == '\n') {
         screen_y++;
         screen_x = 0;
 
