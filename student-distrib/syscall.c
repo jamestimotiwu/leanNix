@@ -66,11 +66,15 @@ int32_t halt (uint8_t status){
  *   SIDE EFFECTS: starts executing a different program
  */
 int32_t execute(const uint8_t* command){
-    uint32_t entry;
-    PCB_t *pcb;
-    int32_t ebp;
-    int32_t parent_pid = current_pid;
-    uint8_t program[KB_BUF_SIZE+1];
+
+
+  if(current_pid == 2)
+    return -1;
+  uint32_t entry;
+  PCB_t *pcb;
+  int32_t ebp;
+  int32_t parent_pid = current_pid;
+  uint8_t program[KB_BUF_SIZE+1];
 	int offset = 0; // for command parsing
 
     if (command == NULL)
@@ -107,7 +111,7 @@ int32_t execute(const uint8_t* command){
     pcb->base_ptr = ebp;
     pcb->stack_ptr = get_kernel_stack(current_pid);
     tss.esp0 = pcb->stack_ptr; /* set the kernel's stack pointer */
-    
+
     //pcb->arguments = {};
 
     /* initailize stdin and stdout */
@@ -193,8 +197,10 @@ int32_t open(const uint8_t* filename){
       pcb->fd_arr[i].file_ops = &rtc_file_ops;
     else if(dentry.type == FTYPE_DIR)
       pcb->fd_arr[i].file_ops = &dir_file_ops;
-    else if(dentry.type == FTYPE_RTC)
+    else if(dentry.type == FTYPE_FILE)
       pcb->fd_arr[i].file_ops = &fs_file_ops;
+    else
+      return -1;
 
     pcb->fd_arr[i].inode = dentry.inode_num;
     pcb->fd_arr[i].file_pos = 0;
@@ -226,4 +232,3 @@ int32_t close(int32_t fd){
 
     return pcb->fd_arr[fd].file_ops->close_ptr(fd);
 }
-
