@@ -58,5 +58,7 @@ void page_map_user(uint32_t proc_num) {
 	/* Update user page physical address pointer for virtual address (physical memory of user program starts at 8MB + (proc_num * 4MB)) */
 	page_dir[PROC_PAGE_INDEX].mb.base_32_22 = (uint32_t)(PROC_PAGE_PADDR + (MB_PAGE_SIZE * proc_num)) >> MB_BASE_OFFSET; // Check if proc page offset is required
 	flush_tlb();
+
+    /* Phyiscal address is located at 8MB+(pid*4MB) */
 }
 

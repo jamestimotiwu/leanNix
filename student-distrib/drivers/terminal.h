@@ -12,6 +12,7 @@
 
 /* basic terminal functionality */
 void term_clear();
+void term_showbuf(); /* prints out contents currently in buffer */
 void term_putc(uint8_t c);
 void term_test_int();
 

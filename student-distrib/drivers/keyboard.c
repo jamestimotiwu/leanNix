@@ -147,7 +147,7 @@ void keyboard_int(){
 
         /* Ctrl-L pressed: clear the screen */
         term_clear();
-        // but don't reset the buffer
+        term_showbuf();
 
         send_eoi(KB_IRQ);  //send EOI signal when done handling 
         sti();
@@ -163,7 +163,6 @@ void keyboard_int(){
     send_eoi(KB_IRQ);  //send EOI signal when done handling 
     sti();
 }
-
 
 
 /* keyboard_init()
