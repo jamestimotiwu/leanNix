@@ -61,25 +61,6 @@ int32_t halt (uint8_t status){
 }
 
 
-int parseCommand(const uint8_t *command, uint8_t *buf, int offset) {
-    int i = offset, j = 0;
-
-    /* Skip the leading white space */
-    while (command[i] == ' ')
-        i++;
-
-    while (command[i] != ' ' && command[i] != '\0') {
-        buf[j] = command[i];
-        i++;
-        j++;
-    }
-
-    buf[j] = '\0';
-    return i;
-
-}
-
-
 /* execute
  *   DESCRIPTION: syscall that executes a command
  *   INPUTS: command - the file to execute
@@ -92,19 +73,37 @@ int32_t execute(const uint8_t* command){
     int32_t ebp;
     int32_t parent_pid = current_pid;
     uint8_t program[KB_BUF_SIZE+1];
-    int offset = 0;
+    int i = 0, j = 0;
 
     if (command == NULL)
         return -1;
 
     /* parse args */
-    /* First, copy program name into program buffer (kernel memory) */
-    //offset = command_read((int8_t*) command, (int8_t *) program, offset);
-    /* Next, copy argument into pcb argument field */
-    //offset = command_read((int8_t*) command, (int8_t *) pcb->argument, offset);
 
-    offset = parseCommand(command, program, 0);
-    parseCommand(command, (uint8_t *)pcb->argument, offset);
+    /* skip the leading whitespace */
+    while (command[i] == ' ')
+        i++;
+
+    /* Copy program name from the command into kernel memory */
+    while (command[i] != ' ' && command[i] != '\0') {
+        program[j] = command[i];
+        j++;
+        i++;
+    }
+    program[j] = '\0';
+
+    /* skip the whitespace */
+    while (command[i] == ' ')
+        i++;
+
+    /* Copy the remaining characters in command into the program's argument */
+    j = 0;
+    while (command[i] != '\0') {
+        pcb->argument[j] = command[i];
+        j++;
+        i++;
+    }
+    pcb->argument[j] = '\0';
 
     /* check file validity */
     if (!program_valid(program))
