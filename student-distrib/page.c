@@ -63,6 +63,7 @@ void page_map_user(uint32_t proc_num) {
 }
 
 void page_map_4kb(uint32_t user, page_table_entry_t* dest_pte, uint32_t v_addr_offset, uint32_t base_addr) {
+	dest_page_table[v_addr_offset].val = 0;
 	dest_page_table[v_addr_offset].present = 1;
 	dest_page_table[v_addr_offset].rw = 1;
 	dest_page_table[v_addr_offset].user = user;
@@ -75,6 +76,7 @@ uint32_t page_map_vmem() {
 		return -1;
 	}
 
+	page_dir[2].kb.val = 0;
 	/* Create new page table at USER_VMEM_VIRT */
 	page_dir[2].kb.present = 1;
 	page_dir[2].kb.rw = 1;

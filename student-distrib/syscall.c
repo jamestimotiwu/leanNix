@@ -236,7 +236,7 @@ int32_t close(int32_t fd){
  */
 int32_t vidmap(uint8_t** screen_start) {
 	/* Validate screen_start double ptr */
-	if (screen_start < USER_VMEM_VIRT && screen_start >= (USER_VMEM_VIRT + PAGE_SIZE - 4)) {
+	if (screen_start < (MB_PAGE_SIZE*32) || screen_start >= (MB_PAGE_SIZE*33) - 4)) {
 		return -1;
 	}
 
