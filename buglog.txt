@@ -125,6 +125,14 @@ Problem: halt not working properly
 Solution: Forgot to set TSS esp0 so the kernel stacks would overwrite each other for each process.
 It is fixed by setting esp0 whenever the task switches.
 
+CP4:
+Problem: Page fault when a program calls getargs
+Solution: Forgot to update the jump table used by the assembly linkage.
+
+Problem: Using cat with a file only works the first time. After that it fails.
+Solution: The getargs didn't always put a terminating null character in the buffer
+string, so the call to open failed. This was fixed by adding an extra statement.
+
 ######
 
 Buglog (Ben):

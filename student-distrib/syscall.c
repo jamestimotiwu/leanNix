@@ -37,6 +37,7 @@ int32_t halt32(uint32_t status) {
     page_map_user(current_pid);
 
     /* close any relevant FDs */
+    // TODO: call the correct close() function on these?
     for (i = 0; i < MAX_NUM_FD; i++) {
         set_fd_close(i, pcb);
     }
@@ -59,6 +60,7 @@ int32_t halt (uint8_t status){
     return halt32((uint32_t) status);
 }
 
+
 /* execute
  *   DESCRIPTION: syscall that executes a command
  *   INPUTS: command - the file to execute
@@ -70,19 +72,41 @@ int32_t execute(const uint8_t* command){
     if(current_pid == 2)
         return -1;
     uint32_t entry;
-    PCB_t *pcb;
+    PCB_t *pcb = create_pcb(current_pid + 1);
     int32_t ebp;
     int32_t parent_pid = current_pid;
     uint8_t program[KB_BUF_SIZE+1];
-	int offset = 0; // for command parsing
+    int i = 0, j = 0;
 
     if (command == NULL)
         return -1;
 
     /* parse args */
-    /* copies program name into kernel memory */
-    offset = command_read((int8_t*) command, (int8_t *) program, offset);
-    // TODO: parse the arguments (cp4)
+
+    /* skip the leading whitespace */
+    while (command[i] == ' ')
+        i++;
+
+    /* Copy program name from the command into kernel memory */
+    while (command[i] != ' ' && command[i] != '\0') {
+        program[j] = command[i];
+        j++;
+        i++;
+    }
+    program[j] = '\0';
+
+    /* skip the whitespace */
+    while (command[i] == ' ')
+        i++;
+
+    /* Copy the remaining characters in command into the program's argument */
+    j = 0;
+    while (command[i] != '\0') {
+        pcb->argument[j] = command[i];
+        j++;
+        i++;
+    }
+    pcb->argument[j] = '\0';
 
     /* check file validity */
     if (!program_valid(program))
@@ -96,7 +120,7 @@ int32_t execute(const uint8_t* command){
     entry = program_load(program, current_pid);
 
     /* create PCB/open FDs */
-    pcb = create_pcb(current_pid);
+    //pcb = create_pcb(current_pid);
     pcb->process_id = current_pid;
 
     /* get the stack pointer and base pointer */
@@ -110,16 +134,13 @@ int32_t execute(const uint8_t* command){
     pcb->base_ptr = ebp;
     pcb->stack_ptr = get_kernel_stack(current_pid);
     tss.esp0 = pcb->stack_ptr; /* set the kernel's stack pointer */
-
-    //pcb->arguments = {};
-
+    
     /* initailize stdin and stdout */
     /* other entries (eg. inode) aren't used */
     pcb->fd_arr[STDIN].file_ops = &stdin_file_ops;
     set_fd_open(STDIN, pcb);
     pcb->fd_arr[STDOUT].file_ops = &stdout_file_ops;
     set_fd_open(STDOUT, pcb);
-
 
     /* prepare for context switch */
 
@@ -140,7 +161,7 @@ int32_t execute(const uint8_t* command){
 int32_t read(int32_t fd, void* buf, int32_t nbytes){
     PCB_t *pcb = create_pcb(current_pid);
 
-    if (fd < 0 || fd >= MAX_NUM_FD)
+    if (buf == NULL || fd < 0 || fd >= MAX_NUM_FD)
         return -1;
 
     if (fd_is_open(fd, pcb))
@@ -160,7 +181,7 @@ int32_t read(int32_t fd, void* buf, int32_t nbytes){
 int32_t write(int32_t fd, const void* buf, int32_t nbytes){
     PCB_t *pcb = create_pcb(current_pid);
 
-    if (fd < 0 || fd >= MAX_NUM_FD)
+    if (buf == NULL || fd < 0 || fd >= MAX_NUM_FD)
         return -1;
     if (fd_is_open(fd, pcb))
         return pcb->fd_arr[fd].file_ops->write_ptr(fd, buf, nbytes);
@@ -171,7 +192,7 @@ int32_t write(int32_t fd, const void* buf, int32_t nbytes){
 /* open
  *   DESCRIPTION: open a file descriptor
  *   INPUTS: filename -- the name of the file to open
- *   OUTPUTS: the file descriptor
+ *   OUTPUTS: the file descriptor, or -1 if failure
  *   SIDE EFFECTS: changes pcb open files
  */
 int32_t open(const uint8_t* filename){
@@ -180,6 +201,10 @@ int32_t open(const uint8_t* filename){
     //fd = 0;
     PCB_t* pcb = create_pcb(current_pid);
     int i;
+
+    if (filename == NULL)
+        return -1;
+
     for(i = 0; i < MAX_NUM_FD; i++){
       if(pcb->fd_arr[i].flags == 0)
         break;
@@ -199,7 +224,7 @@ int32_t open(const uint8_t* filename){
     else if(dentry.type == FTYPE_FILE)
       pcb->fd_arr[i].file_ops = &fs_file_ops;
     else
-      return -1;
+        return -1;
 
     pcb->fd_arr[i].inode = dentry.inode_num;
     pcb->fd_arr[i].file_pos = 0;
@@ -231,3 +256,31 @@ int32_t close(int32_t fd){
 
     return pcb->fd_arr[fd].file_ops->close_ptr(fd);
 }
+
+/* getargs
+ *   DESCRIPTION: get the arguments of the command
+ *   INPUTS: buf -- location to copy the argument into
+ *           nbytes -- number of bytes to copy
+ *   OUTPUTS: 0 on success, else -1
+ *   SIDE EFFECTS: changes user-level buf
+ */
+int32_t getargs(uint8_t *buf, int32_t nbytes) {
+    PCB_t* pcb = create_pcb(current_pid);
+    int i;
+
+    if (buf == NULL)
+        return -1;
+
+    for (i = 0; i < nbytes && pcb->argument[i] != '\0'; i++) {
+        buf[i] = pcb->argument[i];
+    }
+    buf[i] = '\0';
+
+    if (i == nbytes)
+        /* There are still more bytes to copy */
+        return -1;
+
+    return 0;
+
+}
+

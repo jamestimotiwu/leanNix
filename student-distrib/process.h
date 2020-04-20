@@ -15,7 +15,7 @@
 
 /* Max number of open file descriptors per program */
 #define MAX_NUM_FD 8
-/* Max number of args */
+/* Max size of argument */
 #define MAX_ARGS   128
 /* mask 8MB - 8KB*/
 #define PCB_MASK 0x7FE000
@@ -67,7 +67,7 @@ typedef struct PCB{
   /* shell or level above */
   int32_t level;
   /* argument storage for later use */
-  int8_t arguments[MAX_ARGS];
+  int8_t argument[MAX_ARGS];
 }PCB_t;
 
 PCB_t* get_PCB(); //get PCB
