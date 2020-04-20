@@ -79,14 +79,31 @@ void page_map_user(uint32_t proc_num) {
     /* Phyiscal address is located at 8MB+(pid*4MB) */
 }
 
+/* page_map_4kb
+ *   DESCRIPTION Creates page that maps to a physical address
+ *   INPUTS: user
+			 dest_pte
+			 v_addr_offset
+			 base_addr
+ *   OUTPUTS: -1 if error, 0 for success
+ *   SIDE EFFECTS: creates page table entry
+ */
 void page_map_4kb(uint32_t user, page_table_entry_t* dest_pte, uint32_t v_addr_offset, uint32_t base_addr) {
+	if (dest_pte == NULL) {
+		return;
+	}
 	dest_pte[v_addr_offset].val = 0;
 	dest_pte[v_addr_offset].present = 1;
 	dest_pte[v_addr_offset].rw = 1;
 	dest_pte[v_addr_offset].user = user;
 	dest_pte[v_addr_offset].base_32_12 = base_addr;
 }
-
+/* page_map_vmem
+ *   DESCRIPTION Maps vmem if needed
+ *   INPUTS: None
+ *   OUTPUTS: None
+ *   SIDE EFFECTS: creates page table entry in vmem
+ */
 uint32_t page_map_vmem() {
 	/* Create new page dir entry if not present */
 	page_map_4kb(1, vmem_page_table, VMEM_MAP, VMEM_MAP);
