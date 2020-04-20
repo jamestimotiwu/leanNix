@@ -10,7 +10,9 @@
 #define SYS_CLOSE 6
 #define SYS_GETARGS 7
 
-#define NUM_SYSCALLS 7
+#define SYS_VIDMAP 8
+
+#define NUM_SYSCALLS 8
 
 #ifndef ASM
 /* syscall handler asm code */
@@ -39,6 +41,8 @@ int32_t getargs(uint8_t *buf, int32_t nbytes);
 
 int32_t halt32(uint32_t status); // not a syscall
 
+/* system call vidmap */
+int32_t vidmap(uint8_t** screen_start);
 
 /* wrapper functions for the system calls (called by C code, implemented in assembly)
 int32_t system_halt (uint8_t status);

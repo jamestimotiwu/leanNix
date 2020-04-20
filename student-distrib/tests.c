@@ -366,19 +366,19 @@ int test_terminal_read() {
 int test_command_read() {
 	TEST_HEADER;
 
-	int8_t result[KB_BUF_SIZE];
-	int8_t result2[KB_BUF_SIZE];
-	int8_t string[KB_BUF_SIZE];
-	int offset;
-	strcpy(string, "test    this");
-	offset = 0;
-	offset = command_read(string, result, offset);
+	//int8_t result[KB_BUF_SIZE];
+	//int8_t result2[KB_BUF_SIZE];
+	//int8_t string[KB_BUF_SIZE];
+	//int offset;
+	//strcpy(string, "test    this");
+	//offset = 0;
+	//offset = command_read(string, result, offset);
 
-	//printf("%d", offset);
-	offset = command_read(string, result2, offset);
+	////printf("%d", offset);
+	//offset = command_read(string, result2, offset);
 
-	printf(result2);
-	printf(result);
+	//printf(result2);
+	//printf(result);
 
 	return PASS;
 }

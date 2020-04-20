@@ -23,7 +23,6 @@ void init_pages()
 	page_dir[0].kb.val = 0;
 	page_dir[0].kb.present = 1;
 	page_dir[0].kb.rw = 1;
-	page_dir[0].kb.user = 1;
 	page_dir[0].kb.base_32_12 = (uint32_t)page_table >> KB_BASE_OFFSET;
 
 	/* Second page is 4MB for kernel code -> page_size = 1 */
@@ -44,6 +43,24 @@ void init_pages()
 	page_dir[PROC_PAGE_INDEX].mb.page_size = 1;
 	page_dir[PROC_PAGE_INDEX].mb.global = 1;
 	page_dir[PROC_PAGE_INDEX].mb.base_32_22 = (uint32_t)(PROC_PAGE_PADDR) >> MB_BASE_OFFSET; // Check if proc page offset is required
+
+	for (i = 0; i < NUM_PAGES; i++)
+	{
+		vmem_page_table[i].val = 2; /* Set read write flag */
+	}
+
+	vmem_page_table[0].val = 0;
+	vmem_page_table[0].present = 1;
+	vmem_page_table[0].rw = 1;
+	vmem_page_table[0].user = 1;
+	vmem_page_table[0].base_32_12 = VMEM_MAP;
+
+	page_dir[2].kb.val = 0;
+	/* Create new page table at USER_VMEM_VIRT */
+	page_dir[2].kb.present = 1;
+	page_dir[2].kb.rw = 1;
+	page_dir[2].kb.user = 1;
+	page_dir[2].kb.base_32_12 = (uint32_t)vmem_page_table >> KB_BASE_OFFSET;
 	/* Load and enable page directory */
 	load_page(&page_dir);
 }
@@ -61,4 +78,20 @@ void page_map_user(uint32_t proc_num) {
 
     /* Phyiscal address is located at 8MB+(pid*4MB) */
 }
+
+void page_map_4kb(uint32_t user, page_table_entry_t* dest_pte, uint32_t v_addr_offset, uint32_t base_addr) {
+	dest_pte[v_addr_offset].val = 0;
+	dest_pte[v_addr_offset].present = 1;
+	dest_pte[v_addr_offset].rw = 1;
+	dest_pte[v_addr_offset].user = user;
+	dest_pte[v_addr_offset].base_32_12 = base_addr;
+}
+
+uint32_t page_map_vmem() {
+	/* Create new page dir entry if not present */
+	page_map_4kb(1, vmem_page_table, VMEM_MAP, VMEM_MAP);
+
+	return 0;
+}
+
 
