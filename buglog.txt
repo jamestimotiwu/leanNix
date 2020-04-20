@@ -86,6 +86,14 @@ Solution: Always increment your index if you use an index in a while loop
 Problem: Strange bug that fills the buffer with special characters on the first word of the command.
 Solution: Still working on it.
 
+# Checkpoint 4
+Problem: Vidmap causing pagefault after iret
+Solution: Likely an issue with how address was being passed as a nullptr
+Solution: Could not debug fish directly, but using info mem helped immensely to uncover the problem
+
+Problem: Fish printing weird line endings (musical notes) as \r into video memory
+Solution: Issue with how fish must have been uploaded to the filesystem. We added several test programs into the filesystem, which likely contain DOS line endings. This was fixed by checking out an old copy of an unmodified file system image.
+
 #####
 Buglog (Michael)
 
