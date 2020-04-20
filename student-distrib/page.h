@@ -20,7 +20,7 @@
 #define PROC_PAGE_OFFSET    0x48000
 #define PROC_PAGE_PADDR     (MB_PAGE_SIZE << 1) // Starting at 8MB
 
-#define USER_VMEM_VIRT		(MB_PAGE_SIZE << 1) + VMEM_MAP // Vmem mapped to virtual address at 8MB
+#define USER_VMEM_VADDR		(MB_PAGE_SIZE << 1) // Vmem mapped to virtual address at 8MB
  /*
  Base address - 31:12 physical addr of 4k-aligned tabled
  Avail - 11:9

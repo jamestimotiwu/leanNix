@@ -284,3 +284,20 @@ int32_t getargs(uint8_t *buf, int32_t nbytes) {
 
 }
 
+/* vidmap
+ *   DESCRIPTION: Sets screen address pointer to user video memory page
+ *   INPUTS: screen_start - screen address pointer
+ *   OUTPUTS: screen_address to user video memory page
+ *   SIDE EFFECTS: modify given screen_start pointer
+ */
+int32_t vidmap(uint8_t** screen_start) {
+    /* Validate screen_start double ptr */
+    if ((uint32_t)screen_start < (MB_PAGE_SIZE * 32) || (uint32_t)screen_start >= (MB_PAGE_SIZE * 33) - 4) {
+        return -1;
+    }
+
+    page_map_vmem();
+    *screen_start = (uint8_t*)USER_VMEM_VADDR;
+    return 0;
+}
+
