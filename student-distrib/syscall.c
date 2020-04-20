@@ -293,6 +293,9 @@ int32_t getargs(uint8_t *buf, int32_t nbytes) {
  *   SIDE EFFECTS: modify given screen_start pointer
  */
 int32_t vidmap(uint8_t** screen_start) {
+    if (screen_start == NULL) {
+        return -1;
+    }
     /* Validate screen_start double ptr */
     if ((uint32_t)screen_start < (MB_PAGE_SIZE * 32) || (uint32_t)screen_start >= (MB_PAGE_SIZE * 33) - 4) {
         return -1;
