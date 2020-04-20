@@ -120,7 +120,6 @@ int32_t execute(const uint8_t* command){
     entry = program_load(program, current_pid);
 
     /* create PCB/open FDs */
-    //pcb = create_pcb(current_pid);
     pcb->process_id = current_pid;
 
     /* get the stack pointer and base pointer */
@@ -202,6 +201,7 @@ int32_t open(const uint8_t* filename){
     PCB_t* pcb = create_pcb(current_pid);
     int i;
 
+    /* check user pointer for null */
     if (filename == NULL)
         return -1;
 
@@ -268,17 +268,19 @@ int32_t getargs(uint8_t *buf, int32_t nbytes) {
     PCB_t* pcb = create_pcb(current_pid);
     int i;
 
+    /* check user argument */
     if (buf == NULL)
         return -1;
 
     for (i = 0; i < nbytes && pcb->argument[i] != '\0'; i++) {
         buf[i] = pcb->argument[i];
     }
-    buf[i] = '\0';
 
     if (i == nbytes)
         /* There are still more bytes to copy */
         return -1;
+
+    buf[i] = '\0';
 
     return 0;
 
@@ -300,4 +302,28 @@ int32_t vidmap(uint8_t** screen_start) {
     *screen_start = (uint8_t*)USER_VMEM_VADDR;
     return 0;
 }
+
+/* set_handler
+ *   DESCRIPTION: changes the default action taken when a signal is received
+ *   INPUTS: signum -- the number of the signal
+ *           handler_address - address of function to be set as the handler
+ *   OUTPUTS: 0 if success, -1 if failure
+ *   SIDE EFFECTS: changes signal behavior
+ */
+int32_t set_handler(int32_t signum, void *handler_address) {
+    // not yet implemented
+    return -1;
+}
+
+/* signum
+ *   DESCRIPTION: used by signal handler to return execution to program
+ *   INPUTS: none
+ *   OUTPUTS: 0 if success, -1 if failure
+ *   SIDE EFFECTS: returns exeuction to user program
+ */
+int32_t sigreturn(void) {
+    // not yet implemented
+    return -1;
+}
+
 

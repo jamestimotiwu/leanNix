@@ -92,7 +92,7 @@ invalid_syscall:
 
 # syscall jumptable 
 syscall_table:
-    .long 0x0, halt, execute, read, write, open, close, getargs, vidmap
+    .long 0x0, halt, execute, read, write, open, close, getargs, vidmap, set_handler, sigreturn
 
 # Return to user from execute, push user DS, esp, eflags, cs, eip
 ret_to_user:

@@ -257,6 +257,10 @@ void term_setChar(uint8_t c) {
  */
 int32_t terminal_read(int32_t fd, void *buf, uint32_t count) {
     int i;
+
+    if (buf == NULL)
+        return -1;
+
     readWaiting = 1;
 
     while (readWaiting) {
@@ -291,6 +295,9 @@ int32_t terminal_read(int32_t fd, void *buf, uint32_t count) {
 int32_t terminal_write(int32_t fd, void *buf, uint32_t count) {
     int i;
     uint8_t *input = (uint8_t *) buf;
+
+    if (buf == NULL)
+        return -1;
 
     for (i = 0; i < count; i++) {
 
