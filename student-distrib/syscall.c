@@ -66,15 +66,14 @@ int32_t halt (uint8_t status){
  *   SIDE EFFECTS: starts executing a different program
  */
 int32_t execute(const uint8_t* command){
-
-
-  if(current_pid == 2)
-    return -1;
-  uint32_t entry;
-  PCB_t *pcb;
-  int32_t ebp;
-  int32_t parent_pid = current_pid;
-  uint8_t program[KB_BUF_SIZE+1];
+    /* Maximum 3 shells */
+    if(current_pid == 2)
+        return -1;
+    uint32_t entry;
+    PCB_t *pcb;
+    int32_t ebp;
+    int32_t parent_pid = current_pid;
+    uint8_t program[KB_BUF_SIZE+1];
 	int offset = 0; // for command parsing
 
     if (command == NULL)
