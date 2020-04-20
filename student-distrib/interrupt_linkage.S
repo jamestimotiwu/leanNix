@@ -58,6 +58,9 @@ syscall_assembly:
   pushl %ebx  # 1st arg
   call *syscall_table(,%eax,4)  # call function from syscall_table with syscall # stored in eax register
   addl $12, %esp # tear down args on stack
+
+  movl $USER_DS, %ebx
+  movw %bx, %ds # restore data segment to user data segment
 # restore all saved registers and return 
   popl %ebx
   popl %ecx
@@ -71,6 +74,9 @@ syscall_assembly:
 
 # For invalid_syscall, restore registers and return -1 (in eax) 
 invalid_syscall: 
+  movl $USER_DS, %ebx
+  movw %bx, %ds # restore data segment to user data segment
+
   movl $-1, %eax
   popl %ebx
   popl %ecx
