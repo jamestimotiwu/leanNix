@@ -297,7 +297,7 @@ int32_t vidmap(uint8_t** screen_start) {
         return -1;
     }
     /* Validate screen_start double ptr */
-    if ((uint32_t)screen_start < (MB_PAGE_SIZE * 32) || (uint32_t)screen_start >= (MB_PAGE_SIZE * 33) - 4) {
+    if ((uint32_t)screen_start < USER_PAGE_VMIN || (uint32_t)screen_start >= USER_PAGE_VMAX) {
         return -1;
     }
 
