@@ -261,15 +261,15 @@ int32_t close(int32_t fd){
  *   DESCRIPTION: get the arguments of the command
  *   INPUTS: buf -- location to copy the argument into
  *           nbytes -- number of bytes to copy
- *   OUTPUTS: 0 on success, else -1
+ *   OUTPUTS: 0 on success, else -1 (if buf is null or argument is empty)
  *   SIDE EFFECTS: changes user-level buf
  */
 int32_t getargs(uint8_t *buf, int32_t nbytes) {
     PCB_t* pcb = create_pcb(current_pid);
     int i;
 
-    /* check user argument */
-    if (buf == NULL)
+    /* fail if pointer is invalid or argument is empty */
+    if (buf == NULL || pcb->argument[0] == '\0')
         return -1;
 
     for (i = 0; i < nbytes && pcb->argument[i] != '\0'; i++) {
