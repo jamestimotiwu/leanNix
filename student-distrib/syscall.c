@@ -7,6 +7,7 @@
 #include "x86_desc.h"
 #include "drivers/keyboard.h"
 
+int32_t process_arr[PROCESS_NUM] = {0,0,0,0,0,0};
 /* halt32
  *   DESCRIPTION: same as halt, but argument is 32 bits so
  *                that this can be called during an exception
@@ -19,7 +20,7 @@ int32_t halt32(uint32_t status) {
     PCB_t *pcb = create_pcb(current_pid);
     PCB_t *parent;
     int32_t i, ebp;
-
+    process_arr[current_pid] = 0;
     if (current_pid == 0) {
         /* restart shell when it tries to halt */
         current_pid = -1;
@@ -69,14 +70,23 @@ int32_t halt (uint8_t status){
  */
 int32_t execute(const uint8_t* command){
     /* Maximum 3 shells */
-    if(current_pid == 2)
-        return -1;
+    int p;
     uint32_t entry;
-    PCB_t *pcb = create_pcb(current_pid + 1);
+    // PCB_t *pcb = create_pcb(current_pid + 1);
     int32_t ebp;
     int32_t parent_pid = current_pid;
     uint8_t program[KB_BUF_SIZE+1];
     int i = 0, j = 0;
+    for(p=0; p < PROCESS_NUM; p++){
+      if(process_arr[p] == 0){
+        break;
+      }
+    }
+    if(p == PROCESS_NUM)
+      return -1;
+    process_arr[p] = 1;
+    current_pid = p;
+    PCB_t *pcb = create_pcb(current_pid);
 
     if (command == NULL)
         return -1;
@@ -113,7 +123,7 @@ int32_t execute(const uint8_t* command){
         return -1;
 
     /* set up paging */
-    current_pid++;
+    // current_pid++;
     page_map_user(current_pid);
 
     /* load file into memory and get entry point*/
@@ -133,7 +143,7 @@ int32_t execute(const uint8_t* command){
     pcb->base_ptr = ebp;
     pcb->stack_ptr = get_kernel_stack(current_pid);
     tss.esp0 = pcb->stack_ptr; /* set the kernel's stack pointer */
-    
+
     /* initailize stdin and stdout */
     /* other entries (eg. inode) aren't used */
     pcb->fd_arr[STDIN].file_ops = &stdin_file_ops;
@@ -328,5 +338,3 @@ int32_t sigreturn(void) {
     // not yet implemented
     return -1;
 }
-
-

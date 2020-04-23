@@ -12,7 +12,7 @@
 #define SYS_VIDMAP 8
 #define SYS_SET_HANDLER 9
 #define SYS_SIGRETURN 10
-
+#define PROCESS_NUM 6
 #define NUM_SYSCALLS 10
 
 #ifndef ASM
@@ -22,19 +22,19 @@ void syscall_assembly();
 /* system call halt */
 int32_t halt (uint8_t status);  // sys_call_table #1
 
-/* system call execute */ 
+/* system call execute */
 int32_t execute(const uint8_t* command); //sys_call_table #2
 
-/* system call read */ 
+/* system call read */
 int32_t read(int32_t fd, void* buf, int32_t nbytes);  //sys_call_table #3
 
-/* system call write */ 
-int32_t write(int32_t fd, const void* buf, int32_t nbytes);  //sys_call_table #4 
+/* system call write */
+int32_t write(int32_t fd, const void* buf, int32_t nbytes);  //sys_call_table #4
 
-/* system call open */ 
+/* system call open */
 int32_t open(const uint8_t* filename);  //sys_call_table #5
 
-/* system call close */ 
+/* system call close */
 int32_t close(int32_t fd);  //sys_call_table #6
 
 /* system call getargs */
