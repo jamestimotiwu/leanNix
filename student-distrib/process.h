@@ -27,6 +27,8 @@
 
 #define FDFLAG_OPEN 0x1
 
+int32_t process_arr[PROCESS_NUM] = { 0,0,0,0,0,0 };
+int32_t schedule_queue[PROCESS_NUM - 3] = { -1, -1, -1 };
 
 /* jump table for file operations */
 typedef int32_t (*read_op)(int32_t fd, void* buf, int32_t nbytes);

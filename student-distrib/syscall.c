@@ -8,6 +8,7 @@
 #include "drivers/keyboard.h"
 
 int32_t process_arr[PROCESS_NUM] = {0,0,0,0,0,0};
+
 /* halt32
  *   DESCRIPTION: same as halt, but argument is 32 bits so
  *                that this can be called during an exception
