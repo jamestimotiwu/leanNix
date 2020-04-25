@@ -159,8 +159,8 @@ void entry(unsigned long magic, unsigned long addr) {
 	/* 1 cycle per 10 millisecond = 100 cps = 100Hz? */
 	/* 1 cycle per 50 millisecond = 200cps = 20HZ? */
 	/* Init PIT between 1 cycle per 10milisecond and 1 cycle per 50 millisecond*/
-	/* dont know what to put here */
-	pit_init(30);
+	/* set as 20HZ */
+	pit_init(20);
 	/* Init the RTC */
 	rtc_init();
 
