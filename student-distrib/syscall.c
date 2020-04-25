@@ -4,6 +4,7 @@
 #include "page.h"
 #include "interrupt_linkage.h"
 #include "process.h"
+#include "schedule.h"
 #include "x86_desc.h"
 #include "drivers/keyboard.h"
 
@@ -43,6 +44,8 @@ int32_t halt32(uint32_t status) {
     }
 
     ebp = pcb->base_ptr;
+
+    sched_queue_process(parent->parent_id, parent->process_id);
 
     /* jump to execute return */
     halt_ret(ebp, status);
@@ -149,6 +152,9 @@ int32_t execute(const uint8_t* command){
     set_fd_open(STDIN, pcb);
     pcb->fd_arr[STDOUT].file_ops = &stdout_file_ops;
     set_fd_open(STDOUT, pcb);
+
+    /* add new process to schedule */
+    sched_queue_process(pcb->parent_id, pcb->process_id);
 
     /* prepare for context switch */
 

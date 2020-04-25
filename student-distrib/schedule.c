@@ -71,24 +71,24 @@ void sched (void) {
 	return;
 }
 
+
+/* sched_queue_process
+ *   DESCRIPTION: add process to process queue
+ *   INPUTS: stop_pid - process to stop/remove from queue based on corresponding parent
+ *			 exec_pid - process to start/add to queue, indexed to itself if parent
+ *   OUTPUTS: None
+ *   SIDE EFFECTS: adds pid to the schedule queue depending on its pid
+ */
 void sched_queue_process(int32_t stop_pid, int32_t exec_pid) {
 	/* set process to wait based on parent*/
-	int32_t p;
-
-	/* if parent (parent = -1), set run pid */
-	if (stop_pid == -1) {
-		schedule_queue[exec_pid] = exec_pid;
+	if (exec_pid < 3) {
+		/* if exec_pid < 3, it is a parent/shell */
+		process_queue[exec_pid] = exec_pid;
 	}
 	else {
-		p = 0;
-		/* find wait pid */
-		while (schedule_queue[p] != stop_pid) {
-			p++;
-		}
-		/* set run_pid to replace wait_pid */
-		schedule_queue[p] = exec_pid;
+		/* set exec_pid using stop_pid index */
+		process_queue[stop_pid] = exec_pid;
 	}
-	/* if not parent, index as parent */
 	return;
 }
 
