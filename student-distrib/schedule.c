@@ -28,11 +28,12 @@ void sched(void) {
 	if (process_queue[running_idx] != -1) {
 		return;
 	}
-	/* old process; save esp, ebp */
+
+	/* pcb for process to sleep; save esp, ebp */
 	sleep_pid = process_queue[running_idx];
 	PCB_t* pcb = create_pcb(sleep_pid);
 
-	/* get the stack pointer and base pointer */
+	/* get the stack pointer and base pointer and save to pcb before sleeping*/
 	asm volatile("movl %%esp, %0 \n\
 				  movl %%ebp, %1"
 		: "=rm"((esp)), "=rm"((ebp)) /* outputs */
@@ -42,7 +43,7 @@ void sched(void) {
 	pcb->base_ptr = ebp;
 	pcb->stack_ptr = esp;
 
-	/* increment running pid to next process to schedule */
+	/* get next process to schedule by incrementing queue pointer */
 	p = running_idx;
 	while (p < SCHEDULE_QUEUE_NUM) {
 		p++;
@@ -58,14 +59,13 @@ void sched(void) {
 	/* set next process as running_pid */
 	running_pid = process_queue[running_idx];
 
-	/* remap paging; flush tlb */
-	page_map_user(running_pid);
 	/* restore next scheduled process context */
 	pcb = create_pcb(running_pid);
 
+	/* remap paging; flush tlb */
+	page_map_user(running_pid);
 	/* set next process tss / set next esp */
 	tss.esp0 = get_kernel_stack(running_pid);
-
 	/* restore next process stack and base pointer */
 	asm volatile("movl %0, %%esp \n\
 				  movl %1, %%ebp"
@@ -85,14 +85,25 @@ void sched(void) {
  *   SIDE EFFECTS: adds pid to the schedule queue depending on its pid
  */
 void sched_queue_process(int32_t stop_pid, int32_t exec_pid) {
+	int p;
 	/* set process to wait based on parent*/
-	if (exec_pid < 3) {
+	if (stop_pid == -1) {
 		/* if exec_pid < 3, it is a parent/shell */
 		process_queue[exec_pid] = exec_pid;
 	}
-	else {
+	else if (stop_pid < 3) {
 		/* set exec_pid using stop_pid index */
 		process_queue[stop_pid] = exec_pid;
+	}
+	else {
+		/* parent is not base shell, get parent of next shell */
+		for (p = 0; p < SCHEDULE_QUEUE_NUM; p++) {
+			if (process_queue[p] == stop_pid) {
+				process_queue[p] = exec_pid;
+				break;
+			}
+		}
+
 	}
 	return;
 }

@@ -21,7 +21,7 @@ int32_t process_arr[PROCESS_NUM] = { 0,0,0,0,0,0 };
 int32_t halt32(uint32_t status) {
     PCB_t *pcb = create_pcb(current_pid);
     PCB_t *parent;
-    int32_t i, ebp;
+    int32_t i, ebp, old_pid;
     process_arr[current_pid] = 0;
     if (current_pid == 0) {
         /* restart shell when it tries to halt */
@@ -29,7 +29,7 @@ int32_t halt32(uint32_t status) {
         execute((uint8_t *)"shell");
         return -1;
     }
-
+    old_pid = current_pid;
     /* restore parent data */
     current_pid = pcb->parent_id;
     /* change kernel stack to parent's kernel stack */
@@ -47,7 +47,8 @@ int32_t halt32(uint32_t status) {
 
     ebp = pcb->base_ptr;
 
-    sched_queue_process(parent->parent_id, parent->process_id);
+    /* remove process with old_pid (process being halted) in queue and replace with parent process id */
+    sched_queue_process(old_pid, parent->process_id);
 
     /* jump to execute return */
     halt_ret(ebp, status);
