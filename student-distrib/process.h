@@ -29,9 +29,6 @@
 
 #define FDFLAG_OPEN 0x1
 
-int32_t process_arr[PROCESS_NUM] = { 0,0,0,0,0,0 };
-int32_t process_queue[PROCESS_NUM - 3] = { -1, -1, -1 };
-
 /* jump table for file operations */
 typedef int32_t (*read_op)(int32_t fd, void* buf, int32_t nbytes);
 typedef int32_t (*write_op)(int32_t fd, const void* buf, int32_t nbytes);
@@ -90,7 +87,8 @@ int32_t process_execute(const uint8_t* command);
 int32_t command_read(int8_t* command, int8_t* arg, uint32_t offset);
 
 uint32_t get_kernel_stack(int32_t pid);
-PCB_t *create_pcb(int32_t pid);
+PCB_t* create_pcb(int32_t pid);
+
 #endif
 
 #endif
