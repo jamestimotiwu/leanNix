@@ -29,6 +29,15 @@ keyboard_interrupt_assembly:
   popal
   iret
 
+# pit interrupt
+pit_interrupt_assembly:
+  pushal
+  pushfl
+  #call keyboard_int
+  popfl
+  popal
+  iret
+
 # syscall interrupt
 syscall_assembly:
 
