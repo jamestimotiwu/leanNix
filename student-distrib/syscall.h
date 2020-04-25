@@ -12,7 +12,6 @@
 #define SYS_VIDMAP 8
 #define SYS_SET_HANDLER 9
 #define SYS_SIGRETURN 10
-#define PROCESS_NUM 6
 #define NUM_SYSCALLS 10
 
 #ifndef ASM

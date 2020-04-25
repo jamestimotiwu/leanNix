@@ -18,6 +18,7 @@ void sched (void) {
 	int32_t ebp;
 	int32_t esp;
 	cli();
+
 	/* check if processes exist and nothing is running */
     if (running_pid == -1 && process_arr[0] == 1) {
 		running_pid = 0;
@@ -67,6 +68,27 @@ void sched (void) {
 
 	send_eoi(0);
 	sti();
+	return;
+}
+
+void sched_queue_process(int32_t stop_pid, int32_t exec_pid) {
+	/* set process to wait based on parent*/
+	int32_t p;
+
+	/* if parent (parent = -1), set run pid */
+	if (stop_pid == -1) {
+		schedule_queue[exec_pid] = exec_pid;
+	}
+	else {
+		p = 0;
+		/* find wait pid */
+		while (schedule_queue[p] != stop_pid) {
+			p++;
+		}
+		/* set run_pid to replace wait_pid */
+		schedule_queue[p] = exec_pid;
+	}
+	/* if not parent, index as parent */
 	return;
 }
 
