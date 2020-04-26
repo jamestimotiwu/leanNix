@@ -9,10 +9,12 @@
 #include "debug.h"
 #include "tests.h"
 #include "syscall.h"
+#include "drivers/terminal.h"
 
 #include "idt.h"
 #include "drivers/keyboard.h"
 #include "drivers/rtc.h"
+#include "drivers/pit.h"
 
 #include "page.h"
 #include "drivers/fs.h"
@@ -155,13 +157,18 @@ void entry(unsigned long magic, unsigned long addr) {
 	i8259_init();
 	/* Init the keyboard */
 	keyboard_init();
-
+	/* 1 cycle per 10 millisecond = 100 cps = 100Hz? */
+	/* 1 cycle per 50 millisecond = 200cps = 20HZ? */
+	/* Init PIT between 1 cycle per 10milisecond and 1 cycle per 50 millisecond*/
+	/* set as 20HZ */
+	pit_init(20);
 	/* Init the RTC */
 	rtc_init();
 
 	/* Init paging */
 	init_pages();
 
+ 	term_init();
 	/* Initialize devices, memory, filesystem, enable device interrupts on the
 	 * PIC, any other initialization stuff... */
 
@@ -179,7 +186,7 @@ void entry(unsigned long magic, unsigned long addr) {
 
 
 	/* Execute the first program ("shell") ... */
-	execute((uint8_t *) "shell");
+	//execute((uint8_t *) "shell");
 
 	/* Spin (nicely, so we don't chew up cycles) */
 	asm volatile (".1: hlt; jmp .1;");
