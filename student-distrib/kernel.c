@@ -168,7 +168,7 @@ void entry(unsigned long magic, unsigned long addr) {
 	/* Init paging */
 	init_pages();
 
- 	term_init();
+	//term_init();
 	/* Initialize devices, memory, filesystem, enable device interrupts on the
 	 * PIC, any other initialization stuff... */
 
@@ -186,7 +186,7 @@ void entry(unsigned long magic, unsigned long addr) {
 
 
 	/* Execute the first program ("shell") ... */
-	//execute((uint8_t *) "shell");
+	execute((uint8_t *) "shell");
 
 	/* Spin (nicely, so we don't chew up cycles) */
 	asm volatile (".1: hlt; jmp .1;");

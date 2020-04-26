@@ -3,6 +3,7 @@
 
 void rtc_interrupt_assembly();
 void keyboard_interrupt_assembly();
+void pit_interrupt_assembly();
 
 void execute_iret(uint32_t esp, uint32_t eip);
 void ret_to_user(int32_t eip);

@@ -6,6 +6,7 @@
 .text
 .globl rtc_interrupt_assembly
 .globl keyboard_interrupt_assembly
+.globl pit_interrupt_assembly
 .globl syscall_assembly
 .globl ret_to_user, halt_ret
 
@@ -33,7 +34,7 @@ keyboard_interrupt_assembly:
 pit_interrupt_assembly:
   pushal
   pushfl
-  #call keyboard_int
+  call pit_int
   popfl
   popal
   iret

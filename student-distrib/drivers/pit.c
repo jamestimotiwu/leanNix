@@ -1,5 +1,5 @@
 #include "pit.h"
-
+#include "../lib.h"
 
 
 /* pit_init
@@ -26,5 +26,8 @@ void pit_init(uint32_t frequency){
  *   SIDE EFFECT: None
  */
 void pit_int(){
-
+    cli();
+    printf("something");
+    send_eoi(0);
+    sti();
 }
