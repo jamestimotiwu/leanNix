@@ -143,6 +143,28 @@ void keyboard_int(){
 
         backsp_func();   //call backspace function 
     }
+    else if(temp_sc == F1 && alt == Pressed){
+
+         term_launch(TERM1);
+        //printf("alt + F1 pressed\n");
+         send_eoi(KB_IRQ);
+
+    }
+    else if(temp_sc == F2 && alt == Pressed){
+         term_launch(TERM2);
+       // printf("alt + F2 pressed\n");
+         send_eoi(KB_IRQ);
+
+
+    }
+    else if(temp_sc ==F3 && alt == Pressed){
+
+        term_launch(TERM3);
+        //printf("alt + F3 pressed\n");
+        send_eoi(KB_IRQ);
+
+
+    }
     else if(temp_sc == CHAR_L && ctrl == Pressed){
 
         /* Ctrl-L pressed: clear the screen */

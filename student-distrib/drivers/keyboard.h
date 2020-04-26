@@ -35,6 +35,12 @@
 #define NEW_LINE   '\n'
 #define char_space ' '
 #define SPACE      0x39
+#define F1		   0x3B 
+#define F2 		   0x3C
+#define F3  	   0x3D
+#define TERM1      0 
+#define TERM2      1
+#define TERM3      2
 
 //define pressed/released 
 

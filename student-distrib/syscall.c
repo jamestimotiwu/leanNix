@@ -247,7 +247,7 @@ int32_t close(int32_t fd){
 
     PCB_t* pcb = create_pcb(current_pid);
     if (!fd_is_open(fd, pcb)) {
-        /* trying to open an already closed fd */
+        /* trying to close an already closed fd */
         return -1;
     }
 
