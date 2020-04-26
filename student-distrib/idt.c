@@ -71,7 +71,7 @@ void init_idt() {
 			idt[i].dpl = 3;
 			idt[i].present = 1;
 		}
-		if (i == IDT_KEYBOARD || i == IDT_RTC) {
+		if (i == IDT_KEYBOARD || i == IDT_RTC || i == IDT_PIT) {
 			idt[i].present = 1;
 		}
 	}
@@ -102,8 +102,9 @@ void init_idt() {
 	SET_IDT_ENTRY(idt[IDT_RTC], rtc_interrupt_assembly);
 	/* set handler for system call */
 	SET_IDT_ENTRY(idt[IDT_SYSTEM_CALL], syscall_assembly);
+  /* set handler for pit */
+  SET_IDT_ENTRY(idt[IDT_PIT], pit_interrupt_assembly);
 
 	/* set idtr */
 	lidt(idt_desc_ptr);
 }
-

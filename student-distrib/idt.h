@@ -35,6 +35,8 @@
 #define IDT_KEYBOARD                    0x21
 /* IRQ8 0x20 + 8 */
 #define IDT_RTC                         0x28
+/* IRQ0 0x20 + 0 */
+#define IDT_PIT                         0x20
 
 
 
