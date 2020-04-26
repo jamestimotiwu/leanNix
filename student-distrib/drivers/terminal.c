@@ -1,15 +1,17 @@
 #include "terminal.h"
-#include "keyboard.h"
 #include "../types.h"
 #include "../lib.h"
 
 /* global variables used by terminal */
 static int screen_x;
 static int screen_y;
-static char* video_mem = (char *)VIDEO;
+static char* video_mem = (char *)VIDEO1;
 
 /* used by the read system call */
 volatile static int readWaiting = 0;
+
+volatile uint32_t current_term_num; 
+terminal_t term[TERM_MAX];
 
 
 // reference used: https://wiki.osdev.org/Text_Mode_Cursor
@@ -29,6 +31,85 @@ void reset_cursor(int x, int y){
     outb(0x0E, 0x3D4);
     outb((uint8_t) ((position >> 8) & 0xFF),0x3D5);
 }
+
+
+/* void term_init()
+ *   DESCRIPTION: intialize all three terminals
+ *   INPUT: none
+ *   OUTPUT: none
+ *   SIDE EFFECTS: initialize terminals 
+ */
+void term_init(){
+
+  int i;
+//initialize terminal struct for three terminals
+  for(i=0; i< TERM_MAX; i++){
+
+     term[i].x_cur =0; 
+     term[i].y_cur =0; 
+     term[i].flag =0;
+     term[i].term_num=i;
+     reset_kb_buf(i);
+
+  }
+ // initialize pointer to each terminal's video memory 
+  term[TERM1].vid_mem = (char *) VIDEO1; 
+  term[TERM2].vid_mem = (char *) VIDEO2; 
+  term[TERM3].vid_mem = (char *) VIDEO3;
+
+ current_term_num =0; //first terminal upon initialization 
+
+ execute((uint8_t *) "shell"); //first terminal executing in shell upon initialization 
+
+
+}
+
+
+/* int32_t term_launch(int32_t term_num)
+ *   DESCRIPTION: launch terminal
+ *   INPUT: terminal number 
+ *   OUTPUT: return -1 for failure, 0 for success
+ *   SIDE EFFECTS: lauch specific terminal
+ */
+int32_t term_launch(int32_t term_number){
+
+   /*if(term_number <0 || term_number >=TERM_MAX)
+    return -1;  //check if terminal number is within range
+
+   if(term_number == term_num) 
+    return 0;  */ 
+
+    if(term_number ==0) {
+
+        printf("launch terminal 0");
+    } 
+
+    
+    if(term_number ==1){
+
+        printf("launch terminal 1");
+
+    }
+
+
+   if(term_number ==2){
+
+
+     printf("launch terminal 2");
+   }
+
+
+    return 0;
+
+
+
+}
+
+
+
+
+
+
 
 /* term_clear
  *   DESCRIPTION: clears all video memory and cursor position
