@@ -143,6 +143,28 @@ void keyboard_int(){
 
         backsp_func();   //call backspace function 
     }
+    else if(temp_sc == F1 && alt == Pressed){
+
+         term_launch(TERM1);
+        //printf("alt + F1 pressed\n");
+         send_eoi(KB_IRQ);
+
+    }
+    else if(temp_sc == F2 && alt == Pressed){
+         term_launch(TERM2);
+       // printf("alt + F2 pressed\n");
+         send_eoi(KB_IRQ);
+
+
+    }
+    else if(temp_sc ==F3 && alt == Pressed){
+
+        term_launch(TERM3);
+        //printf("alt + F3 pressed\n");
+        send_eoi(KB_IRQ);
+
+
+    }
     else if(temp_sc == CHAR_L && ctrl == Pressed){
 
         /* Ctrl-L pressed: clear the screen */
@@ -203,19 +225,19 @@ char get_char_map(uint8_t sc){
  *   INPUT/OUTPUT: None
  *   SIDE EFFECTS: resets and clears buffer
  */
-void reset_kb_buf(){
+void reset_kb_buf(int term_num){
 
     int i; 
     /* set everything in buffer to 0 */
     for(i=0; i< KB_BUF_SIZE; i++){
 
-        kb_buf[i] = NULL_BYTE;   
+        term[term_num].kb_buf[i] = NULL_BYTE;   
 
 
     }
 
     // mark the buffer as empty
-    cur_buf_length =0;  
+    term[term_num].cur_buf_length =0;  
 
 
 }

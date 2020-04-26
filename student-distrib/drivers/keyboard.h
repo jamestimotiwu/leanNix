@@ -35,6 +35,12 @@
 #define NEW_LINE   '\n'
 #define char_space ' '
 #define SPACE      0x39
+#define F1		   0x3B 
+#define F2 		   0x3C
+#define F3  	   0x3D
+#define TERM1      0 
+#define TERM2      1
+#define TERM3      2
 
 //define pressed/released 
 
@@ -49,7 +55,7 @@ extern volatile char kb_buf[KB_BUF_SIZE];
 extern void keyboard_int();
 extern void keyboard_init();
 char get_char_map(uint8_t sc); 
-void reset_kb_buf();
+void reset_kb_buf(int term_num);
 void reset_cursor(int x, int y);
 void tab_func();
 void backsp_func();

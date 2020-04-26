@@ -198,6 +198,9 @@ Problem: the wrapper for the system call assembly linkage doesn't invoke syscall
 Solution: the sequence of how registers are stored was wrong. Fixed it by pushing registers in the right sequence in the
 assembly linkage.
 
+problem: open systemcall not working, ls user function is not outputting anything on the terminal
+solution: The implementation of the function pointer to open was not initialized correctly. It was fixed by 
+having the file operations pointer pointing to the open function pointer. 
 
 
 
