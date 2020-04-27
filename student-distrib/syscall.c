@@ -23,8 +23,9 @@ int32_t halt32(uint32_t status) {
     PCB_t *parent;
     int32_t i, ebp, old_pid;
     process_arr[current_pid] = 0;
-    if (current_pid == 0) {
+    if (pcb->parent_id == -1) {
         /* restart shell when it tries to halt */
+        // TODO: make this work with scheduling?
         current_pid = -1;
         execute((uint8_t *)"shell");
         return -1;
@@ -82,16 +83,18 @@ int32_t execute(const uint8_t* command){
     int32_t parent_pid = current_pid;
     uint8_t program[KB_BUF_SIZE+1];
     int i = 0, j = 0;
+
+    /* Find an open pid */
     for(p=0; p < PROCESS_NUM; p++){
-      if(process_arr[p] == 0){
-        break;
-      }
+        if(process_arr[p] == 0){
+            break;
+        }
     }
+    /* No open pids exist */
     if(p == PROCESS_NUM)
-      return -1;
-    process_arr[p] = 1;
-    current_pid = p;
-    PCB_t *pcb = create_pcb(current_pid);
+        return -1;
+
+    PCB_t *pcb = create_pcb(p);
 
     // TEMP TODO - init this some other way?
     pcb->term_num = 0;
@@ -130,15 +133,17 @@ int32_t execute(const uint8_t* command){
     if (!program_valid(program))
         return -1;
 
+    /* execute didn't fail, so update pid info */
+    process_arr[p] = 1;
+    current_pid = p;
+    pcb->process_id = current_pid;
+
     /* set up paging */
-    // current_pid++;
     page_map_user(current_pid);
 
     /* load file into memory and get entry point*/
     entry = program_load(program, current_pid);
 
-    /* create PCB/open FDs */
-    pcb->process_id = current_pid;
 
     /* get the stack pointer and base pointer */
     asm volatile("movl %%ebp, %0"
