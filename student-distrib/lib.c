@@ -10,7 +10,7 @@
  * Return Value: none
  * Function: Clears video memory */
 void clear(void) {
-	term_clear();
+	term_clear(display_term);
 
 }
 
@@ -158,7 +158,8 @@ int32_t puts(int8_t* s) {
  * Return Value: void
  *  Function: Output a character to the console */
 void putc(uint8_t c) {
-	term_putc(c);
+	// TODO : don't always use display term
+	term_putc(c, display_term);
 }
 
 /* int8_t* itoa(uint32_t value, int8_t* buf, int32_t radix);

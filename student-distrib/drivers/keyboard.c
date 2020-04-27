@@ -145,13 +145,13 @@ void keyboard_int(){
     }
     else if(temp_sc == F1 && alt == Pressed){
 
-         term_launch(TERM1);
+         show_terminal(TERM1);
         //printf("alt + F1 pressed\n");
          send_eoi(KB_IRQ);
 
     }
     else if(temp_sc == F2 && alt == Pressed){
-         term_launch(TERM2);
+         show_terminal(TERM2);
        // printf("alt + F2 pressed\n");
          send_eoi(KB_IRQ);
 
@@ -159,7 +159,7 @@ void keyboard_int(){
     }
     else if(temp_sc ==F3 && alt == Pressed){
 
-        term_launch(TERM3);
+        show_terminal(TERM3);
         //printf("alt + F3 pressed\n");
         send_eoi(KB_IRQ);
 
@@ -231,13 +231,13 @@ void reset_kb_buf(int term_num){
     /* set everything in buffer to 0 */
     for(i=0; i< KB_BUF_SIZE; i++){
 
-        term[term_num].kb_buf[i] = NULL_BYTE;   
+        terminals[term_num].kb_buf[i] = NULL_BYTE;   
 
 
     }
 
     // mark the buffer as empty
-    term[term_num].cur_buf_length =0;  
+    terminals[term_num].kb_pos =0;  
 
 
 }

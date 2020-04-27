@@ -93,6 +93,9 @@ int32_t execute(const uint8_t* command){
     current_pid = p;
     PCB_t *pcb = create_pcb(current_pid);
 
+    // TEMP TODO - init this some other way?
+    pcb->term_num = 0;
+
     if (command == NULL)
         return -1;
 

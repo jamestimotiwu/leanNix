@@ -27,7 +27,7 @@ void pit_init(uint32_t frequency){
  */
 void pit_int(){
     cli();
-    printf("something");
+    //printf("something");
     send_eoi(PIT_IRQ);
     sti();
 }

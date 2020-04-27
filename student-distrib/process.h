@@ -51,6 +51,7 @@ typedef struct file_desc{
     int32_t inode;
     int32_t file_pos;
     int32_t flags;
+    uint32_t term_num;
 }file_desc_t;
 
 /* struct for PCB */
@@ -66,7 +67,7 @@ typedef struct PCB{
   /* when child program halts, can return control to parent */
   int32_t parent_id;
   /* shell or level above */
-  int32_t level;
+  uint32_t term_num;
   /* argument storage for later use */
   int8_t argument[MAX_ARGS];
 }PCB_t;

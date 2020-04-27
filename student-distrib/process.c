@@ -13,18 +13,6 @@
 /* start at -1 since shell will start with pid of 0 */
 int32_t current_pid = -1;
 
-/* get the PCB */
-PCB_t* get_PCB(){
-  PCB_t* position;
-  /* AND ESP with mask*/
-  asm volatile(
-    "andl %%esp, %%eax"
-    :"=a"(position) /* output */
-    :"a"(PCB_MASK)  /* input */
-  );
-  return position;
-}
-
 /* 8KB */
 #define PROCESS_DATA_SIZE (8<<10)
 /* 8MB */

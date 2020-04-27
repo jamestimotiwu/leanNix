@@ -11,6 +11,7 @@
 #define VIDEO3 		 VIDEO2+VID_BACKUP;
 #define NUM_COLS    80
 #define NUM_ROWS    25
+#define VBUF_SIZE   (NUM_COLS*NUM_ROWS*2)
 #define ATTRIB      0x7
 #define TERM_MAX   	3
 
@@ -20,32 +21,35 @@
 /* basic terminal functionality */
 void term_clear();
 void term_showbuf(); /* prints out contents currently in buffer */
-void term_putc(uint8_t c);
+void term_putc(uint8_t c, uint32_t term);
 void term_test_int();
-int32_t term_launch(int32_t term_number);
+int32_t show_terminal(uint32_t term);
 void term_init(); //initialize all three terminals 
 
+extern char video_mem_backup[TERM_MAX][VBUF_SIZE];
 
 /* struct for terminal */
 typedef struct terminal{
  
- int32_t x_cur; 
- int32_t y_cur; 
+ int32_t cur_x; 
+ int32_t cur_y; 
 
- volatile char kb_buf[KB_BUF_SIZE]; //keyboard buffer for each terminal
- volatile int cur_buf_length;  //buf length for each terminal 
+ char kb_buf[KB_BUF_SIZE]; //keyboard buffer for each terminal
+ int kb_pos;  //buf length for each terminal 
 
  int32_t flag; // to check if termianl is currently operating (1= running, 0= not running)
  int32_t term_num; // terminal number (0,1,2) 
  
- char *vid_mem; //video memory ptr to each terminal 
+ //char *vid_mem; //video memory ptr to each terminal 
+ char *video_mem;
 
 
 }terminal_t;
 
 
-extern volatile uint32_t current_term_num; 
-extern terminal_t term[TERM_MAX];
+extern uint32_t display_term;
+extern uint32_t current_term; 
+extern terminal_t terminals[TERM_MAX];
 
 
 
@@ -54,7 +58,7 @@ int term_keyboardChar(uint8_t c);
 void term_keyboardBackspace();
 void term_keyboardEnter();
 void term_keyboardTab();
-void term_setChar(uint8_t c);
+void term_setChar(uint8_t c, int x, int y);
 
 /* system calls */
 
