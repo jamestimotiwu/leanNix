@@ -4,8 +4,6 @@
 #include "../process.h"
 
 /* global variables used by terminal */
-static int screen_x;
-static int screen_y;
 static char* video_mem = (char *)VIDEO1;
 
 /* used by the read system call */
@@ -15,7 +13,6 @@ volatile uint32_t current_term_num;
 terminal_t terminals[TERM_MAX];
 
 uint32_t display_term;
-uint32_t current_term; 
 
 char video_mem_backup[TERM_MAX][VBUF_SIZE];
 
@@ -28,13 +25,18 @@ char video_mem_backup[TERM_MAX][VBUF_SIZE];
  *   SIDE EFFECTS: function that handles the screen scroll-move 
  *                 video mem texts up by 1 if needed and clear the bottom line
  */
-void reset_cursor(int x, int y){
-    uint16_t position = y*NUM_COLS + x; 
+void reset_cursor(uint32_t term, int x, int y){
+    terminals[term].cur_x = x;
+    terminals[term].cur_y = y;
 
-    outb(0x0F, 0x3D4);
-    outb((uint8_t) (position & 0xFF)  ,0x3D5);
-    outb(0x0E, 0x3D4);
-    outb((uint8_t) ((position >> 8) & 0xFF),0x3D5);
+    if (term == display_term) {
+        uint16_t position = y*NUM_COLS + x; 
+
+        outb(0x0F, 0x3D4);
+        outb((uint8_t) (position & 0xFF)  ,0x3D5);
+        outb(0x0E, 0x3D4);
+        outb((uint8_t) ((position >> 8) & 0xFF),0x3D5);
+    }
 }
 
 char video_mem_array[TERM_MAX][VBUF_SIZE];
@@ -63,7 +65,6 @@ void term_init(){
 
     terminals[0].video_mem = video_mem;
     display_term = 0; //first terminal upon initialization 
-    current_term = 0;
 
     //execute((uint8_t *) "shell"); //first terminal executing in shell upon initialization 
 }
@@ -80,6 +81,7 @@ int32_t show_terminal(uint32_t term){
     if(term >=TERM_MAX)
         return -1;  //check if terminal number is within range
 
+    /* Don't do anything if the terminal is already being displayed */
     if(term == display_term) 
         return 0;
 
@@ -96,7 +98,11 @@ int32_t show_terminal(uint32_t term){
     }
     oldterm->video_mem = video_mem_backup[display_term];
     newterm->video_mem = video_mem;
+    
+    /* Set cursor to correct position */
     display_term = term;
+    reset_cursor(display_term, newterm->cur_x, newterm->cur_y);
+
     sti();
 
 
@@ -106,23 +112,22 @@ int32_t show_terminal(uint32_t term){
 
 /* term_clear
  *   DESCRIPTION: clears all video memory and cursor position
- *   INPUT: none
+ *   INPUT: term -- the terminal to clear
  *   OUTPUT: none
  *   SIDE EFFECTS: video memory is lost
  */
-void term_clear() {
+void term_clear(uint32_t term) {
     int32_t i;
+    terminal_t *t = &terminals[term];
 
     /* clear all locations in video mem */
     for (i = 0; i < NUM_ROWS * NUM_COLS; i++) {
-        *(uint8_t *)(video_mem + (i << 1)) = ' ';
-        *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB;
+        *(uint8_t *)(t->video_mem + (i << 1)) = ' ';
+        *(uint8_t *)(t->video_mem + (i << 1) + 1) = ATTRIB;
     }
 
     /* set cursor back to 0,0 */
-    screen_x = 0;
-    screen_y = 0;
-    reset_cursor(0, 0);
+    reset_cursor(term, 0, 0);
 }
 
 /* term_test_int
@@ -187,7 +192,6 @@ int term_keyboardChar(uint8_t c) {
 
     state->kb_buf[state->kb_pos++] = c;
     term_putc(c, display_term);
-    // reset_cursor(screen_x, screen_y); do this in term_putc now
     return 1;
 }
 
@@ -200,7 +204,7 @@ int term_keyboardChar(uint8_t c) {
 void term_keyboardTab() {
     /* print a tab character */
     // calculate how many spaces left to print until next tabstop
-    int spaces = 4 - (screen_x % TAB_STOP);
+    int spaces = 4 - (terminals[display_term].cur_x % TAB_STOP);
 
     while (spaces--)
         term_keyboardChar(' ');
@@ -234,7 +238,7 @@ void term_keyboardBackspace() {
     }
     
     // set the cursor to last character position (ie. where the space is)
-    reset_cursor(state->cur_x, state->cur_y);
+    reset_cursor(display_term, state->cur_x, state->cur_y);
 }
 
 
@@ -250,7 +254,6 @@ void term_keyboardEnter() {
 
     t->kb_buf[t->kb_pos++] = '\n';
     term_putc('\n', display_term);
-    // reset_cursor(0, screen_y); do this in term_putc now
 
     if (readWaiting[display_term]) {
         readWaiting[display_term] = 0;
@@ -317,7 +320,7 @@ void term_putc(uint8_t c, uint32_t term) {
         }
     }
     /* puts the cursor in location of next character to print */
-    reset_cursor(t->cur_x, t->cur_y);
+    reset_cursor(term, t->cur_x, t->cur_y);
 }
 
 /* term_setChar
@@ -346,6 +349,7 @@ int32_t terminal_read(int32_t fd, void *buf, uint32_t count) {
     if (buf == NULL)
         return -1;
 
+    uint32_t current_term = get_current_terminal();
     /* terminal read always reads from the current terminal */
     readWaiting[current_term] = 1;
     terminal_t *t = &terminals[current_term];
@@ -382,7 +386,6 @@ int32_t terminal_read(int32_t fd, void *buf, uint32_t count) {
 int32_t terminal_write(int32_t fd, void *buf, uint32_t count) {
     int i;
     uint8_t *input = (uint8_t *) buf;
-    PCB_t *pcb = create_pcb(current_pid);
 
     if (buf == NULL)
         return -1;
@@ -390,12 +393,7 @@ int32_t terminal_write(int32_t fd, void *buf, uint32_t count) {
     for (i = 0; i < count; i++) {
 
         /* write to terminal using standard function, not the keyboard function */
-        term_putc(input[i], pcb->term_num);
-
-        // don't use term keyboard anymore -- that is only for keyboard input
-        //if (term_keyboardChar(((uint8_t *)buf)[i]) == 0)
-            /* no longer able to write to buffer, so exit */
-        //    break;
+        term_putc(input[i], get_current_terminal());
     }
     /* return the number of bytes written */
     return i;

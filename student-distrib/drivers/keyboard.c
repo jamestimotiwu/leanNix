@@ -145,30 +145,33 @@ void keyboard_int(){
     }
     else if(temp_sc == F1 && alt == Pressed){
 
-         show_terminal(TERM1);
-        //printf("alt + F1 pressed\n");
-         send_eoi(KB_IRQ);
+        show_terminal(TERM1);
+        send_eoi(KB_IRQ);
+        sti();
+        return;
 
     }
     else if(temp_sc == F2 && alt == Pressed){
-         show_terminal(TERM2);
-       // printf("alt + F2 pressed\n");
-         send_eoi(KB_IRQ);
+        show_terminal(TERM2);
+        send_eoi(KB_IRQ);
+        sti();
+        return;
 
 
     }
     else if(temp_sc ==F3 && alt == Pressed){
 
         show_terminal(TERM3);
-        //printf("alt + F3 pressed\n");
         send_eoi(KB_IRQ);
+        sti();
+        return;
 
 
     }
     else if(temp_sc == CHAR_L && ctrl == Pressed){
 
         /* Ctrl-L pressed: clear the screen */
-        term_clear();
+        term_clear(display_term);
         term_showbuf();
 
         send_eoi(KB_IRQ);  //send EOI signal when done handling 

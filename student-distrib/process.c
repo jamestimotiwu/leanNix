@@ -44,6 +44,21 @@ int32_t bad_call() {
 	return -1;
 }
 
+/* get_current_terminal
+ *   DESCRIPTION: gets number of terminal to be printed to
+ *   INPUTS: none
+ *   OUTPUTS: id of terminal
+ *   SIDE EFFECTS: none
+ */
+uint32_t get_current_terminal() {
+	/* By default, print to terminal 0 */
+	uint32_t term = 0;
+
+	if (current_pid != -1) {
+		term = create_pcb(current_pid)->term_num;
+	}
+	return term;
+}
 
 file_ops_ptr_t stdin_file_ops = { (read_op)terminal_read, (write_op)bad_call,
 	                              (open_op)bad_call, (close_op)bad_call };

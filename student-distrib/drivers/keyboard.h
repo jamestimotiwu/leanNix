@@ -56,7 +56,6 @@ extern void keyboard_int();
 extern void keyboard_init();
 char get_char_map(uint8_t sc); 
 void reset_kb_buf(int term_num);
-void reset_cursor(int x, int y);
 void tab_func();
 void backsp_func();
 void enter_func();

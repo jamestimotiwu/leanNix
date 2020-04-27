@@ -1,8 +1,10 @@
 /* lib.c - Some basic library functions (printf, strlen, etc.)
- * vim:ts=4 noexpandtab */
+ * vim:ts=4 noexpandtab
+ */
 
 #include "lib.h"
 #include "drivers/terminal.h"
+#include "process.h"
 
 
 /* void clear(void);
@@ -10,7 +12,7 @@
  * Return Value: none
  * Function: Clears video memory */
 void clear(void) {
-	term_clear(display_term);
+	term_clear(get_current_terminal());
 
 }
 
@@ -158,8 +160,7 @@ int32_t puts(int8_t* s) {
  * Return Value: void
  *  Function: Output a character to the console */
 void putc(uint8_t c) {
-	// TODO : don't always use display term
-	term_putc(c, display_term);
+	term_putc(c, get_current_terminal());
 }
 
 /* int8_t* itoa(uint32_t value, int8_t* buf, int32_t radix);

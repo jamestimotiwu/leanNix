@@ -19,7 +19,7 @@
 #define TAB_STOP 4
 
 /* basic terminal functionality */
-void term_clear();
+void term_clear(uint32_t term);
 void term_showbuf(); /* prints out contents currently in buffer */
 void term_putc(uint8_t c, uint32_t term);
 void term_test_int();
@@ -48,7 +48,6 @@ typedef struct terminal{
 
 
 extern uint32_t display_term;
-extern uint32_t current_term; 
 extern terminal_t terminals[TERM_MAX];
 
 

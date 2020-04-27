@@ -34,6 +34,9 @@ void entry(unsigned long magic, unsigned long addr) {
 	/* Clear the screen. */
 	clear();
 
+	/* Initialize terminal before printing anything */
+	term_init();
+
 	/* Am I booted by a Multiboot-compliant boot loader? */
 	if (magic != MULTIBOOT_BOOTLOADER_MAGIC) {
 		printf("Invalid magic number: 0x%#x\n", (unsigned)magic);
@@ -168,7 +171,6 @@ void entry(unsigned long magic, unsigned long addr) {
 	/* Init paging */
 	init_pages();
 
-	term_init();
 	/* Initialize devices, memory, filesystem, enable device interrupts on the
 	 * PIC, any other initialization stuff... */
 

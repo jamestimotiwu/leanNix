@@ -12,6 +12,7 @@
 
 #ifndef ASM
 #include "types.h"
+#include "drivers/terminal.h"
 
 /* Max number of processes */
 #define PROCESS_NUM 6
@@ -81,6 +82,8 @@ void set_fd_close(int32_t fd, PCB_t *pcb);
 int32_t fd_is_open(int32_t fd, PCB_t *pcb);
 
 extern int32_t current_pid;
+
+uint32_t get_current_terminal();
 
 
 int32_t process_execute(const uint8_t* command);
