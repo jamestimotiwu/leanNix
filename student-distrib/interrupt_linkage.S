@@ -32,6 +32,7 @@ keyboard_interrupt_assembly:
 
 # pit interrupt
 pit_interrupt_assembly:
+  sti # why is IF cleared when this starts?
   pushal
   pushfl
   call pit_int

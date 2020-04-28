@@ -78,26 +78,26 @@ int32_t execute(const uint8_t* command){
     /* Maximum 3 shells */
     int p;
     uint32_t entry;
-    // PCB_t *pcb = create_pcb(current_pid + 1);
     int32_t ebp;
     int32_t parent_pid = current_pid;
     uint8_t program[KB_BUF_SIZE+1];
     int i = 0, j = 0;
 
     /* Find an open pid */
-    for(p=0; p < PROCESS_NUM; p++){
-        if(process_arr[p] == 0){
-            break;
-        }
-    }
-    /* No open pids exist */
-    if(p == PROCESS_NUM)
+    if ((p = get_available_pid()) == -1)
         return -1;
 
     PCB_t *pcb = create_pcb(p);
 
-    // TEMP TODO - init this some other way?
-    pcb->term_num = 0;
+    /* Child process executes in the same terminal as the parent */
+    if (parent_pid == -1) {
+        /* Top-level shell: the terminal # is same as pid */
+        pcb->term_num = p;
+    } else {
+        /* Terminal number inherited from parent */
+        pcb->term_num = create_pcb(parent_pid)->term_num;
+    }
+        
 
     if (command == NULL)
         return -1;
@@ -134,15 +134,14 @@ int32_t execute(const uint8_t* command){
         return -1;
 
     /* execute didn't fail, so update pid info */
-    process_arr[p] = 1;
-    current_pid = p;
-    pcb->process_id = current_pid;
+    //process_arr[p] = 1;
+    pcb->process_id = p;
 
     /* set up paging */
-    page_map_user(current_pid);
+    page_map_user(p);
 
     /* load file into memory and get entry point*/
-    entry = program_load(program, current_pid);
+    entry = program_load(program, p);
 
 
     /* get the stack pointer and base pointer */
@@ -166,6 +165,11 @@ int32_t execute(const uint8_t* command){
 
     /* add new process to schedule */
     sched_queue_process(pcb->parent_id, pcb->process_id);
+
+    /* TODO: initialize kernel stack w/ iret ctx? eip=entry, esp=user stack top */
+
+    /* Force scheduling routine */
+    //sched(); // TODO
 
     /* prepare for context switch */
 

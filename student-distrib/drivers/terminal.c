@@ -305,8 +305,8 @@ void term_putc(uint8_t c, uint32_t term) {
 
     } else {
 
-        *(uint8_t *)(video_mem + ((NUM_COLS * t->cur_y + t->cur_x) << 1)) = c;
-        *(uint8_t *)(video_mem + ((NUM_COLS * t->cur_y + t->cur_x) << 1) + 1) = ATTRIB;
+        *(uint8_t *)(t->video_mem + ((NUM_COLS * t->cur_y + t->cur_x) << 1)) = c;
+        *(uint8_t *)(t->video_mem + ((NUM_COLS * t->cur_y + t->cur_x) << 1) + 1) = ATTRIB;
         t->cur_x++;
 
         if (t->cur_x >= NUM_COLS) {
@@ -386,6 +386,7 @@ int32_t terminal_read(int32_t fd, void *buf, uint32_t count) {
 int32_t terminal_write(int32_t fd, void *buf, uint32_t count) {
     int i;
     uint8_t *input = (uint8_t *) buf;
+    uint32_t term = get_current_terminal();
 
     if (buf == NULL)
         return -1;
@@ -393,7 +394,7 @@ int32_t terminal_write(int32_t fd, void *buf, uint32_t count) {
     for (i = 0; i < count; i++) {
 
         /* write to terminal using standard function, not the keyboard function */
-        term_putc(input[i], get_current_terminal());
+        term_putc(input[i], term);
     }
     /* return the number of bytes written */
     return i;
