@@ -72,7 +72,7 @@ void sched(void) {
 	/* restore next scheduled process context */
 	pcb = create_pcb((uint32_t) running_pid);
 
-    // TODO CLI STI
+    // TODO CLI STI ???
 
 	/* remap paging; flush tlb */
 	page_map_user(running_pid);
@@ -102,17 +102,21 @@ void sched(void) {
  *   DESCRIPTION: add process to process queue
  *   INPUTS: stop_pid - process to stop/remove from queue based on corresponding parent
  *			 exec_pid - process to start/add to queue, indexed to itself if parent
+ *			 remove - boolean that decides if stop_pid should be completely removed
  *   OUTPUTS: None
  *   SIDE EFFECTS: adds pid to the schedule queue depending on its pid
  */
-void sched_queue_process(int32_t stop_pid, int32_t exec_pid) {
+void sched_queue_process(int32_t stop_pid, int32_t exec_pid, int remove) {
 	/* set process to wait based on parent*/
 	if (stop_pid == -1) {
 		/* nothing to stop */
 		process_queue[exec_pid] = SCHEDULED;
 	} else {
 		/* parent is not base shell, get parent of next shell */
-        process_queue[stop_pid] = LOADED; /* It's still loaded into memory, just not scheduled */
+        if (remove)
+            process_queue[stop_pid] = NOT_LOADED; /* remove completely */
+        else
+            process_queue[stop_pid] = LOADED; /* It's still loaded into memory, just not scheduled */
         process_queue[exec_pid] = SCHEDULED;
 
 	}
@@ -149,7 +153,7 @@ void init_shells(void) {
         set_fd_open(STDOUT, pcb);
 
         /* initialize it for scheduling */
-        sched_queue_process(pcb->parent_id, pcb->process_id);
+        sched_queue_process(pcb->parent_id, pcb->process_id, 0);
 
         pcb->sched_bp = 0; /* not yet set */
         page_map_user(i);

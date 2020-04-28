@@ -137,6 +137,7 @@ halt_ret:
     movl 12(%ebp), %eax # execute's return value
     movl %ecx, %esp
     movl %ecx, %ebp
+    sti
     leave
     ret
 

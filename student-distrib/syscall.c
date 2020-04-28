@@ -21,6 +21,7 @@ int32_t process_arr[PROCESS_NUM] = { 0,0,0,0,0,0 };
 int32_t halt32(uint32_t status) {
     PCB_t *pcb = create_pcb(current_pid);
     PCB_t *parent;
+
     int32_t i, ebp, old_pid;
     process_arr[current_pid] = 0;
     if (pcb->parent_id == -1) {
@@ -30,6 +31,9 @@ int32_t halt32(uint32_t status) {
         execute((uint8_t *)"shell");
         return -1;
     }
+
+    cli();
+
     old_pid = current_pid;
     /* restore parent data */
     current_pid = pcb->parent_id;
@@ -49,7 +53,7 @@ int32_t halt32(uint32_t status) {
     ebp = pcb->base_ptr;
 
     /* remove process with old_pid (process being halted) in queue and replace with parent process id */
-    sched_queue_process(old_pid, parent->process_id);
+    sched_queue_process(old_pid, parent->process_id, 1);
 
     /* jump to execute return */
     halt_ret(ebp, status);
@@ -163,8 +167,16 @@ int32_t execute(const uint8_t* command){
     pcb->fd_arr[STDOUT].file_ops = &stdout_file_ops;
     set_fd_open(STDOUT, pcb);
 
+    pcb->entry = entry;
+    pcb->sched_bp = 0;
+
     /* add new process to schedule */
-    sched_queue_process(pcb->parent_id, pcb->process_id);
+    sched_queue_process(pcb->parent_id, pcb->process_id, 0);
+
+    /* wait for pit handler to execute */
+    while (1) {
+        asm volatile ("hlt");
+    }
 
     /* TODO: initialize kernel stack w/ iret ctx? eip=entry, esp=user stack top */
 
@@ -174,7 +186,7 @@ int32_t execute(const uint8_t* command){
     /* prepare for context switch */
 
     /* push IRET context onto stack and do IRET */
-    ret_to_user(entry);
+    //ret_to_user(entry);
 
     return 0;
 }
