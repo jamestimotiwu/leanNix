@@ -28,9 +28,9 @@ void init_pages()
 	page_table[VMEM_T2].rw = 1;
 	page_table[VMEM_T2].base_32_12 = VMEM_T2;
 					 
-	page_table[VMEM_T2].present = 1;
-	page_table[VMEM_T2].rw = 1;
-	page_table[VMEM_T2].base_32_12 = VMEM_T3;
+	page_table[VMEM_T3].present = 1;
+	page_table[VMEM_T3].rw = 1;
+	page_table[VMEM_T3].base_32_12 = VMEM_T3;
 
 	/* First entry of page table to directory 
 	(4kb entries), page table mapped to base address */

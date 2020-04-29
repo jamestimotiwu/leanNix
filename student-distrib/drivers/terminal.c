@@ -14,7 +14,8 @@ terminal_t terminals[TERM_MAX];
 
 uint32_t display_term;
 
-char video_mem_backup[TERM_MAX][VBUF_SIZE];
+//char video_mem_backup[TERM_MAX][VBUF_SIZE];
+char* video_mem_backup[TERM_MAX];
 
 // reference used: https://wiki.osdev.org/Text_Mode_Cursor
 
@@ -50,6 +51,11 @@ char video_mem_array[TERM_MAX][VBUF_SIZE];
 void term_init(){
 
     int i;
+
+    video_mem_backup[0] = (char*)VIDEO_T1;
+    video_mem_backup[1] = (char*)VIDEO_T2;
+    video_mem_backup[2] = (char*)VIDEO_T3;
+
     //initialize terminal struct for three terminals
     for(i=0; i< TERM_MAX; i++){
 
@@ -57,7 +63,7 @@ void term_init(){
         terminals[i].cur_y =0; 
         terminals[i].flag =0;
         terminals[i].term_num=i;
-        // initialize pointer to each terminal's video memory 
+        // initialize pointer to each terminal's video memory
         terminals[i].video_mem = video_mem_backup[i];
         reset_kb_buf(i);
 

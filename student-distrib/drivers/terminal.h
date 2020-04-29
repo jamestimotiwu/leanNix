@@ -7,8 +7,9 @@
 
 #define VIDEO1       0xB8000
 #define VID_BACKUP   0x01000 //4kb video memory backup space for each terminal
-#define VIDEO2       VIDEO1+VID_BACKUP; 
-#define VIDEO3 		 VIDEO2+VID_BACKUP;
+#define VIDEO_T1     0xB9000; 
+#define VIDEO_T2 	 0xBA000;
+#define VIDEO_T3     0xBB000;
 #define NUM_COLS    80
 #define NUM_ROWS    25
 #define VBUF_SIZE   (NUM_COLS*NUM_ROWS*2)
@@ -26,7 +27,9 @@ void term_test_int();
 int32_t show_terminal(uint32_t term);
 void term_init(); //initialize all three terminals 
 
-extern char video_mem_backup[TERM_MAX][VBUF_SIZE];
+//extern char video_mem_backup[TERM_MAX][VBUF_SIZE];
+
+extern char* video_mem_backup[TERM_MAX];
 
 /* struct for terminal */
 typedef struct terminal{
