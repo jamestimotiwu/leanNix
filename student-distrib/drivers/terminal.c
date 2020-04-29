@@ -2,6 +2,7 @@
 #include "../types.h"
 #include "../lib.h"
 #include "../process.h"
+#include "../page.h"
 
 /* global variables used by terminal */
 static char* video_mem = (char *)VIDEO1;
@@ -93,6 +94,9 @@ int32_t show_terminal(uint32_t term){
 
     terminal_t *oldterm = &terminals[display_term];
     terminal_t *newterm = &terminals[term];
+
+    page_map_4kb(1, vmem_page_table, term_vid_addr[term], VMEM_MAP);
+    page_map_4kb(1, vmem_page_table, term_vid_addr[display_term], term_vid_addr[display_term]);
 
     cli();
     int i;

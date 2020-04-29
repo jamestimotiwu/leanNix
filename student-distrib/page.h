@@ -136,8 +136,8 @@ void init_pages(void);
 void page_map_user(uint32_t proc_num);
 
 void page_map_4kb(uint32_t user, page_table_entry_t* dest_pte, uint32_t v_addr_offset, uint32_t base_addr); 
-uint32_t page_map_vmem();
 
+extern uint32_t term_vid_addr[3];
 #endif
 
 

@@ -335,6 +335,9 @@ int32_t getargs(uint8_t *buf, int32_t nbytes) {
  *   SIDE EFFECTS: modify given screen_start pointer
  */
 int32_t vidmap(uint8_t** screen_start) {
+    PCB_t* pcb = create_pcb(current_pid);
+    uint32_t term_num = pcb->term_num;
+
     if (screen_start == NULL) {
         return -1;
     }
@@ -343,8 +346,7 @@ int32_t vidmap(uint8_t** screen_start) {
         return -1;
     }
 
-    page_map_vmem();
-    *screen_start = (uint8_t*)USER_VMEM_VADDR;
+    *screen_start = (uint8_t*)(USER_VMEM_VADDR + (term_vid_addr[term_num] << 12));
     return 0;
 }
 

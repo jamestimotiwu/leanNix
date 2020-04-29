@@ -3,6 +3,8 @@
 #include "lib.h"
 #include "page_asm.h"
 
+uint32_t term_vid_addr[3] = { VMEM_T1, VMEM_T2, VMEM_T3 };
+
 /* Initialize paging structures */
 void init_pages()
 {
@@ -63,11 +65,9 @@ void init_pages()
 		vmem_page_table[i].val = 2; /* Set read write flag */
 	}
 
-	vmem_page_table[0].val = 0;
-	vmem_page_table[0].present = 1;
-	vmem_page_table[0].rw = 1;
-	vmem_page_table[0].user = 1;
-	vmem_page_table[0].base_32_12 = VMEM_MAP;
+	page_map_4kb(1, vmem_page_table, VMEM_T1, VMEM_MAP);
+	page_map_4kb(1, vmem_page_table, VMEM_T2, VMEM_T2);
+	page_map_4kb(1, vmem_page_table, VMEM_T3, VMEM_T3);
 
 	page_dir[2].kb.val = 0;
 	/* Create new page table at USER_VMEM_VIRT */
@@ -112,17 +112,6 @@ void page_map_4kb(uint32_t user, page_table_entry_t* dest_pte, uint32_t v_addr_o
 	dest_pte[v_addr_offset].user = user;
 	dest_pte[v_addr_offset].base_32_12 = base_addr;
 }
-/* page_map_vmem
- *   DESCRIPTION Maps vmem if needed
- *   INPUTS: None
- *   OUTPUTS: None
- *   SIDE EFFECTS: creates page table entry in vmem
- */
-uint32_t page_map_vmem() {
-	/* Create new page dir entry if not present */
-	page_map_4kb(1, vmem_page_table, VMEM_MAP, VMEM_MAP);
 
-	return 0;
-}
 
 
