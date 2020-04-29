@@ -133,10 +133,11 @@ halt_ret:
     pushl %ebp
     movl %esp, %ebp
 
-    movl 8(%ebp), %ecx # put the ebp in ecx
-    movl 12(%ebp), %eax # execute's return value
+    movl 8(%ebp), %ecx # put the esp in ecx
+    movl 12(%ebp), %edx # put ebp in edx
+    movl 16(%ebp), %eax # execute's return value
     movl %ecx, %esp
-    movl %ecx, %ebp
+    movl %edx, %ebp
     sti
     leave
     ret
