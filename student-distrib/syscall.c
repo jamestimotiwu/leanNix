@@ -168,7 +168,7 @@ int32_t execute(const uint8_t* command){
 
     /* get the stack pointer and base pointer */
     asm volatile("movl %%esp, %0 \n\
-                  movl %%ebp, %0"
+                  movl %%ebp, %1"
                   
             : "=r"((esp)), "=r"((ebp)) /* outputs */
             :
