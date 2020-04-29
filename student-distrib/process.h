@@ -24,6 +24,8 @@
 #define PCB_MASK 0x7FE000
 /* PCB Functionality */
 
+extern int32_t process_arr[PROCESS_NUM];
+
 /* Basic file descriptors */
 #define STDIN 0
 #define STDOUT 1
@@ -52,7 +54,7 @@ typedef struct file_desc{
     int32_t inode;
     int32_t file_pos;
     int32_t flags;
-    uint32_t term_num;
+    //uint32_t term_num;
 }file_desc_t;
 
 /* struct for PCB */
@@ -65,8 +67,12 @@ typedef struct PCB{
   int32_t stack_ptr;
   /* EBP */
   int32_t base_ptr;
+  /* base pointer of sched() function */
+  int32_t sched_bp;
   /* when child program halts, can return control to parent */
   int32_t parent_id;
+  /* entry point into the program */
+  int32_t entry;
   /* shell or level above */
   uint32_t term_num;
   /* argument storage for later use */

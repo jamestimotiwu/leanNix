@@ -2,6 +2,7 @@
 #include "../types.h"
 #include "../lib.h"
 #include "../process.h"
+#include "../page.h"
 
 /* global variables used by terminal */
 static char* video_mem = (char *)VIDEO1;
@@ -14,7 +15,8 @@ terminal_t terminals[TERM_MAX];
 
 uint32_t display_term;
 
-char video_mem_backup[TERM_MAX][VBUF_SIZE];
+//char video_mem_backup[TERM_MAX][VBUF_SIZE];
+char* video_mem_backup[TERM_MAX];
 
 // reference used: https://wiki.osdev.org/Text_Mode_Cursor
 
@@ -50,6 +52,11 @@ char video_mem_array[TERM_MAX][VBUF_SIZE];
 void term_init(){
 
     int i;
+
+    video_mem_backup[0] = (char*)VIDEO_T1;
+    video_mem_backup[1] = (char*)VIDEO_T2;
+    video_mem_backup[2] = (char*)VIDEO_T3;
+
     //initialize terminal struct for three terminals
     for(i=0; i< TERM_MAX; i++){
 
@@ -57,7 +64,7 @@ void term_init(){
         terminals[i].cur_y =0; 
         terminals[i].flag =0;
         terminals[i].term_num=i;
-        // initialize pointer to each terminal's video memory 
+        // initialize pointer to each terminal's video memory
         terminals[i].video_mem = video_mem_backup[i];
         reset_kb_buf(i);
 
@@ -87,6 +94,9 @@ int32_t show_terminal(uint32_t term){
 
     terminal_t *oldterm = &terminals[display_term];
     terminal_t *newterm = &terminals[term];
+
+    page_map_4kb(1, vmem_page_table, term_vid_addr[term], VMEM_MAP);
+    page_map_4kb(1, vmem_page_table, term_vid_addr[display_term], term_vid_addr[display_term]);
 
     cli();
     int i;
@@ -305,8 +315,8 @@ void term_putc(uint8_t c, uint32_t term) {
 
     } else {
 
-        *(uint8_t *)(video_mem + ((NUM_COLS * t->cur_y + t->cur_x) << 1)) = c;
-        *(uint8_t *)(video_mem + ((NUM_COLS * t->cur_y + t->cur_x) << 1) + 1) = ATTRIB;
+        *(uint8_t *)(t->video_mem + ((NUM_COLS * t->cur_y + t->cur_x) << 1)) = c;
+        *(uint8_t *)(t->video_mem + ((NUM_COLS * t->cur_y + t->cur_x) << 1) + 1) = ATTRIB;
         t->cur_x++;
 
         if (t->cur_x >= NUM_COLS) {
@@ -386,6 +396,7 @@ int32_t terminal_read(int32_t fd, void *buf, uint32_t count) {
 int32_t terminal_write(int32_t fd, void *buf, uint32_t count) {
     int i;
     uint8_t *input = (uint8_t *) buf;
+    uint32_t term = get_current_terminal();
 
     if (buf == NULL)
         return -1;
@@ -393,7 +404,7 @@ int32_t terminal_write(int32_t fd, void *buf, uint32_t count) {
     for (i = 0; i < count; i++) {
 
         /* write to terminal using standard function, not the keyboard function */
-        term_putc(input[i], get_current_terminal());
+        term_putc(input[i], term);
     }
     /* return the number of bytes written */
     return i;

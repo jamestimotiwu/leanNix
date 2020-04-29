@@ -21,6 +21,7 @@ int32_t process_arr[PROCESS_NUM] = { 0,0,0,0,0,0 };
 int32_t halt32(uint32_t status) {
     PCB_t *pcb = create_pcb(current_pid);
     PCB_t *parent;
+
     int32_t i, ebp, old_pid;
     process_arr[current_pid] = 0;
     if (pcb->parent_id == -1) {
@@ -30,6 +31,9 @@ int32_t halt32(uint32_t status) {
         execute((uint8_t *)"shell");
         return -1;
     }
+
+    cli();
+
     old_pid = current_pid;
     /* restore parent data */
     current_pid = pcb->parent_id;
@@ -49,7 +53,7 @@ int32_t halt32(uint32_t status) {
     ebp = pcb->base_ptr;
 
     /* remove process with old_pid (process being halted) in queue and replace with parent process id */
-    sched_queue_process(old_pid, parent->process_id);
+    sched_queue_process(old_pid, parent->process_id, 1);
 
     /* jump to execute return */
     halt_ret(ebp, status);
@@ -78,26 +82,26 @@ int32_t execute(const uint8_t* command){
     /* Maximum 3 shells */
     int p;
     uint32_t entry;
-    // PCB_t *pcb = create_pcb(current_pid + 1);
     int32_t ebp;
     int32_t parent_pid = current_pid;
     uint8_t program[KB_BUF_SIZE+1];
     int i = 0, j = 0;
 
     /* Find an open pid */
-    for(p=0; p < PROCESS_NUM; p++){
-        if(process_arr[p] == 0){
-            break;
-        }
-    }
-    /* No open pids exist */
-    if(p == PROCESS_NUM)
+    if ((p = get_available_pid()) == -1)
         return -1;
 
     PCB_t *pcb = create_pcb(p);
 
-    // TEMP TODO - init this some other way?
-    pcb->term_num = 0;
+    /* Child process executes in the same terminal as the parent */
+    if (parent_pid == -1) {
+        /* Top-level shell: the terminal # is same as pid */
+        pcb->term_num = p;
+    } else {
+        /* Terminal number inherited from parent */
+        pcb->term_num = create_pcb(parent_pid)->term_num;
+    }
+        
 
     if (command == NULL)
         return -1;
@@ -134,15 +138,14 @@ int32_t execute(const uint8_t* command){
         return -1;
 
     /* execute didn't fail, so update pid info */
-    process_arr[p] = 1;
-    current_pid = p;
-    pcb->process_id = current_pid;
+    //process_arr[p] = 1;
+    pcb->process_id = p;
 
     /* set up paging */
-    page_map_user(current_pid);
+    page_map_user(p);
 
     /* load file into memory and get entry point*/
-    entry = program_load(program, current_pid);
+    entry = program_load(program, p);
 
 
     /* get the stack pointer and base pointer */
@@ -164,13 +167,26 @@ int32_t execute(const uint8_t* command){
     pcb->fd_arr[STDOUT].file_ops = &stdout_file_ops;
     set_fd_open(STDOUT, pcb);
 
+    pcb->entry = entry;
+    pcb->sched_bp = 0;
+
     /* add new process to schedule */
-    sched_queue_process(pcb->parent_id, pcb->process_id);
+    sched_queue_process(pcb->parent_id, pcb->process_id, 0);
+
+    /* wait for pit handler to execute */
+    while (1) {
+        asm volatile ("hlt");
+    }
+
+    /* TODO: initialize kernel stack w/ iret ctx? eip=entry, esp=user stack top */
+
+    /* Force scheduling routine */
+    //sched(); // TODO
 
     /* prepare for context switch */
 
     /* push IRET context onto stack and do IRET */
-    ret_to_user(entry);
+    //ret_to_user(entry);
 
     return 0;
 }
@@ -319,6 +335,9 @@ int32_t getargs(uint8_t *buf, int32_t nbytes) {
  *   SIDE EFFECTS: modify given screen_start pointer
  */
 int32_t vidmap(uint8_t** screen_start) {
+    PCB_t* pcb = create_pcb(current_pid);
+    uint32_t term_num = pcb->term_num;
+
     if (screen_start == NULL) {
         return -1;
     }
@@ -327,8 +346,7 @@ int32_t vidmap(uint8_t** screen_start) {
         return -1;
     }
 
-    page_map_vmem();
-    *screen_start = (uint8_t*)USER_VMEM_VADDR;
+    *screen_start = (uint8_t*)(USER_VMEM_VADDR + (term_vid_addr[term_num] << 12));
     return 0;
 }
 

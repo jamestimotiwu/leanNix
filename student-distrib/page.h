@@ -12,6 +12,10 @@
 #define MB_PAGE_SIZE    (PAGE_SIZE << 10) 
 #define VMEM_MAP        0xB8
 
+#define VMEM_T1         0xB9
+#define VMEM_T2         0xBA
+#define VMEM_T3         0xBB
+
 #define KB_BASE_OFFSET  12
 #define MB_BASE_OFFSET  22
 
@@ -132,8 +136,8 @@ void init_pages(void);
 void page_map_user(uint32_t proc_num);
 
 void page_map_4kb(uint32_t user, page_table_entry_t* dest_pte, uint32_t v_addr_offset, uint32_t base_addr); 
-uint32_t page_map_vmem();
 
+extern uint32_t term_vid_addr[3];
 #endif
 
 

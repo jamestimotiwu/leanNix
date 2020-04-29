@@ -27,12 +27,10 @@ void rtc_int() {
  *   SIDE EFFECT: changes rtc state, enables irq8
  */
 void rtc_init() {
-	cli();						/* Disable interrupts */
 	outb(REG_B, RTC_PORT);			/* Select register B, disable non-maskable interrupt(NMI) */
 	unsigned char prev = inb(CMOS_PORT);			/* Read value of register B */
 	outb(REG_B, RTC_PORT);			/* Set index again because read resets index in register */
 	outb((prev | 0x40), CMOS_PORT);	/* Write previous value | 0x40 to turn bit 6 of register in enable ints*/
-	sti();						/* Enable interrupts */
 	rtc_set_freq(2);
 	enable_irq(RTC_IRQ);
 	enable_irq(SLAVE_IRQ);
