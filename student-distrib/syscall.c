@@ -22,8 +22,8 @@ int32_t halt32(uint32_t status) {
     PCB_t *pcb = create_pcb(current_pid);
     PCB_t *parent;
 
-    int32_t i, ebp, old_pid;
-    process_arr[current_pid] = 0;
+    int32_t i, ebp, esp, old_pid;
+    //process_arr[current_pid] = 0;
     if (pcb->parent_id == -1) {
         /* restart shell when it tries to halt */
         // TODO: make this work with scheduling?
@@ -39,10 +39,7 @@ int32_t halt32(uint32_t status) {
     current_pid = pcb->parent_id;
     /* change kernel stack to parent's kernel stack */
     parent = create_pcb(current_pid);
-    tss.esp0 = parent->stack_ptr;
-
-    /* restore parent paging */
-    page_map_user(current_pid);
+    tss.esp0 = get_kernel_stack(current_pid);
 
     /* close any relevant FDs */
     // TODO: call the correct close() function on these?
@@ -50,13 +47,17 @@ int32_t halt32(uint32_t status) {
         set_fd_close(i, pcb);
     }
 
+    esp = pcb->stack_ptr;
     ebp = pcb->base_ptr;
 
     /* remove process with old_pid (process being halted) in queue and replace with parent process id */
     sched_queue_process(old_pid, parent->process_id, 1);
 
+    /* restore parent paging */
+    page_map_user(current_pid);
+
     /* jump to execute return */
-    halt_ret(ebp, status);
+    halt_ret(esp, ebp, status);
 
     return 0;
 }
@@ -83,6 +84,7 @@ int32_t execute(const uint8_t* command){
     int p;
     uint32_t entry;
     int32_t ebp;
+    int32_t esp;
     int32_t parent_pid = current_pid;
     uint8_t program[KB_BUF_SIZE+1];
     int i = 0, j = 0;
@@ -148,17 +150,9 @@ int32_t execute(const uint8_t* command){
     entry = program_load(program, p);
 
 
-    /* get the stack pointer and base pointer */
-    asm volatile("movl %%ebp, %0"
-            : "=rm"((ebp)) /* outputs */
-            :
-            : "memory");
-
     pcb->parent_id = parent_pid;
 
-    pcb->base_ptr = ebp;
-    pcb->stack_ptr = get_kernel_stack(current_pid);
-    tss.esp0 = pcb->stack_ptr; /* set the kernel's stack pointer */
+    tss.esp0 = get_kernel_stack(current_pid); /* set the kernel's stack pointer */
 
     /* initailize stdin and stdout */
     /* other entries (eg. inode) aren't used */
@@ -169,9 +163,19 @@ int32_t execute(const uint8_t* command){
 
     pcb->entry = entry;
     pcb->sched_bp = 0;
-
     /* add new process to schedule */
     sched_queue_process(pcb->parent_id, pcb->process_id, 0);
+
+    /* get the stack pointer and base pointer */
+    asm volatile("movl %%esp, %0 \n\
+                  movl %%ebp, %1"
+                  
+            : "=r"((esp)), "=r"((ebp)) /* outputs */
+            :
+            : "memory");
+
+    pcb->base_ptr = ebp;
+    pcb->stack_ptr = esp;
 
     /* wait for pit handler to execute */
     while (1) {

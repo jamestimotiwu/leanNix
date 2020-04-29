@@ -37,6 +37,7 @@ void sched(void) {
 	int32_t sleep_pid;
 	int32_t running_pid;
 	int32_t ebp;
+    int32_t esp;
     PCB_t* pcb;
 
     if (current_pid != -1) {
@@ -46,12 +47,14 @@ void sched(void) {
         pcb = create_pcb(sleep_pid);
 
         /* get the stack pointer and base pointer and save to pcb before sleeping*/
-        asm volatile("movl %%ebp, %0"
-            : "=rm"((ebp)) /* outputs */
+        asm volatile("movl %%esp, %0 \n\
+                      movl %%ebp, %1"
+            : "=rm"((esp)), "=rm"((ebp)) /* outputs */
             :
             : "memory");
 
         pcb->sched_bp = ebp;
+        pcb->stack_ptr = esp;
 	}
 
     // TODO: what to do about kernel stack poitner
@@ -88,10 +91,11 @@ void sched(void) {
 
 	/* restore next process stack and base pointer */
 	asm volatile("movl %0, %%ebp \n\
-				  leave          \n\
+				  movl %1, %%ebp \n\
+                  leave          \n\
                   ret"
 		:
-		: "r"((pcb->sched_bp)) /* inputs */
+		: "r"((pcb->stack_ptr)), "r"((pcb->sched_bp)) /* inputs */
 		: "memory");
 
 	return;
