@@ -27,9 +27,9 @@ int32_t halt32(uint32_t status) {
     if (pcb->parent_id == -1) {
         /* restart shell when it tries to halt */
         // TODO: make this work with scheduling?
-        current_pid = -1;
-        execute((uint8_t *)"shell");
-        return -1;
+        current_pid = pcb->term_num;
+        pcb->entry = program_load((uint8_t*)"shell", current_pid);
+        ret_to_user(pcb->entry);
     }
 
     cli();

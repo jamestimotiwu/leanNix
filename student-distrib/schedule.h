@@ -11,3 +11,5 @@ void sched(void);
 int32_t get_available_pid();
 
 void init_shells(void);
+
+void execute_sh(int32_t term_num);

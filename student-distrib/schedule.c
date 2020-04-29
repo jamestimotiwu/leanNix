@@ -137,36 +137,36 @@ void init_shells(void) {
     /* Assumed to be running with cli */
 
     int i;
-    PCB_t *pcb;
-
     for (i = 0; i < TERM_MAX; i++) {
         /* Initialize a shell for every terminal */
-        process_arr[i] = 1;
-        pcb = create_pcb(i);
-
-        pcb->term_num = i; /* terminal # corresonds with pid for the shells */
-        pcb->process_id = i;
-        pcb->parent_id = -1; /* shells have no parent (top level) */
-        pcb->stack_ptr = get_kernel_stack(i);
-        pcb->argument[0] = '\0'; /* shells are run with no arguments */
-        
-        /* Initialize stdin and stdout */
-        pcb->fd_arr[STDIN].file_ops = &stdin_file_ops;
-        set_fd_open(STDIN, pcb);
-        pcb->fd_arr[STDOUT].file_ops = &stdout_file_ops;
-        set_fd_open(STDOUT, pcb);
-
-        /* initialize it for scheduling */
-        sched_queue_process(pcb->parent_id, pcb->process_id, 0);
-
-        pcb->sched_bp = 0; /* not yet set */
-        page_map_user(i);
-        pcb->entry = program_load((uint8_t *) "shell", i);
-        pcb->stack_ptr = get_kernel_stack(current_pid);
-
-        
-
+        execute_sh(i);
     }
+}
 
+void execute_sh(int32_t term_num) {
+    PCB_t* pcb;
+
+    process_arr[term_num] = 1;
+    pcb = create_pcb(term_num);
+
+    pcb->term_num = term_num; /* terminal # corresonds with pid for the shells */
+    pcb->process_id = term_num;
+    pcb->parent_id = -1; /* shells have no parent (top level) */
+    pcb->stack_ptr = get_kernel_stack(term_num);
+    pcb->argument[0] = '\0'; /* shells are run with no arguments */
+
+    /* Initialize stdin and stdout */
+    pcb->fd_arr[STDIN].file_ops = &stdin_file_ops;
+    set_fd_open(STDIN, pcb);
+    pcb->fd_arr[STDOUT].file_ops = &stdout_file_ops;
+    set_fd_open(STDOUT, pcb);
+
+    /* initialize it for scheduling */
+    sched_queue_process(pcb->parent_id, pcb->process_id, 0);
+
+    pcb->sched_bp = 0; /* not yet set */
+    page_map_user(term_num);
+    pcb->entry = program_load((uint8_t*)"shell", term_num);
+    pcb->stack_ptr = get_kernel_stack(current_pid);
 }
 
