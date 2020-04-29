@@ -19,7 +19,21 @@ void init_pages()
 	page_table[VMEM_MAP].rw = 1;
 	page_table[VMEM_MAP].base_32_12 = VMEM_MAP;
 
-	/* First entry of page table to directory (4kb entries), page table mapped to base address */
+	/* Backup video memory present and user */
+	page_table[VMEM_T1].present = 1;
+	page_table[VMEM_T1].rw = 1;
+	page_table[VMEM_T1].base_32_12 = VMEM_T1;
+
+	page_table[VMEM_T2].present = 1;
+	page_table[VMEM_T2].rw = 1;
+	page_table[VMEM_T2].base_32_12 = VMEM_T2;
+					 
+	page_table[VMEM_T2].present = 1;
+	page_table[VMEM_T2].rw = 1;
+	page_table[VMEM_T2].base_32_12 = VMEM_T3;
+
+	/* First entry of page table to directory 
+	(4kb entries), page table mapped to base address */
 	page_dir[0].kb.val = 0;
 	page_dir[0].kb.present = 1;
 	page_dir[0].kb.rw = 1;

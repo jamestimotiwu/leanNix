@@ -12,6 +12,10 @@
 #define MB_PAGE_SIZE    (PAGE_SIZE << 10) 
 #define VMEM_MAP        0xB8
 
+#define VMEM_T1         0xB9
+#define VMEM_T2         0xBA
+#define VMEM_T3         0xBB
+
 #define KB_BASE_OFFSET  12
 #define MB_BASE_OFFSET  22
 
