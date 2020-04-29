@@ -7,6 +7,6 @@ void pit_interrupt_assembly();
 
 void execute_iret(uint32_t esp, uint32_t eip);
 void ret_to_user(int32_t eip);
-void halt_ret(int32_t esp, uint32_t status);
+void halt_ret(int32_t esp, int32_t ebp, uint32_t status);
 
 #endif
