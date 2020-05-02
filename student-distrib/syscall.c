@@ -26,9 +26,11 @@ int32_t halt32(uint32_t status) {
     //process_arr[current_pid] = 0;
     if (pcb->parent_id == -1) {
         /* restart shell when it tries to halt */
-        // TODO: make this work with scheduling?
         current_pid = pcb->term_num;
+        /* Reload the program */
         pcb->entry = program_load((uint8_t*)"shell", current_pid);
+        
+        // TODO base poniter?
         ret_to_user(pcb->entry);
     }
 
@@ -42,9 +44,15 @@ int32_t halt32(uint32_t status) {
     tss.esp0 = get_kernel_stack(current_pid);
 
     /* close any relevant FDs */
-    // TODO: call the correct close() function on these?
     for (i = 0; i < MAX_NUM_FD; i++) {
-        set_fd_close(i, pcb);
+        if (i != STDIN && i != STDOUT) {
+            /* close functions for stdin and stdout return an error, so ignore those */
+            close(i);
+        } else {
+            /* make sure stdin and stdout flags get set to closed */
+            set_fd_close(i, pcb);
+        }
+        
     }
 
     esp = pcb->stack_ptr;
@@ -182,16 +190,6 @@ int32_t execute(const uint8_t* command){
         asm volatile ("hlt");
     }
 
-    /* TODO: initialize kernel stack w/ iret ctx? eip=entry, esp=user stack top */
-
-    /* Force scheduling routine */
-    //sched(); // TODO
-
-    /* prepare for context switch */
-
-    /* push IRET context onto stack and do IRET */
-    //ret_to_user(entry);
-
     return 0;
 }
 
@@ -241,9 +239,6 @@ int32_t write(int32_t fd, const void* buf, int32_t nbytes){
  *   SIDE EFFECTS: changes pcb open files
  */
 int32_t open(const uint8_t* filename){
-    //int32_t fd;
-    /* first find if there is an open file descriptor */
-    //fd = 0;
     PCB_t* pcb = create_pcb(current_pid);
     int i;
 
@@ -251,12 +246,14 @@ int32_t open(const uint8_t* filename){
     if (filename == NULL)
         return -1;
 
+    /* find if there is an open file descriptor */
     for(i = 0; i < MAX_NUM_FD; i++){
-      if(pcb->fd_arr[i].flags == 0)
-        break;
+        if(pcb->fd_arr[i].flags == 0)
+            break;
     }
+
     if(i == MAX_NUM_FD)
-      return -1;
+        return -1;
 
     dir_entry_t dentry;
     if (-1 == read_dentry_by_name(filename, &dentry))
@@ -287,6 +284,8 @@ int32_t open(const uint8_t* filename){
  *   SIDE EFFECTS: changes pcb fd_arr
  */
 int32_t close(int32_t fd){
+    int retval;
+
     /* check that fd is valid (can't close stdout or stdin) */
     if (fd < 0 || fd >= MAX_NUM_FD || fd == STDOUT || fd == STDIN)
         return -1;
@@ -297,10 +296,13 @@ int32_t close(int32_t fd){
         return -1;
     }
 
-    pcb->fd_arr[fd].file_ops = &dir_file_ops;
     pcb->fd_arr[fd].flags = 0;
 
-    return pcb->fd_arr[fd].file_ops->close_ptr(fd);
+    retval = pcb->fd_arr[fd].file_ops->close_ptr(fd);
+    /* set its flag to closed */
+    set_fd_close(fd, pcb);
+    
+    return retval;
 }
 
 /* getargs

@@ -175,18 +175,10 @@ void entry(unsigned long magic, unsigned long addr) {
 
 	/* Init PIT between 1 cycle per 10milisecond and 1 cycle per 50 millisecond*/
 	/* set as 20HZ */
-	pit_init(20);
-	sti();
+	pit_init(60);
 
 	/* Initialize devices, memory, filesystem, enable device interrupts on the
 	 * PIC, any other initialization stuff... */
-
-	/* Initialize the three shells */
-	//int i;
-	//for (i = 0; i < TERM_MAX; i++) {
-		//execute((uint8_t *) "shell");
-		//create_pcb(i)->term_num = i;
-	//}
 
 	 /* Enable interrupts */
 	 /* Do not enable the following until after you have set up your
@@ -205,7 +197,7 @@ void entry(unsigned long magic, unsigned long addr) {
 	//execute((uint8_t *) "shell");
 	
 	/* Force the first shell to start running */
-	//sched();
+	sched();
 
 	/* Spin (nicely, so we don't chew up cycles) */
 	asm volatile (".1: hlt; jmp .1;");

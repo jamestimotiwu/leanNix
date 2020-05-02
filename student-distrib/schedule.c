@@ -17,6 +17,12 @@
 /* process queue to schedule; by default all processes are NOT_RUNNING (0) */
 int32_t process_queue[PROCESS_NUM]; 
 
+/* get_available_pid
+ *   DESCRIPTION: finds the next free pid and returns it
+ *   INPUTS: none
+ *   OUTPUTS: -1 if there are no free pids, else the pid
+ *   SIDE EFFECTS: none
+ */
 int32_t get_available_pid() {
     int i;
     for (i = 0; i < PROCESS_NUM; i++) {
