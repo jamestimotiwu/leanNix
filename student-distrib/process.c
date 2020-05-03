@@ -84,7 +84,7 @@ file_ops_ptr_t fs_file_ops = {(read_op)fs_read, (write_op)fs_write,
  */
 void set_fd_open(int32_t fd, PCB_t *pcb) {
 	/* set the fd's open flag to 1 */
-	pcb->fd_arr[fd].flags |= FDFLAG_OPEN;
+	pcb->fd_arr[fd].flags = FDFLAG_OPEN;
 }
 
 /* set_fd_close
@@ -96,10 +96,10 @@ void set_fd_open(int32_t fd, PCB_t *pcb) {
  */
 void set_fd_close(int32_t fd, PCB_t *pcb) {
 	/* set the fd's open flag to 0 */
-	pcb->fd_arr[fd].flags &= ~FDFLAG_OPEN;
+	pcb->fd_arr[fd].flags = FDFLAG_CLOSED;
 }
 
 int32_t fd_is_open(int32_t fd, PCB_t *pcb) {
-	return pcb->fd_arr[fd].flags & FDFLAG_OPEN;
+	return (pcb->fd_arr[fd].flags == FDFLAG_OPEN);
 }
 

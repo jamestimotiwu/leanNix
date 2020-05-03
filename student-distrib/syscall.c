@@ -12,8 +12,7 @@ int32_t process_arr[PROCESS_NUM] = { 0,0,0,0,0,0 };
 
 /* halt32
  *   DESCRIPTION: same as halt, but argument is 32 bits so
- *                that this can be called during an exception
- *                (status = 256)
+ *                that this can be called during an exception (status = 256)
  *   INPUTS: status -- 32 bit status of halt
  *   OUTPUT: 0
  *   SIDE EFFECTS: halts execution of program
@@ -23,27 +22,19 @@ int32_t halt32(uint32_t status) {
     PCB_t *parent;
 
     int32_t i, ebp, esp, old_pid;
-    //process_arr[current_pid] = 0;
+    process_arr[current_pid] = 0;
     if (pcb->parent_id == -1) {
         /* restart shell when it tries to halt */
         current_pid = pcb->term_num;
         /* Reload the program */
         pcb->entry = program_load((uint8_t*)"shell", current_pid);
         
-        // TODO base poniter?
         ret_to_user(pcb->entry);
     }
 
     cli();
 
-    old_pid = current_pid;
-    /* restore parent data */
-    current_pid = pcb->parent_id;
-    /* change kernel stack to parent's kernel stack */
-    parent = create_pcb(current_pid);
-    tss.esp0 = get_kernel_stack(current_pid);
-
-    /* close any relevant FDs */
+    /* close any relevant FDs of process being halted */
     for (i = 0; i < MAX_NUM_FD; i++) {
         if (i != STDIN && i != STDOUT) {
             /* close functions for stdin and stdout return an error, so ignore those */
@@ -52,8 +43,15 @@ int32_t halt32(uint32_t status) {
             /* make sure stdin and stdout flags get set to closed */
             set_fd_close(i, pcb);
         }
-        
     }
+
+    old_pid = current_pid;
+    /* restore parent data */
+    current_pid = pcb->parent_id;
+    /* change kernel stack to parent's kernel stack */
+    parent = create_pcb(current_pid);
+    tss.esp0 = get_kernel_stack(current_pid);
+
 
     esp = pcb->stack_ptr;
     ebp = pcb->base_ptr;
@@ -148,7 +146,7 @@ int32_t execute(const uint8_t* command){
         return -1;
 
     /* execute didn't fail, so update pid info */
-    //process_arr[p] = 1;
+    process_arr[p] = 1;
     pcb->process_id = p;
 
     /* set up paging */
@@ -160,7 +158,6 @@ int32_t execute(const uint8_t* command){
 
     pcb->parent_id = parent_pid;
 
-    tss.esp0 = get_kernel_stack(current_pid); /* set the kernel's stack pointer */
 
     /* initailize stdin and stdout */
     /* other entries (eg. inode) aren't used */
@@ -170,6 +167,7 @@ int32_t execute(const uint8_t* command){
     set_fd_open(STDOUT, pcb);
 
     pcb->entry = entry;
+    /* No sched base pointer yet - scheduler will handle this case differently */
     pcb->sched_bp = 0;
     /* add new process to schedule */
     sched_queue_process(pcb->parent_id, pcb->process_id, 0);
@@ -185,10 +183,10 @@ int32_t execute(const uint8_t* command){
     pcb->base_ptr = ebp;
     pcb->stack_ptr = esp;
 
-    /* wait for pit handler to execute */
-    while (1) {
-        asm volatile ("hlt");
-    }
+    tss.esp0 = get_kernel_stack(current_pid); /* set the kernel's stack pointer */
+
+    /* Force scheduler to run */
+    sched();
 
     return 0;
 }
@@ -248,7 +246,8 @@ int32_t open(const uint8_t* filename){
 
     /* find if there is an open file descriptor */
     for(i = 0; i < MAX_NUM_FD; i++){
-        if(pcb->fd_arr[i].flags == 0)
+        if(!fd_is_open(i, pcb))
+            /* An fd that can be opened has been found */
             break;
     }
 
@@ -272,7 +271,7 @@ int32_t open(const uint8_t* filename){
     pcb->fd_arr[i].inode = dentry.inode_num;
     pcb->fd_arr[i].file_pos = 0;
     pcb->fd_arr[i].file_ops->open_ptr(filename); // return this?
-    pcb->fd_arr[i].flags = FDFLAG_OPEN;
+    set_fd_open(i, pcb);
 
     return i;
 }
@@ -296,11 +295,10 @@ int32_t close(int32_t fd){
         return -1;
     }
 
-    pcb->fd_arr[fd].flags = 0;
+    /* set flags to 0 (closed) */
+    set_fd_close(fd, pcb);
 
     retval = pcb->fd_arr[fd].file_ops->close_ptr(fd);
-    /* set its flag to closed */
-    set_fd_close(fd, pcb);
     
     return retval;
 }

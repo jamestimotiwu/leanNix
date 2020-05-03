@@ -30,7 +30,8 @@ extern int32_t process_arr[PROCESS_NUM];
 #define STDIN 0
 #define STDOUT 1
 
-#define FDFLAG_OPEN 0x1
+#define FDFLAG_CLOSED  0
+#define FDFLAG_OPEN    1
 
 /* jump table for file operations */
 typedef int32_t (*read_op)(int32_t fd, void* buf, int32_t nbytes);

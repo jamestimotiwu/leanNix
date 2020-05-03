@@ -63,8 +63,6 @@ void sched(void) {
         pcb->stack_ptr = esp;
 	}
 
-    // TODO: what to do about kernel stack poitner
-
     for (i = 1; i < PROCESS_NUM; i++) {
         p = (current_pid + i) % PROCESS_NUM;
 
@@ -73,15 +71,12 @@ void sched(void) {
             break;
         }
     }
-    // TODO: what if break never set?
 
 	/* set next process as running_pid */
 	running_pid = p;
 
 	/* restore next scheduled process context */
 	pcb = create_pcb((uint32_t) running_pid);
-
-    // TODO CLI STI ???
 
 	/* remap paging; flush tlb */
 	page_map_user(running_pid);

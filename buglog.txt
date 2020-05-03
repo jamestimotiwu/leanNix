@@ -141,6 +141,12 @@ Problem: Using cat with a file only works the first time. After that it fails.
 Solution: The getargs didn't always put a terminating null character in the buffer
 string, so the call to open failed. This was fixed by adding an extra statement.
 
+CP5:
+Problem: Running ls too many times causes it to fail on directory open.
+Solution: File descriptors weren't being closed correctly when a user program
+halts, so calling open failed as all the file descriptors were full from
+previous times. The fix was to correctly set all file descriptors to closed.
+
 ######
 
 Buglog (Ben):

@@ -174,8 +174,8 @@ void entry(unsigned long magic, unsigned long addr) {
 	init_shells();
 
 	/* Init PIT between 1 cycle per 10milisecond and 1 cycle per 50 millisecond*/
-	/* set as 20HZ */
-	pit_init(60);
+	/* set as 50HZ (1 cycle / 20 ms) */
+	pit_init(50);
 
 	/* Initialize devices, memory, filesystem, enable device interrupts on the
 	 * PIC, any other initialization stuff... */
