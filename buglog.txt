@@ -183,6 +183,12 @@ Solution: Fix PCB_t struct to include base pointer as an attribute so we can ret
 Problem: Not sure how to check whether an exception occured in user or kernel
 Solution: Piazza advice, checking DS register can differentiate whether using KERNEL_DS or USER_DS
 
+CP5:
+Problem: Pagefault exception when changing process tracking from global variable to a global process array
+Solution: Improper code sequence, had to move the locations of some code
+
+Problem: Processes not limited to 6 even though changed to process tracking with global process array
+Solution: Wasn't setting the current process to used after finding next free process_id
 ######
 
 Buglog (Jin)
