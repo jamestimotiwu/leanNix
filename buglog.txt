@@ -225,7 +225,13 @@ problem: open systemcall not working, ls user function is not outputting anythin
 solution: The implementation of the function pointer to open was not initialized correctly. It was fixed by 
 having the file operations pointer pointing to the open function pointer. 
 
+cp5
+problem: First terminal didn't execute shell properly after implementing multiple terminal funtionality in the keyboard and terminal drivers
+solution: Added the execution of shell in the first terminal initialization and commented out the original execute shell command on the kernel.c file. 
+This implementation was later replaced by the init_shells function after the scheduler is implemented and merged with the system. 
 
+problem: video memory backup physical memory address wasn't specified (allocated) so video backup was not mapped correctly upon initialization. Keyboard buffer and current buffer length for each terminal was not implemented correctly. 
+solution: Specified video memory backup address by allocating 4kb for each of the terminals (each video memory). In addition, created the terminal struct that stores and tracks each terminal's keyboard buffer and current buffer length. 
 
 
 
