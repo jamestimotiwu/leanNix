@@ -78,6 +78,9 @@ typedef struct PCB{
   uint32_t term_num;
   /* argument storage for later use */
   int8_t argument[MAX_ARGS];
+  /* rtc frequency (for restoring it when switching processes */
+  int32_t rtc_freq;
+
 }PCB_t;
 
 PCB_t* get_PCB(); //get PCB

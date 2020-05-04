@@ -152,6 +152,12 @@ Solution: This is caused by the keyboard buffer filling up when the user types w
 program runs. The fix was to show the contents in the buffer after the program finishes
 so that backspace will delete that text and not the prompt.
 
+Problem: Running "cat rtc" while pingpong is running in another terminal causes pingpong
+to permanently slow down.
+Solution: Opening the rtc file causes rtc frequency to be set very low, but the frequency
+wasn't being correctly set back when the scheduler changes programs. The solution was to
+add a check if the frequency needs to be changed and if it does, to change the rtc frequency.
+
 ######
 
 Buglog (Ben):

@@ -1,6 +1,10 @@
 #include "rtc.h"
+#include "../process.h"
+
 
 volatile int rtc_int_flag;
+
+static int current_rtc_freq = -1;
 
 /* rtc_int
  *   DESCRIPTION: rtc interrupt handler test
@@ -9,7 +13,7 @@ volatile int rtc_int_flag;
  *   SIDE EFFECT: prints to screen
  */
 void rtc_int() {
-	//cli();				/* Disable interrupts */
+	//cli()
 	
 	//test_interrupts();
 	outb(REG_C, RTC_PORT);	/* Select and read register C */
@@ -44,6 +48,10 @@ void rtc_init() {
  */
 int rtc_set_freq(int freq){
 	char new_rate;
+
+    /* Don't do anything if rtc frequency already matches argument */
+    if (freq == current_rtc_freq)
+        return 0;
 
 	switch(freq){
 		case 2:
@@ -80,6 +88,7 @@ int rtc_set_freq(int freq){
 			return -1;
 			break;
 	}
+    current_rtc_freq = freq;
 	/* Disable interrupts */
 	cli();
 	outb(REG_A, RTC_PORT);
@@ -99,6 +108,7 @@ int rtc_set_freq(int freq){
  */
 int rtc_open(const uint8_t* filename){
 	rtc_set_freq(2);
+    create_pcb(current_pid)->rtc_freq = 2;
 	return 0;
 }
 
@@ -108,6 +118,7 @@ int rtc_open(const uint8_t* filename){
  *   OUTPUTS: 0 for success
  */
 int rtc_close(int32_t fd){
+    create_pcb(current_pid)->rtc_freq = -1;
 	return 0;
 }
 
@@ -136,6 +147,10 @@ int rtc_read(int32_t fd, void* buf, int32_t nbytes){
 int rtc_write(int32_t fd, const void* buf, int32_t nbytes){
 	uint32_t newRate = *((int*)buf);
 	int result = rtc_set_freq(newRate);
+
+    if (result != -1)
+        create_pcb(current_pid)->rtc_freq = newRate;
+
 	return result;
 	// if(result == -1){
 	// 	return -1;

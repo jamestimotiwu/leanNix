@@ -6,6 +6,7 @@
 #include "schedule.h"
 #include "interrupt_linkage.h"
 #include "drivers/fs.h"
+#include "drivers/rtc.h"
 
 /* Program not loaded */
 #define NOT_LOADED 0
@@ -84,6 +85,9 @@ void sched(void) {
 	tss.esp0 = get_kernel_stack(running_pid);
 
     current_pid = running_pid;
+
+    if (pcb->rtc_freq != -1)
+        rtc_set_freq(pcb->rtc_freq);
 
     if (pcb->sched_bp == 0) {
         /* First time this program is being entered, so it needs to be handled differently */
@@ -165,6 +169,7 @@ void execute_sh(int32_t term_num) {
     /* initialize it for scheduling */
     sched_queue_process(pcb->parent_id, pcb->process_id, 0);
 
+    pcb->rtc_freq = -1;
     pcb->sched_bp = 0; /* not yet set */
     page_map_user(term_num);
     pcb->entry = program_load((uint8_t*)"shell", term_num);

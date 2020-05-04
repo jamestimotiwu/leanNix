@@ -52,7 +52,6 @@ int32_t halt32(uint32_t status) {
     parent = create_pcb(current_pid);
     tss.esp0 = get_kernel_stack(current_pid);
 
-
     esp = pcb->stack_ptr;
     ebp = pcb->base_ptr;
 
@@ -171,6 +170,8 @@ int32_t execute(const uint8_t* command){
     pcb->sched_bp = 0;
     /* add new process to schedule */
     sched_queue_process(pcb->parent_id, pcb->process_id, 0);
+    /* set no rtc_freq */
+    pcb->rtc_freq = -1;
 
     /* get the stack pointer and base pointer */
     asm volatile("movl %%esp, %0 \n\
