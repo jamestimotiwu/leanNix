@@ -94,6 +94,22 @@ Solution: Could not debug fish directly, but using info mem helped immensely to 
 Problem: Fish printing weird line endings (musical notes) as \r into video memory
 Solution: Issue with how fish must have been uploaded to the filesystem. We added several test programs into the filesystem, which likely contain DOS line endings. This was fixed by checking out an old copy of an unmodified file system image.
 
+# Checkpoint 5
+Problem: Process only running starting from terminal 3 during scheduling reimplementation
+Solution: Context switching was not running properly to the other shells, possibly because the ebp of the other processes were not initialized and lacked any hardware context to jump and iret to.
+
+Problem: Fish displaying in all 3 terminals during runtime
+Solution: Create 3 seperate pages for each terminal and switch the vidmap address; swap the video memory mapping during terminal switch
+
+Problem: User_vmem_addr and remapping video memory forcing bootloop
+Solution: Video memory address needed to be shifted by 12 bits for the offset, since the address used was the page index for each individual virtual memory page.
+
+Problem: Exit causing page fault and general protection fault execeptions
+Solution: Instead of completely regenerating the state of the process, just reload the program's ELF back to the entry instruction to start the program
+
+Problem: Terminal cursor not blinking properly, pingpong has empty lines during execution
+Solution: Terminal buffers were statically allocated to be written into video memory, which are all 4KB and likely ooverflowing the kernel stack. Creating individual pages for each terminal solves this issue.
+
 #####
 Buglog (Michael)
 
