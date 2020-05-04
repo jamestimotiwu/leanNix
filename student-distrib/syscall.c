@@ -376,3 +376,4 @@ int32_t sigreturn(void) {
     // not yet implemented
     return -1;
 }
+

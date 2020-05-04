@@ -21,7 +21,7 @@
 
 /* basic terminal functionality */
 void term_clear(uint32_t term);
-void term_showbuf(); /* prints out contents currently in buffer */
+void term_showbuf(int term); /* prints out current buffer contents */
 void term_putc(uint8_t c, uint32_t term);
 void term_test_int();
 int32_t show_terminal(uint32_t term);

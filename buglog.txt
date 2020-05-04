@@ -147,6 +147,11 @@ Solution: File descriptors weren't being closed correctly when a user program
 halts, so calling open failed as all the file descriptors were full from
 previous times. The fix was to correctly set all file descriptors to closed.
 
+Problem: Able to delete the 391OS> prompt after fish.
+Solution: This is caused by the keyboard buffer filling up when the user types while the
+program runs. The fix was to show the contents in the buffer after the program finishes
+so that backspace will delete that text and not the prompt.
+
 ######
 
 Buglog (Ben):

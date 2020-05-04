@@ -172,7 +172,7 @@ void keyboard_int(){
 
         /* Ctrl-L pressed: clear the screen */
         term_clear(display_term);
-        term_showbuf();
+        term_showbuf(display_term); /* ctrl-L was for current screen */
 
         send_eoi(KB_IRQ);  //send EOI signal when done handling 
         sti();

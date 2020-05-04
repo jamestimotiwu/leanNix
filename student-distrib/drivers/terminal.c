@@ -278,15 +278,15 @@ void term_keyboardEnter() {
 
 /* term_showbuf
  *   DESCRIPTION: Prints out contents of keyboard buffer to screen
- *   INPUTS: none
+ *   INPUTS: term -- the terminal to print to
  *   OUTPUTS: none
  *   SIDE EFFECTS: changes video mem
  */
-void term_showbuf() {
+void term_showbuf(int term) {
     terminal_t *t = &terminals[display_term];
     int i;
     for (i = 0; i < t->kb_pos; i++) {
-        term_putc(t->kb_buf[i], display_term);
+        term_putc(t->kb_buf[i], term);
     }
 }
 
@@ -363,6 +363,12 @@ int32_t terminal_read(int32_t fd, void *buf, uint32_t count) {
     /* terminal read always reads from the current terminal */
     readWaiting[current_term] = 1;
     terminal_t *t = &terminals[current_term];
+
+    /* This handles case where user types while program isn't reading.
+       The buffer would get filled but would otherwise not show up after
+       391OS> prompt, meaning it could get deleted with backspace */
+    if (t->kb_pos != 0)
+        term_showbuf(current_term);
 
     while (readWaiting[current_term]) {
         // Do nothing; wait for this to exit (like spinlock)
